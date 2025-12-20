@@ -13,11 +13,14 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <h1>Farm Production Tracker</h1>
-    <p>Offline Farm Records</p>
-    <button id="resetBtn" type="button">Reset App</button>
-  </header>
+<header>
+  <h1>Farm Production Tracker</h1>
+  <p>Offline Farm Records</p>
+  <div style="display: flex; gap: 10px; justify-content: center;">
+    <button id="switchTypeBtn" type="button" style="width: auto; margin-top: 10px; padding: 5px 15px; background: #689f38;">🔄 Switch Farm Type</button>
+    <button id="resetBtn" type="button" style="width: auto; margin-top: 10px; padding: 5px 15px; background: #d32f2f;">Reset App</button>
+  </div>
+</header>
 
 <main>
   <section id="farmTypeScreen">
@@ -97,4 +100,5 @@
   <script src="app.js"></script>
 </body>
 </html>
+
 
