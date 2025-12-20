@@ -188,4 +188,41 @@ document.addEventListener("DOMContentLoaded", () => {
       req.onsuccess = () => window.location.reload();
     }
   });
+  /* =========================
+      EXPORT DATA TO CSV
+  ========================= */
+  document.getElementById("exportBtn").addEventListener("click", () => {
+    const tx = db.transaction("records", "readonly");
+    const req = tx.objectStore("records").getAll();
+
+    req.onsuccess = () => {
+      const records = req.result;
+      if (records.length === 0) return alert("No records to export!");
+
+      // 1. Define CSV Headers
+      let csvContent = "Date,Quantity,Price per Unit,Expenses,Total Revenue,Estimated Profit\n";
+
+      // 2. Add Rows
+      records.forEach(r => {
+        const revenue = r.quantity * r.price;
+        const profit = revenue - r.expenses;
+        const row = `${r.date},${r.quantity},${r.price},${r.expenses},${revenue},${profit}`;
+        csvContent += row + "\n";
+      });
+
+      // 3. Create a downloadable link
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      
+      link.setAttribute("href", url);
+      link.setAttribute("download", `Farm_Records_${new Date().toISOString().slice(0,10)}.csv`);
+      link.style.visibility = "hidden";
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    };
+  });
 }); // End of DOMContentLoaded
+
