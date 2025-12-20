@@ -78,13 +78,17 @@ document.addEventListener("DOMContentLoaded", () => {
       const record = {
         type: currentType,
         date: document.getElementById("date").value,
-        quantity: Number(document.getElementById("quantity").value),
+        quantity: Number(document.getElementById("quantity").value), // Eggs for Layers, Weight for Broilers
         price: Number(document.getElementById("price").value),
         expenses: Number(document.getElementById("expenses").value) || 0,
-        extra: currentType === "dairy" ? document.getElementById("cowId").value :
-               currentType === "poultry" ? document.getElementById("batchId").value :
-               document.getElementById("fieldName").value
-      };
+        // Poultry Specifics
+        subtype: document.getElementById("poultrySubtype").value,
+        mortality: Number(document.getElementById("mortality").value) || 0,
+        flockSize: Number(document.getElementById("flockSize").value) || 0,
+        feed: Number(document.getElementById("feed").value) || 0,
+        weight: Number(document.getElementById("avgWeight").value) || 0,
+        extra: document.getElementById("batchId").value
+};
       const tx = db.transaction("records", "readwrite");
       tx.objectStore("records").add(record);
       tx.oncomplete = () => {
@@ -97,17 +101,25 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   });
 
-  function loadRecords() {
-    if (!db) return;
-    const tx = db.transaction(["records", "settings"], "readonly");
-    tx.objectStore("settings").get("farmType").onsuccess = (e) => {
-      const currentType = e.target.result.value;
-      tx.objectStore("records").getAll().onsuccess = (ev) => {
-        const allRecords = ev.target.result;
-        const selectedMonth = monthFilter.value;
-        recordsList.innerHTML = "";
-        let [totalQty, totalExp, totalRev] = [0, 0, 0];
-        const months = new Set();
+// Add these variables at the top of loadRecords
+let poultryStats = { mortality: 0, feed: 0, eggs: 0, size: 0, weightSum: 0, weightCount: 0 };
+
+// Inside the loop where you process records:
+if (r.type === "poultry") {
+    poultryStats.mortality += (r.mortality || 0);
+    poultryStats.feed += (r.feed || 0);
+    poultryStats.size = r.flockSize; // Taking the most recent flock size
+    if (r.subtype === "layers") {
+        poultryStats.eggs += r.quantity;
+    } else {
+        poultryStats.weightSum += (r.weight || 0);
+        poultryStats.weightCount++;
+    }
+}
+
+// After the loop, calculate Ratios:
+const layingRatio = poultryStats.size > 0 ? (poultryStats.eggs / poultryStats.size) * 100 : 0;
+const avgWeight = poultryStats.weightCount > 0 ? poultryStats.weightSum / poultryStats.weightCount : 0;
 
         updateChart(allRecords, currentType);
 
@@ -177,3 +189,4 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
   }
 });
+
