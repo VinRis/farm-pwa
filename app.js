@@ -76,16 +76,16 @@ document.addEventListener("DOMContentLoaded", () => {
   /* =========================
       SHOW APP SCREEN
   ========================= */
-  function showApp(type) {
-    farmTypeScreen.style.display = "none";
-    appScreen.style.display = "block";
+function showApp(type) {
+    document.getElementById("farmTypeScreen").style.display = "none";
+    document.getElementById("appScreen").style.display = "block";
 
-    // SAFETY FIX: Check if element exists before setting text
-    if (dynamicLabel) {
-        if (type === "dairy") dynamicLabel.innerText = "Milk Collected (Litres)";
-        else if (type === "poultry") dynamicLabel.innerText = "Eggs Collected";
-        else if (type === "crops") dynamicLabel.innerText = "Harvest Quantity (Kg)";
-    }
+    // UPDATED: Select by ID
+    const qtyLabel = document.getElementById("qtyLabel");
+
+    if (type === "dairy") qtyLabel.innerText = "Milk Collected (Litres)";
+    if (type === "poultry") qtyLabel.innerText = "Eggs Collected";
+    if (type === "crops") qtyLabel.innerText = "Harvest Quantity (Kg)";
   }
 
   /* =========================
@@ -225,3 +225,4 @@ document.addEventListener("DOMContentLoaded", () => {
       };
     }
   });
+
