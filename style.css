@@ -77,3 +77,8 @@ button {
   z-index: 1;
 }
 
+button {
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
