@@ -157,3 +157,42 @@ li {
   justify-content: space-between;
   align-items: center;
 }
+
+.chart-container {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 150px;
+  padding-top: 20px;
+  border-bottom: 2px solid #ddd;
+  gap: 5px;
+}
+
+.chart-bar-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.bar {
+  width: 80%;
+  background: #2e7d32;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+  transition: height 0.5s ease-out;
+  min-height: 2px;
+}
+
+.bar-label {
+  font-size: 10px;
+  color: #666;
+  margin-top: 5px;
+  transform: rotate(-45-deg);
+}
+
+.bar-value {
+  font-size: 9px;
+  font-weight: bold;
+  margin-bottom: 2px;
+}
