@@ -1,3 +1,6 @@
+/* =========================
+    SERVICE WORKER REGISTRATION
+========================= */
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("service-worker.js")
     .then(() => console.log("Service Worker Registered"))
@@ -15,24 +18,37 @@ document.addEventListener("DOMContentLoaded", () => {
   const monthFilter = document.getElementById("monthFilter");
   const qtyLabel = document.getElementById("qtyLabel");
 
-  document.addEventListener("click", (e) => {
-    const btn = e.target.closest("#farmTypeScreen button");
-    if (btn) setFarmType(btn.dataset.type);
-  });
-
+  /* =========================
+      INITIALIZATION & DB
+  ========================= */
   const request = indexedDB.open("FarmDB", 1);
+
   request.onupgradeneeded = (e) => {
     db = e.target.result;
-    if (!db.objectStoreNames.contains("records")) db.createObjectStore("records", { keyPath: "id", autoIncrement: true });
-    if (!db.objectStoreNames.contains("settings")) db.createObjectStore("settings", { keyPath: "key" });
+    if (!db.objectStoreNames.contains("records")) {
+      db.createObjectStore("records", { keyPath: "id", autoIncrement: true });
+    }
+    if (!db.objectStoreNames.contains("settings")) {
+      db.createObjectStore("settings", { keyPath: "key" });
+    }
   };
 
   request.onsuccess = (e) => {
     db = e.target.result;
     dbReady = true;
+    document.getElementById("date").valueAsDate = new Date(); // Set default date
     getFarmType();
   };
 
+  // Handle farm type selection buttons
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest("#farmTypeScreen button");
+    if (btn) setFarmType(btn.dataset.type);
+  });
+
+  /* =========================
+      FARM TYPE LOGIC
+  ========================= */
   function setFarmType(type) {
     const tx = db.transaction("settings", "readwrite");
     tx.objectStore("settings").put({ key: "farmType", value: type });
@@ -55,52 +71,59 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-function showApp(type) {
-  farmTypeScreen.style.display = "none";
-  appScreen.style.display = "block";
+  function showApp(type) {
+    farmTypeScreen.style.display = "none";
+    appScreen.style.display = "block";
 
-  // Hide all extra fields first
-  document.querySelectorAll('.extra-fields').forEach(div => div.style.display = 'none');
+    // Toggle specific fields
+    document.querySelectorAll('.extra-fields').forEach(div => div.style.display = 'none');
 
-  if (type === "dairy") {
-    qtyLabel.innerText = "Milk Collected (Litres)";
-    document.getElementById("dairyFields").style.display = "block";
-  } else if (type === "poultry") {
-    qtyLabel.innerText = "Eggs Collected (Trays/Pcs)";
-    document.getElementById("poultryFields").style.display = "block";
-  } else if (type === "crops") {
-    qtyLabel.innerText = "Harvest Quantity (Kg)";
-    document.getElementById("cropFields").style.display = "block";
+    if (type === "dairy") {
+      qtyLabel.innerText = "Milk Collected (Litres)";
+      document.getElementById("dairyFields").style.display = "block";
+    } else if (type === "poultry") {
+      qtyLabel.innerText = "Eggs Collected (Trays/Pcs)";
+      document.getElementById("poultryFields").style.display = "block";
+    } else if (type === "crops") {
+      qtyLabel.innerText = "Harvest Quantity (Kg)";
+      document.getElementById("cropFields").style.display = "block";
+    }
   }
-}
 
-  function getMonthKey(dateStr) { return dateStr.substring(0, 7); }
-
+  /* =========================
+      SAVE RECORDS
+  ========================= */
   form.addEventListener("submit", (e) => {
     e.preventDefault();
     const txS = db.transaction("settings", "readonly");
     txS.objectStore("settings").get("farmType").onsuccess = (ev) => {
       const currentType = ev.target.result.value;
-    const record = {
-      type: currentType,
-      date: document.getElementById("date").value,
-      quantity: Number(document.getElementById("quantity").value),
-      price: Number(document.getElementById("price").value),
-      expenses: Number(document.getElementById("expenses").value) || 0,
-      // Capture extra data
-      extra: currentType === "dairy" ? document.getElementById("cowId").value :
-         currentType === "poultry" ? document.getElementById("batchId").value :
-         document.getElementById("fieldName").value
-};
+      
+      const record = {
+        type: currentType,
+        date: document.getElementById("date").value,
+        quantity: Number(document.getElementById("quantity").value),
+        price: Number(document.getElementById("price").value),
+        expenses: Number(document.getElementById("expenses").value) || 0,
+        extra: currentType === "dairy" ? document.getElementById("cowId").value :
+               currentType === "poultry" ? document.getElementById("batchId").value :
+               document.getElementById("fieldName").value
+      };
+
       const tx = db.transaction("records", "readwrite");
       tx.objectStore("records").add(record);
       tx.oncomplete = () => {
         loadRecords();
         form.reset();
+        document.getElementById("date").valueAsDate = new Date(); // Re-set date
+        showApp(currentType); // Refresh field visibility
       };
     };
   });
 
+  /* =========================
+      LOAD & DISPLAY RECORDS
+  ========================= */
   function loadRecords() {
     if (!db) return;
     const tx = db.transaction(["records", "settings"], "readonly");
@@ -118,12 +141,12 @@ function showApp(type) {
         updateChart(allRecords, currentType);
         const months = new Set();
 
-        // Sort records newest first
+        // Sort: Newest entries first
         allRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
 
         allRecords.forEach(r => {
           if (r.type !== currentType) return;
-          const mKey = getMonthKey(r.date);
+          const mKey = r.date.substring(0, 7);
           months.add(mKey);
 
           if (selectedMonth !== "all" && mKey !== selectedMonth) return;
@@ -132,25 +155,30 @@ function showApp(type) {
           totalExp += r.expenses;
           totalRevenue += (r.quantity * r.price);
 
+          const extraLabel = r.extra ? `<br><small>🏷️ ${r.extra}</small>` : "";
+
           recordsList.innerHTML += `
             <li>
-              <div><strong>📅 ${r.date}</strong><br><small>Qty: ${r.quantity} | Exp: ${r.expenses}</small></div>
+              <div>
+                <strong>📅 ${r.date}</strong> ${extraLabel}
+                <br><small>Qty: ${r.quantity} | Exp: ${r.expenses}</small>
+              </div>
               <div style="text-align:right">
-                <strong>KES ${r.quantity * r.price}</strong><br>
+                <strong>KES ${(r.quantity * r.price).toLocaleString()}</strong><br>
                 <button class="delete-btn" data-id="${r.id}">✕</button>
               </div>
             </li>`;
         });
 
-        // Update Dropdown
+        // Update Month Filter
         const currentOpts = Array.from(monthFilter.options).map(o => o.value);
         Array.from(months).sort().reverse().forEach(m => {
           if (!currentOpts.includes(m)) {
-            const opt = new Option(m, m);
-            monthFilter.add(opt);
+            monthFilter.add(new Option(m, m));
           }
         });
 
+        // Update Stats Dashboard
         document.getElementById("totalRecords").innerText = recordsList.children.length;
         document.getElementById("totalQuantity").innerText = totalQty.toFixed(1);
         document.getElementById("totalExpenses").innerText = totalExp.toLocaleString();
@@ -159,22 +187,58 @@ function showApp(type) {
     };
   }
 
+  /* =========================
+      ANALYTICS CHART
+  ========================= */
+  function updateChart(allRecords, currentType) {
+    const chartContainer = document.getElementById("productionChart");
+    if (!chartContainer) return;
+    chartContainer.innerHTML = "";
+
+    const last7Days = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      last7Days.push(d.toISOString().split('T')[0]);
+    }
+
+    const dailyTotals = {};
+    last7Days.forEach(date => dailyTotals[date] = 0);
+
+    allRecords.forEach(r => {
+      if (r.type === currentType && dailyTotals.hasOwnProperty(r.date)) {
+        dailyTotals[r.date] += r.quantity;
+      }
+    });
+
+    const maxVal = Math.max(...Object.values(dailyTotals), 1);
+
+    last7Days.forEach(date => {
+      const val = dailyTotals[date];
+      const heightPercent = (val / maxVal) * 100;
+      const dayLabel = date.split('-')[2];
+
+      chartContainer.innerHTML += `
+        <div class="chart-bar-wrapper">
+          <span class="bar-value">${val > 0 ? val.toFixed(1) : ''}</span>
+          <div class="bar" style="height: ${heightPercent}%"></div>
+          <span class="bar-label">${dayLabel}</span>
+        </div>`;
+    });
+  }
+
+  /* =========================
+      UI EVENT LISTENERS
+  ========================= */
   monthFilter.addEventListener("change", loadRecords);
 
   recordsList.addEventListener("click", (e) => {
     if (e.target.classList.contains("delete-btn")) {
-      if (confirm("Delete record?")) {
+      if (confirm("Delete this record?")) {
         const tx = db.transaction("records", "readwrite");
         tx.objectStore("records").delete(Number(e.target.dataset.id));
         tx.oncomplete = loadRecords;
       }
-    }
-  });
-
-  document.getElementById("resetBtn").addEventListener("click", () => {
-    if (confirm("Wipe all data?")) {
-      db.close();
-      indexedDB.deleteDatabase("FarmDB").onsuccess = () => window.location.reload();
     }
   });
 
@@ -187,57 +251,23 @@ function showApp(type) {
     const tx = db.transaction("records", "readonly");
     tx.objectStore("records").getAll().onsuccess = (e) => {
       const recs = e.target.result;
-      if (!recs.length) return alert("No data");
-      let csv = "Type,Date,Quantity,Price,Expenses,Revenue\n";
-      recs.forEach(r => csv += `${r.type},${r.date},${r.quantity},${r.price},${r.expenses},${r.quantity*r.price}\n`);
+      if (!recs.length) return alert("No records to export.");
+      let csv = "Type,Date,Label,Quantity,Price,Expenses,Revenue\n";
+      recs.forEach(r => {
+        csv += `${r.type},${r.date},${r.extra || ''},${r.quantity},${r.price},${r.expenses},${r.quantity*r.price}\n`;
+      });
       const blob = new Blob([csv], { type: "text/csv" });
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
-      a.download = "farm_records.csv";
+      a.download = `Farm_Records_${new Date().toISOString().split('T')[0]}.csv`;
       a.click();
     };
   });
-  function updateChart(allRecords, currentType) {
-  const chartContainer = document.getElementById("productionChart");
-  chartContainer.innerHTML = "";
 
-  // 1. Get the last 7 days dates
-  const last7Days = [];
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    last7Days.push(d.toISOString().split('T')[0]);
-  }
-
-  // 2. Sum production per day
-  const dailyTotals = {};
-  last7Days.forEach(date => dailyTotals[date] = 0);
-
-  allRecords.forEach(r => {
-    if (r.type === currentType && dailyTotals.hasOwnProperty(r.date)) {
-      dailyTotals[r.date] += r.quantity;
+  document.getElementById("resetBtn").addEventListener("click", () => {
+    if (confirm("WARNING: This will permanently delete all farm data. Continue?")) {
+      db.close();
+      indexedDB.deleteDatabase("FarmDB").onsuccess = () => window.location.reload();
     }
   });
-
-  // 3. Find max value for scaling
-  const maxVal = Math.max(...Object.values(dailyTotals), 1);
-
-  // 4. Render Bars
-  last7Days.forEach(date => {
-    const val = dailyTotals[date];
-    const heightPercent = (val / maxVal) * 100;
-    const dayLabel = date.split('-')[2]; // Just the day number
-
-    chartContainer.innerHTML += `
-      <div class="chart-bar-wrapper">
-        <span class="bar-value">${val > 0 ? val.toFixed(1) : ''}</span>
-        <div class="bar" style="height: ${heightPercent}%"></div>
-        <span class="bar-label">${dayLabel}</span>
-      </div>
-    `;
-  });
-}
 });
-
-
-
