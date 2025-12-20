@@ -6,6 +6,8 @@ const FILES_TO_CACHE = [
   "./style.css",
   "./app.js",
   "./manifest.json"
+  "./icon-192.png", // Added
+  "./icon-512.png"  // Added
 ];
 
 // Install
@@ -38,3 +40,4 @@ self.addEventListener("fetch", event => {
     })
   );
 });
+
