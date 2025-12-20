@@ -80,27 +80,33 @@ document.addEventListener("DOMContentLoaded", () => {
   /* =========================
       SAVE RECORDS
   ========================= */
-  form.addEventListener("submit", (e) => {
+form.addEventListener("submit", (e) => {
     e.preventDefault();
-    const record = {
-      date: document.getElementById("date").value,
-      quantity: Number(document.getElementById("quantity").value),
-      price: Number(document.getElementById("price").value),
-      expenses: Number(document.getElementById("expenses").value) || 0,
-    };
+    
+    // Get the current farm type from the settings store or a global variable
+    const txSettings = db.transaction("settings", "readonly");
+    const reqSettings = txSettings.objectStore("settings").get("farmType");
 
-    const tx = db.transaction("records", "readwrite");
-    tx.objectStore("records").add(record);
-    tx.oncomplete = () => {
-      loadRecords();
-      e.target.reset();
-      document.getElementById("date").valueAsDate = new Date();
+    reqSettings.onsuccess = () => {
+      const currentType = reqSettings.result.value;
+
+      const record = {
+        type: currentType, // NEW: Track which farm type this record belongs to
+        date: document.getElementById("date").value,
+        quantity: Number(document.getElementById("quantity").value),
+        price: Number(document.getElementById("price").value),
+        expenses: Number(document.getElementById("expenses").value) || 0,
+      };
+
+      const tx = db.transaction("records", "readwrite");
+      tx.objectStore("records").add(record);
+      tx.oncomplete = () => {
+        loadRecords();
+        e.target.reset();
+        document.getElementById("date").valueAsDate = new Date();
+      };
     };
   });
-
-  function getMonthKey(dateStr) {
-    return dateStr.substring(0, 7); 
-  }
 
   /* =========================
       LOAD RECORDS
@@ -224,5 +230,18 @@ document.addEventListener("DOMContentLoaded", () => {
       document.body.removeChild(link);
     };
   });
+  /* =========================
+      SWITCH FARM TYPE
+  ========================= */
+  document.getElementById("switchTypeBtn").addEventListener("click", () => {
+    // Show the selection screen
+    document.getElementById("farmTypeScreen").style.display = "block";
+    // Hide the app dashboard/form
+    document.getElementById("appScreen").style.display = "none";
+    
+    // Optional: Clear the month filter selection when switching
+    document.getElementById("monthFilter").value = "all";
+  });
 }); // End of DOMContentLoaded
+
 
