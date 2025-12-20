@@ -1,116 +1,139 @@
+/* GLOBAL FIXES */
+* {
+  box-sizing: border-box; /* Critical for mobile layouts */
+}
+
 body {
-  font-family: Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   margin: 0;
-  background: #f5f5f5;
+  background: #f4f6f8;
+  color: #333;
 }
 
 header {
-  background: #2e7d32;
+  background: #2e7d32; /* Farm Green */
   color: white;
-  padding: 15px;
+  padding: 20px;
   text-align: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
-main {
-  padding: 15px;
-}
+header h1 { margin: 0; font-size: 1.5rem; }
+header p { margin: 5px 0 0; opacity: 0.9; font-size: 0.9rem; }
 
-form {
-  background: white;
-  padding: 15px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-}
-
-label {
-  display: block;
+/* RESET BUTTON */
+#resetBtn {
+  background: rgba(255,255,255,0.2);
+  width: auto;
+  padding: 5px 15px;
   margin-top: 10px;
+  font-size: 14px;
+  border: 1px solid rgba(255,255,255,0.4);
 }
 
-input {
-  width: 100%;
-  padding: 10px;
-  margin-top: 5px;
-}
+main { padding: 15px; max-width: 600px; margin: 0 auto; }
 
-button {
-  margin-top: 15px;
-  width: 100%;
-  padding: 12px;
-  background: #2e7d32;
-  color: white;
-  border: none;
-  font-size: 16px;
-  border-radius: 5px;
-}
-
-ul {
-  list-style: none;
-  padding: 0;
-}
-
-li {
-  background: white;
-  margin-bottom: 10px;
-  padding: 10px;
-  border-radius: 5px;
-}
-
-#farmTypeScreen button {
-  width: 100%;
-  padding: 15px;
-  margin-bottom: 15px;
-  font-size: 18px;
-  background: #ffffff;
-  border: 2px solid #2e7d32;
-  border-radius: 8px;
-}
-
-#farmTypeScreen {
-  position: relative;
-  z-index: 10;
-}
-
-#appScreen {
-  position: relative;
-  z-index: 1;
-}
-
-button {
-  cursor: pointer;
-  touch-action: manipulation;
-}
-
-#dashboard {
+/* DASHBOARD GRID (New) */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 2 columns */
+  gap: 10px;
   margin-bottom: 20px;
+}
+
+/* Make Profit card span full width */
+.card.profit {
+  grid-column: span 2; 
+  background: #e8f5e9; /* Light green highlight */
+  border: 1px solid #c8e6c9;
 }
 
 .card {
   background: #ffffff;
   padding: 15px;
-  border-radius: 10px;
-  margin-bottom: 10px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.card p {
-  margin: 0;
-  color: #555;
-  font-size: 14px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  text-align: center;
 }
 
 .card h3 {
-  margin-top: 5px;
-  font-size: 24px;
+  margin: 5px 0 0;
+  font-size: 1.4rem;
   color: #2e7d32;
 }
 
-#monthFilter {
-  width: 100%;
-  padding: 10px;
-  margin: 10px 0 15px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
+/* FORM STYLING */
+form {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
+label {
+  display: block;
+  margin-top: 15px;
+  font-weight: bold;
+  font-size: 0.9rem;
+  color: #555;
+}
 
+input, select {
+  width: 100%;
+  padding: 12px;
+  margin-top: 5px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px; /* Prevents zoom on iPhone */
+}
+
+input:focus {
+  border-color: #2e7d32;
+  outline: none;
+}
+
+/* BUTTONS */
+button {
+  width: 100%;
+  padding: 15px;
+  background: #2e7d32;
+  color: white;
+  border: none;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+button:active { transform: scale(0.98); }
+
+/* FARM TYPE BUTTONS */
+#farmTypeScreen button {
+  background: white;
+  color: #2e7d32;
+  border: 2px solid #2e7d32;
+  margin-bottom: 15px;
+}
+
+#farmTypeScreen button:hover {
+  background: #f1f8e9;
+}
+
+/* RECORD LIST */
+ul { list-style: none; padding: 0; }
+
+li {
+  background: white;
+  margin-bottom: 10px;
+  padding: 15px;
+  border-radius: 8px;
+  border-left: 5px solid #2e7d32;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
