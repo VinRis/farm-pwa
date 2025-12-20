@@ -1,3 +1,8 @@
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("service-worker.js")
+    .then(() => console.log("Service Worker Registered"))
+    .catch(err => console.log("SW Registration Failed: ", err));
+}
 document.addEventListener("DOMContentLoaded", () => {
   let db;
   let dbReady = false;
@@ -225,4 +230,5 @@ function showApp(type) {
       };
     }
   });
+
 
