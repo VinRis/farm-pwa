@@ -92,6 +92,7 @@ document.addEventListener("DOMContentLoaded", () => {
         form.reset();
         document.getElementById("date").valueAsDate = new Date();
         showApp(currentType);
+        showToast("Record Saved Successfully! ✅"); // Call Toast
       };
     };
   });
@@ -108,7 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
         let [totalQty, totalExp, totalRev] = [0, 0, 0];
         const months = new Set();
 
-        updateChart(allRecords, currentType); // TRIGGER CHART
+        updateChart(allRecords, currentType);
 
         allRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
         allRecords.forEach(r => {
@@ -153,13 +154,26 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   monthFilter.addEventListener("change", loadRecords);
+
+  // FIXED DELETE LISTENER
   recordsList.addEventListener("click", (e) => {
-    if (e.target.classList.contains("delete-btn") && confirm("Delete?")) {
+    if (e.target.classList.contains("delete-btn") && confirm("Delete record?")) {
       const tx = db.transaction("records", "readwrite");
       tx.objectStore("records").delete(Number(e.target.dataset.id));
-      tx.oncomplete = loadRecords;
+      tx.oncomplete = () => {
+        loadRecords();
+        showToast("Record Deleted 🗑️");
+      };
     }
   });
+
   document.getElementById("switchTypeBtn").addEventListener("click", () => { farmTypeScreen.style.display = "block"; appScreen.style.display = "none"; });
   document.getElementById("resetBtn").addEventListener("click", () => { if (confirm("Wipe all data?")) { db.close(); indexedDB.deleteDatabase("FarmDB").onsuccess = () => window.location.reload(); } });
-}); // Final closing bracket for DOMContentLoaded
+
+  function showToast(msg) {
+    const toast = document.getElementById("toast");
+    toast.innerText = msg;
+    toast.className = "toast show";
+    setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+  }
+});
