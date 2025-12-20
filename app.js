@@ -116,10 +116,14 @@ function loadRecords() {
 
     let totalQty = 0;
     let totalExp = 0;
+    let totalRevenue = 0;
 
     req.result.forEach(r => {
       totalQty += Number(r.quantity);
       totalExp += Number(r.expenses);
+      totalRevenue += Number(r.quantity) * Number(r.price);
+      document.getElementById("totalProfit").innerText =
+  totalRevenue - totalExp;
 
       list.innerHTML += `
         <li>
@@ -144,5 +148,6 @@ function loadRecords() {
   }
 
 });
+
 
 
