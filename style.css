@@ -56,8 +56,7 @@ li {
   border-radius: 5px;
 }
 
-#farmTypeScreen 
-button {
+#farmTypeScreen button {
   width: 100%;
   padding: 15px;
   margin-bottom: 15px;
@@ -81,4 +80,5 @@ button {
   cursor: pointer;
   touch-action: manipulation;
 }
+
 
