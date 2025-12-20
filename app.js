@@ -57,18 +57,34 @@ document.addEventListener("DOMContentLoaded", () => {
   function showApp(type) {
     farmTypeScreen.style.display = "none";
     appScreen.style.display = "block";
+    
+    // UI Reset
     document.querySelectorAll('.extra-fields').forEach(div => div.style.display = 'none');
+    const isPoultry = type === "poultry";
+    document.getElementById("poultrySubtypeToggle").style.display = isPoultry ? "block" : "none";
+    document.getElementById("poultryKpis").style.display = isPoultry ? "grid" : "none";
+
     if (type === "dairy") {
       qtyLabel.innerText = "Milk Collected (Litres)";
       document.getElementById("dairyFields").style.display = "block";
     } else if (type === "poultry") {
-      qtyLabel.innerText = "Eggs Collected (Trays/Pcs)";
       document.getElementById("poultryFields").style.display = "block";
+      updatePoultryUI();
     } else if (type === "crops") {
       qtyLabel.innerText = "Harvest Quantity (Kg)";
       document.getElementById("cropFields").style.display = "block";
     }
   }
+
+  function updatePoultryUI() {
+    const sub = document.getElementById("poultrySubtype").value;
+    const isBroiler = sub === "broilers";
+    document.querySelectorAll('.broiler-only-field').forEach(el => el.style.display = isBroiler ? "block" : "none");
+    qtyLabel.innerText = isBroiler ? "Weight Sold (Kg)" : "Eggs Collected (Pcs/Trays)";
+  }
+
+  document.getElementById("poultrySubtype").addEventListener("change", updatePoultryUI);
+  document.getElementById("poultrySubtypeToggle").addEventListener("change", loadRecords);
 
   form.addEventListener("submit", (e) => {
     e.preventDefault();
@@ -78,17 +94,18 @@ document.addEventListener("DOMContentLoaded", () => {
       const record = {
         type: currentType,
         date: document.getElementById("date").value,
-        quantity: Number(document.getElementById("quantity").value), // Eggs for Layers, Weight for Broilers
+        quantity: Number(document.getElementById("quantity").value),
         price: Number(document.getElementById("price").value),
         expenses: Number(document.getElementById("expenses").value) || 0,
-        // Poultry Specifics
-        subtype: document.getElementById("poultrySubtype").value,
-        mortality: Number(document.getElementById("mortality").value) || 0,
-        flockSize: Number(document.getElementById("flockSize").value) || 0,
-        feed: Number(document.getElementById("feed").value) || 0,
-        weight: Number(document.getElementById("avgWeight").value) || 0,
-        extra: document.getElementById("batchId").value
-};
+        subtype: currentType === "poultry" ? document.getElementById("poultrySubtype").value : null,
+        mortality: currentType === "poultry" ? Number(document.getElementById("mortality").value) || 0 : 0,
+        flockSize: currentType === "poultry" ? Number(document.getElementById("flockSize").value) || 0 : 0,
+        feed: currentType === "poultry" ? Number(document.getElementById("feed").value) || 0 : 0,
+        weight: currentType === "poultry" ? Number(document.getElementById("avgWeight").value) || 0 : 0,
+        extra: currentType === "dairy" ? document.getElementById("cowId").value :
+               currentType === "poultry" ? document.getElementById("batchId").value :
+               document.getElementById("fieldName").value
+      };
       const tx = db.transaction("records", "readwrite");
       tx.objectStore("records").add(record);
       tx.oncomplete = () => {
@@ -96,50 +113,74 @@ document.addEventListener("DOMContentLoaded", () => {
         form.reset();
         document.getElementById("date").valueAsDate = new Date();
         showApp(currentType);
-        showToast("Record Saved Successfully! ✅"); // Call Toast
+        showToast("Record Saved Successfully! ✅");
       };
     };
   });
 
-// Add these variables at the top of loadRecords
-let poultryStats = { mortality: 0, feed: 0, eggs: 0, size: 0, weightSum: 0, weightCount: 0 };
-
-// Inside the loop where you process records:
-if (r.type === "poultry") {
-    poultryStats.mortality += (r.mortality || 0);
-    poultryStats.feed += (r.feed || 0);
-    poultryStats.size = r.flockSize; // Taking the most recent flock size
-    if (r.subtype === "layers") {
-        poultryStats.eggs += r.quantity;
-    } else {
-        poultryStats.weightSum += (r.weight || 0);
-        poultryStats.weightCount++;
-    }
-}
-
-// After the loop, calculate Ratios:
-const layingRatio = poultryStats.size > 0 ? (poultryStats.eggs / poultryStats.size) * 100 : 0;
-const avgWeight = poultryStats.weightCount > 0 ? poultryStats.weightSum / poultryStats.weightCount : 0;
+  function loadRecords() {
+    if (!db) return;
+    const tx = db.transaction(["records", "settings"], "readonly");
+    tx.objectStore("settings").get("farmType").onsuccess = (e) => {
+      const currentType = e.target.result.value;
+      tx.objectStore("records").getAll().onsuccess = (ev) => {
+        const allRecords = ev.target.result;
+        const selectedMonth = monthFilter.value;
+        const activePoultrySub = document.getElementById("poultrySubtypeToggle").value;
+        
+        recordsList.innerHTML = "";
+        let [totalQty, totalExp, totalRev] = [0, 0, 0];
+        let pStats = { mortality: 0, feed: 0, eggs: 0, size: 0, weightSum: 0, weightCount: 0 };
+        const months = new Set();
 
         updateChart(allRecords, currentType);
 
         allRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
+        
         allRecords.forEach(r => {
           if (r.type !== currentType) return;
+          if (currentType === "poultry" && r.subtype !== activePoultrySub) return;
+
           const mKey = r.date.substring(0, 7);
           months.add(mKey);
           if (selectedMonth !== "all" && mKey !== selectedMonth) return;
+
           totalQty += r.quantity; totalExp += r.expenses; totalRev += (r.quantity * r.price);
+          
+          if (currentType === "poultry") {
+            pStats.mortality += (r.mortality || 0);
+            pStats.feed += (r.feed || 0);
+            pStats.size = r.flockSize || pStats.size; 
+            if (r.subtype === "layers") pStats.eggs += r.quantity;
+            else { pStats.weightSum += (r.weight || 0); pStats.weightCount++; }
+          }
+
           const extraLabel = r.extra ? `<br><small>🏷️ ${r.extra}</small>` : "";
           recordsList.innerHTML += `<li><div><strong>📅 ${r.date}</strong> ${extraLabel}<br><small>Qty: ${r.quantity} | Exp: ${r.expenses}</small></div><div style="text-align:right"><strong>KES ${(r.quantity * r.price).toLocaleString()}</strong><br><button class="delete-btn" data-id="${r.id}">✕</button></div></li>`;
         });
 
+        // Dashboard Updates
+        document.getElementById("totalQuantity").innerText = totalQty.toFixed(1);
+        document.getElementById("totalProfit").innerText = (totalRev - totalExp).toLocaleString();
+        
+        if (currentType === "poultry") {
+          document.getElementById("statFlock").innerText = pStats.size;
+          document.getElementById("statMortality").innerText = pStats.mortality;
+          document.getElementById("statFeed").innerText = pStats.feed.toFixed(1);
+          
+          const isLayers = activePoultrySub === "layers";
+          document.querySelectorAll('.layer-only').forEach(el => el.style.display = isLayers ? "block" : "none");
+          document.querySelectorAll('.broiler-only').forEach(el => el.style.display = isLayers ? "none" : "block");
+
+          const ratio = pStats.size > 0 ? ((pStats.eggs / pStats.size) * 100).toFixed(1) : 0;
+          document.getElementById("statLaying").innerText = ratio + "%";
+          const avgW = pStats.weightCount > 0 ? (pStats.weightSum / pStats.weightCount).toFixed(2) : 0;
+          document.getElementById("statWeight").innerText = avgW + "kg";
+        }
+
+        // Filter Setup
         const currentOpts = Array.from(monthFilter.options).map(o => o.value);
         Array.from(months).sort().reverse().forEach(m => { if (!currentOpts.includes(m)) monthFilter.add(new Option(m, m)); });
-        document.getElementById("totalRecords").innerText = recordsList.children.length;
-        document.getElementById("totalQuantity").innerText = totalQty.toFixed(1);
-        document.getElementById("totalExpenses").innerText = totalExp.toLocaleString();
-        document.getElementById("totalProfit").innerText = (totalRev - totalExp).toLocaleString();
       };
     };
   }
@@ -166,16 +207,11 @@ const avgWeight = poultryStats.weightCount > 0 ? poultryStats.weightSum / poultr
   }
 
   monthFilter.addEventListener("change", loadRecords);
-
-  // FIXED DELETE LISTENER
   recordsList.addEventListener("click", (e) => {
     if (e.target.classList.contains("delete-btn") && confirm("Delete record?")) {
       const tx = db.transaction("records", "readwrite");
       tx.objectStore("records").delete(Number(e.target.dataset.id));
-      tx.oncomplete = () => {
-        loadRecords();
-        showToast("Record Deleted 🗑️");
-      };
+      tx.oncomplete = loadRecords;
     }
   });
 
@@ -189,4 +225,3 @@ const avgWeight = poultryStats.weightCount > 0 ? poultryStats.weightSum / poultr
     setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
   }
 });
-
