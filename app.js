@@ -1,3 +1,9 @@
+document.addEventListener("click", function (e) {
+  if (e.target.matches("#farmTypeScreen button")) {
+    alert("Button clicked: " + e.target.dataset.type);
+  }
+});
+
 let db;
 
 // Open database
@@ -111,6 +117,7 @@ document.addEventListener("click", function (e) {
     setFarmType(type);
   }
 });
+
 
 
 
