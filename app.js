@@ -7,13 +7,37 @@ const request = indexedDB.open("FarmDB", 1);
 request.onupgradeneeded = event => {
   db = event.target.result;
   db.createObjectStore("records", { keyPath: "id", autoIncrement: true });
+  db.createObjectStore("settings", { keyPath: "key" });
 };
 
 // Database ready
 request.onsuccess = event => {
   db = event.target.result;
+  getFarmType();
   loadRecords();
 };
+function setFarmType(type) {
+  const tx = db.transaction("settings", "readwrite");
+  tx.objectStore("settings").put({ key: "farmType", value: type });
+
+  tx.oncomplete = () => {
+    showApp(type);
+  };
+}
+
+function getFarmType() {
+  const tx = db.transaction("settings", "readonly");
+  const store = tx.objectStore("settings");
+  const request = store.get("farmType");
+
+  request.onsuccess = () => {
+    if (request.result) {
+      showApp(request.result.value);
+    } else {
+      document.getElementById("farmTypeScreen").style.display = "block";
+    }
+  };
+}
 
 // Save data
 document.getElementById("farmForm").addEventListener("submit", e => {
@@ -60,3 +84,18 @@ function loadRecords() {
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("service-worker.js");
 }
+function showApp(type) {
+  document.getElementById("farmTypeScreen").style.display = "none";
+  document.getElementById("appScreen").style.display = "block";
+
+  const quantityLabel = document.querySelector("label[for='quantity']") || document.querySelectorAll("label")[1];
+
+  if (type === "dairy") {
+    quantityLabel.innerText = "Milk Collected (Litres)";
+  } else if (type === "poultry") {
+    quantityLabel.innerText = "Eggs Collected";
+  } else if (type === "crops") {
+    quantityLabel.innerText = "Harvest Quantity (Kg)";
+  }
+}
+
