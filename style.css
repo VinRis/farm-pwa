@@ -137,3 +137,23 @@ li {
   font-size: 0.95rem;
   line-height: 1.4;
 }
+
+.delete-btn {
+  background: #ffcdd2;
+  color: #c62828;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background 0.2s;
+}
+
+.delete-btn:hover {
+  background: #ef9a9a;
+}
+
+li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
