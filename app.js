@@ -110,35 +110,32 @@ document.addEventListener("DOMContentLoaded", () => {
   /* =========================
      LOAD RECORDS
   ========================= */
-function loadRecords() {
+  const selectedMonth = document.getElementById("monthFilter").value;
+  function loadRecords() {
   const tx = db.transaction("records", "readonly");
   const store = tx.objectStore("records");
   const req = store.getAll();
+  const months = new Set();
 
-  req.onsuccess = () => {
-    const list = document.getElementById("records");
-    list.innerHTML = "";
+req.result.forEach(r => {
+  const recordMonth = getMonthKey(r.date);
+  months.add(recordMonth);
 
-    let totalQty = 0;
-    let totalExp = 0;
-    let totalRevenue = 0;
+  if (selectedMonth !== "all" && recordMonth !== selectedMonth) return;
 
-    req.result.forEach(r => {
-      totalQty += Number(r.quantity);
-      totalExp += Number(r.expenses);
-      totalRevenue += Number(r.quantity) * Number(r.price);
-      document.getElementById("totalProfit").innerText =
-  totalRevenue - totalExp;
+  totalQty += Number(r.quantity);
+  totalExp += Number(r.expenses);
+  totalRevenue += Number(r.quantity) * Number(r.price);
 
-      list.innerHTML += `
-        <li>
-          📅 ${r.date}<br>
-          🧺 Quantity: ${r.quantity}<br>
-          💰 Expenses: KES ${r.expenses}
-        </li>
-      `;
-    });
-
+  list.innerHTML += `
+    <li>
+      📅 ${r.date}<br>
+      🧺 Quantity: ${r.quantity}<br>
+      💰 Expenses: KES ${r.expenses}
+    </li>
+  `;
+});
+    
     // Dashboard values
     document.getElementById("totalRecords").innerText = req.result.length;
     document.getElementById("totalQuantity").innerText = totalQty;
@@ -153,6 +150,7 @@ function loadRecords() {
   }
 
 });
+
 
 
 
