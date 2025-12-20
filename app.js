@@ -15,229 +15,170 @@ document.addEventListener("DOMContentLoaded", () => {
   const monthFilter = document.getElementById("monthFilter");
   const qtyLabel = document.getElementById("qtyLabel");
 
-  /* =========================
-      CLICK HANDLER
-  ========================= */
-  document.addEventListener("click", function (e) {
+  document.addEventListener("click", (e) => {
     const btn = e.target.closest("#farmTypeScreen button");
-    if (btn) {
-      const type = btn.dataset.type;
-      setFarmType(type);
-    }
+    if (btn) setFarmType(btn.dataset.type);
   });
 
-  /* =========================
-      OPEN DATABASE
-  ========================= */
   const request = indexedDB.open("FarmDB", 1);
-
-  request.onupgradeneeded = (event) => {
-    db = event.target.result;
-    if (!db.objectStoreNames.contains("records")) {
-      db.createObjectStore("records", { keyPath: "id", autoIncrement: true });
-    }
-    if (!db.objectStoreNames.contains("settings")) {
-      db.createObjectStore("settings", { keyPath: "key" });
-    }
+  request.onupgradeneeded = (e) => {
+    db = e.target.result;
+    if (!db.objectStoreNames.contains("records")) db.createObjectStore("records", { keyPath: "id", autoIncrement: true });
+    if (!db.objectStoreNames.contains("settings")) db.createObjectStore("settings", { keyPath: "key" });
   };
 
-  request.onsuccess = (event) => {
-    db = event.target.result;
+  request.onsuccess = (e) => {
+    db = e.target.result;
     dbReady = true;
     getFarmType();
-    loadRecords();
   };
 
-  /* =========================
-      FARM TYPE LOGIC
-  ========================= */
   function setFarmType(type) {
-    if (!dbReady) return alert("App loading...");
     const tx = db.transaction("settings", "readwrite");
     tx.objectStore("settings").put({ key: "farmType", value: type });
-    tx.oncomplete = () => showApp(type);
+    tx.oncomplete = () => {
+      showApp(type);
+      loadRecords();
+    };
   }
 
   function getFarmType() {
     const tx = db.transaction("settings", "readonly");
     const req = tx.objectStore("settings").get("farmType");
     req.onsuccess = () => {
-      if (req.result) showApp(req.result.value);
-      else farmTypeScreen.style.display = "block";
+      if (req.result) {
+        showApp(req.result.value);
+        loadRecords();
+      } else {
+        farmTypeScreen.style.display = "block";
+      }
     };
   }
 
   function showApp(type) {
     farmTypeScreen.style.display = "none";
     appScreen.style.display = "block";
-    if (qtyLabel) {
-      if (type === "dairy") qtyLabel.innerText = "Milk Collected (Litres)";
-      else if (type === "poultry") qtyLabel.innerText = "Eggs Collected";
-      else if (type === "crops") qtyLabel.innerText = "Harvest Quantity (Kg)";
-    }
+    if (type === "dairy") qtyLabel.innerText = "Milk Collected (Litres)";
+    else if (type === "poultry") qtyLabel.innerText = "Eggs Collected";
+    else if (type === "crops") qtyLabel.innerText = "Harvest Quantity (Kg)";
   }
 
-  /* =========================
-      SAVE RECORDS
-  ========================= */
-form.addEventListener("submit", (e) => {
+  function getMonthKey(dateStr) { return dateStr.substring(0, 7); }
+
+  form.addEventListener("submit", (e) => {
     e.preventDefault();
-    
-    // Get the current farm type from the settings store or a global variable
-    const txSettings = db.transaction("settings", "readonly");
-    const reqSettings = txSettings.objectStore("settings").get("farmType");
-
-    reqSettings.onsuccess = () => {
-      const currentType = reqSettings.result.value;
-
+    const txS = db.transaction("settings", "readonly");
+    txS.objectStore("settings").get("farmType").onsuccess = (ev) => {
+      const currentType = ev.target.result.value;
       const record = {
-        type: currentType, // NEW: Track which farm type this record belongs to
+        type: currentType,
         date: document.getElementById("date").value,
         quantity: Number(document.getElementById("quantity").value),
         price: Number(document.getElementById("price").value),
-        expenses: Number(document.getElementById("expenses").value) || 0,
+        expenses: Number(document.getElementById("expenses").value) || 0
       };
-
       const tx = db.transaction("records", "readwrite");
       tx.objectStore("records").add(record);
       tx.oncomplete = () => {
         loadRecords();
-        e.target.reset();
-        document.getElementById("date").valueAsDate = new Date();
+        form.reset();
       };
     };
   });
 
-  /* =========================
-      LOAD RECORDS
-  ========================= */
-  monthFilter.addEventListener("change", loadRecords);
-
   function loadRecords() {
     if (!db) return;
-    const tx = db.transaction("records", "readonly");
-    const req = tx.objectStore("records").getAll();
+    const tx = db.transaction(["records", "settings"], "readonly");
+    const recordStore = tx.objectStore("records");
+    const settingsStore = tx.objectStore("settings");
 
-    req.onsuccess = () => {
-      // Inside loadRecords() req.onsuccess:
-    const txSettings = db.transaction("settings", "readonly");
-    const currentTypeReq = txSettings.objectStore("settings").get("farmType");
+    settingsStore.get("farmType").onsuccess = (e) => {
+      const currentType = e.target.result.value;
+      recordStore.getAll().onsuccess = (ev) => {
+        const allRecords = ev.target.result;
+        const selectedMonth = monthFilter.value;
+        recordsList.innerHTML = "";
 
-    currentTypeReq.onsuccess = () => {
-      const currentType = currentTypeReq.result.value;
-  
-      allRecords.forEach(r => {
-    // Filter by BOTH month AND farm type
-        if (r.type && r.type !== currentType) return; 
-    
-        const recordMonth = getMonthKey(r.date);
-        if (selectedMonth !== "all" && recordMonth !== selectedMonth) return;
- }
-      });
+        let [totalQty, totalExp, totalRevenue] = [0, 0, 0];
+        const months = new Set();
 
-      allRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
+        // Sort records newest first
+        allRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-      allRecords.forEach(r => {
-        const recordMonth = getMonthKey(r.date);
-        if (selectedMonth !== "all" && recordMonth !== selectedMonth) return;
+        allRecords.forEach(r => {
+          if (r.type !== currentType) return;
+          const mKey = getMonthKey(r.date);
+          months.add(mKey);
 
-        totalQty += r.quantity;
-        totalExp += r.expenses;
-        totalRevenue += (r.quantity * r.price);
+          if (selectedMonth !== "all" && mKey !== selectedMonth) return;
 
-        recordsList.innerHTML += `
-          <li>
-            <div>
-              <strong>📅 ${r.date}</strong><br>
-              <small>Qty: ${r.quantity} | Exp: ${r.expenses}</small>
-            </div>
-            <div style="text-align:right; display: flex; align-items: center; gap: 10px;">
-              <strong>KES ${r.quantity * r.price}</strong>
-              <button class="delete-btn" data-id="${r.id}" style="width: auto; margin: 0; padding: 5px 10px; background: #c62828;">✕</button>
-            </div>
-          </li>`;
-      });
+          totalQty += r.quantity;
+          totalExp += r.expenses;
+          totalRevenue += (r.quantity * r.price);
 
-      document.getElementById("totalRecords").innerText = (selectedMonth === "all") ? allRecords.length : recordsList.children.length;
-      document.getElementById("totalQuantity").innerText = totalQty;
-      document.getElementById("totalExpenses").innerText = totalExp;
-      document.getElementById("totalProfit").innerText = totalRevenue - totalExp;
+          recordsList.innerHTML += `
+            <li>
+              <div><strong>📅 ${r.date}</strong><br><small>Qty: ${r.quantity} | Exp: ${r.expenses}</small></div>
+              <div style="text-align:right">
+                <strong>KES ${r.quantity * r.price}</strong><br>
+                <button class="delete-btn" data-id="${r.id}">✕</button>
+              </div>
+            </li>`;
+        });
+
+        // Update Dropdown
+        const currentOpts = Array.from(monthFilter.options).map(o => o.value);
+        Array.from(months).sort().reverse().forEach(m => {
+          if (!currentOpts.includes(m)) {
+            const opt = new Option(m, m);
+            monthFilter.add(opt);
+          }
+        });
+
+        document.getElementById("totalRecords").innerText = recordsList.children.length;
+        document.getElementById("totalQuantity").innerText = totalQty.toFixed(1);
+        document.getElementById("totalExpenses").innerText = totalExp.toLocaleString();
+        document.getElementById("totalProfit").innerText = (totalRevenue - totalExp).toLocaleString();
+      };
     };
   }
 
-  /* =========================
-      DELETE RECORD
-  ========================= */
+  monthFilter.addEventListener("change", loadRecords);
+
   recordsList.addEventListener("click", (e) => {
     if (e.target.classList.contains("delete-btn")) {
-      const id = Number(e.target.dataset.id);
-      if (confirm("Delete this record?")) {
+      if (confirm("Delete record?")) {
         const tx = db.transaction("records", "readwrite");
-        tx.objectStore("records").delete(id);
-        tx.oncomplete = () => loadRecords();
+        tx.objectStore("records").delete(Number(e.target.dataset.id));
+        tx.oncomplete = loadRecords;
       }
     }
-  });  
+  });
 
-  /* =========================
-      RESET APP
-  ========================= */
   document.getElementById("resetBtn").addEventListener("click", () => {
-    if (confirm("Are you sure? This will delete all records.")) {
-      if (db) db.close();
-      const req = indexedDB.deleteDatabase("FarmDB");
-      req.onsuccess = () => window.location.reload();
+    if (confirm("Wipe all data?")) {
+      db.close();
+      indexedDB.deleteDatabase("FarmDB").onsuccess = () => window.location.reload();
     }
   });
-  /* =========================
-      EXPORT DATA TO CSV
-  ========================= */
+
+  document.getElementById("switchTypeBtn").addEventListener("click", () => {
+    farmTypeScreen.style.display = "block";
+    appScreen.style.display = "none";
+  });
+
   document.getElementById("exportBtn").addEventListener("click", () => {
     const tx = db.transaction("records", "readonly");
-    const req = tx.objectStore("records").getAll();
-
-    req.onsuccess = () => {
-      const records = req.result;
-      if (records.length === 0) return alert("No records to export!");
-
-      // 1. Define CSV Headers
-      let csvContent = "Date,Quantity,Price per Unit,Expenses,Total Revenue,Estimated Profit\n";
-
-      // 2. Add Rows
-      records.forEach(r => {
-        const revenue = r.quantity * r.price;
-        const profit = revenue - r.expenses;
-        const row = `${r.date},${r.quantity},${r.price},${r.expenses},${revenue},${profit}`;
-        csvContent += row + "\n";
-      });
-
-      // 3. Create a downloadable link
-      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      
-      link.setAttribute("href", url);
-      link.setAttribute("download", `Farm_Records_${new Date().toISOString().slice(0,10)}.csv`);
-      link.style.visibility = "hidden";
-      
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+    tx.objectStore("records").getAll().onsuccess = (e) => {
+      const recs = e.target.result;
+      if (!recs.length) return alert("No data");
+      let csv = "Type,Date,Quantity,Price,Expenses,Revenue\n";
+      recs.forEach(r => csv += `${r.type},${r.date},${r.quantity},${r.price},${r.expenses},${r.quantity*r.price}\n`);
+      const blob = new Blob([csv], { type: "text/csv" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "farm_records.csv";
+      a.click();
     };
   });
-  /* =========================
-      SWITCH FARM TYPE
-  ========================= */
-  document.getElementById("switchTypeBtn").addEventListener("click", () => {
-    // Show the selection screen
-    document.getElementById("farmTypeScreen").style.display = "block";
-    // Hide the app dashboard/form
-    document.getElementById("appScreen").style.display = "none";
-    
-    // Optional: Clear the month filter selection when switching
-    document.getElementById("monthFilter").value = "all";
-  });
-}); // End of DOMContentLoaded
-
-
-
+});
