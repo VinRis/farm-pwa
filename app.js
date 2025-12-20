@@ -1,137 +1,135 @@
-let db;
-let dbReady = false;
+document.addEventListener("DOMContentLoaded", () => {
 
-/* =========================
-   CLICK HANDLER (ONE ONLY)
-========================= */
-document.addEventListener("click", function (e) {
-  if (e.target.matches("#farmTypeScreen button")) {
-    const type = e.target.dataset.type;
-    setFarmType(type);
-  }
-});
+  let db;
+  let dbReady = false;
 
-/* =========================
-   OPEN DATABASE
-========================= */
-const request = indexedDB.open("FarmDB", 1);
+  /* =========================
+     CLICK HANDLER
+  ========================= */
+  document.addEventListener("click", function (e) {
+    if (e.target.matches("#farmTypeScreen button")) {
+      const type = e.target.dataset.type;
+      setFarmType(type);
+    }
+  });
 
-request.onupgradeneeded = event => {
-  db = event.target.result;
+  /* =========================
+     OPEN DATABASE
+  ========================= */
+  const request = indexedDB.open("FarmDB", 1);
 
-  if (!db.objectStoreNames.contains("records")) {
-    db.createObjectStore("records", { keyPath: "id", autoIncrement: true });
-  }
+  request.onupgradeneeded = event => {
+    db = event.target.result;
 
-  if (!db.objectStoreNames.contains("settings")) {
-    db.createObjectStore("settings", { keyPath: "key" });
-  }
-};
+    if (!db.objectStoreNames.contains("records")) {
+      db.createObjectStore("records", { keyPath: "id", autoIncrement: true });
+    }
 
-request.onsuccess = event => {
-  db = event.target.result;
-  dbReady = true;
-  getFarmType();
-  loadRecords();
-};
-
-/* =========================
-   FARM TYPE LOGIC
-========================= */
-function setFarmType(type) {
-  if (!dbReady) {
-    alert("App still loading, please wait...");
-    return;
-  }
-
-  const tx = db.transaction("settings", "readwrite");
-  tx.objectStore("settings").put({ key: "farmType", value: type });
-
-  tx.oncomplete = () => {
-    showApp(type);
-  };
-}
-
-function getFarmType() {
-  const tx = db.transaction("settings", "readonly");
-  const store = tx.objectStore("settings");
-  const req = store.get("farmType");
-
-  req.onsuccess = () => {
-    if (req.result) {
-      showApp(req.result.value);
-    } else {
-      document.getElementById("farmTypeScreen").style.display = "block";
+    if (!db.objectStoreNames.contains("settings")) {
+      db.createObjectStore("settings", { keyPath: "key" });
     }
   };
-}
 
-/* =========================
-   SHOW APP SCREEN
-========================= */
-function showApp(type) {
-  document.getElementById("farmTypeScreen").style.display = "none";
-  document.getElementById("appScreen").style.display = "block";
-
-  const labels = document.querySelectorAll("label");
-
-  if (type === "dairy") {
-    labels[1].innerText = "Milk Collected (Litres)";
-  } else if (type === "poultry") {
-    labels[1].innerText = "Eggs Collected";
-  } else if (type === "crops") {
-    labels[1].innerText = "Harvest Quantity (Kg)";
-  }
-}
-
-/* =========================
-   SAVE FARM RECORDS
-========================= */
-document.getElementById("farmForm").addEventListener("submit", e => {
-  e.preventDefault();
-
-  const record = {
-    date: date.value,
-    quantity: quantity.value,
-    expenses: expenses.value || 0
-  };
-
-  const tx = db.transaction("records", "readwrite");
-  tx.objectStore("records").add(record);
-
-  tx.oncomplete = () => {
+  request.onsuccess = event => {
+    db = event.target.result;
+    dbReady = true;
+    getFarmType();
     loadRecords();
-    e.target.reset();
   };
+
+  /* =========================
+     FARM TYPE LOGIC
+  ========================= */
+  function setFarmType(type) {
+    if (!dbReady) {
+      alert("App loading, please wait...");
+      return;
+    }
+
+    const tx = db.transaction("settings", "readwrite");
+    tx.objectStore("settings").put({ key: "farmType", value: type });
+
+    tx.oncomplete = () => showApp(type);
+  }
+
+  function getFarmType() {
+    const tx = db.transaction("settings", "readonly");
+    const store = tx.objectStore("settings");
+    const req = store.get("farmType");
+
+    req.onsuccess = () => {
+      if (req.result) {
+        showApp(req.result.value);
+      } else {
+        document.getElementById("farmTypeScreen").style.display = "block";
+      }
+    };
+  }
+
+  /* =========================
+     SHOW APP SCREEN
+  ========================= */
+  function showApp(type) {
+    document.getElementById("farmTypeScreen").style.display = "none";
+    document.getElementById("appScreen").style.display = "block";
+
+    const labels = document.querySelectorAll("label");
+
+    if (type === "dairy") labels[1].innerText = "Milk Collected (Litres)";
+    if (type === "poultry") labels[1].innerText = "Eggs Collected";
+    if (type === "crops") labels[1].innerText = "Harvest Quantity (Kg)";
+  }
+
+  /* =========================
+     SAVE RECORDS
+  ========================= */
+  document.getElementById("farmForm").addEventListener("submit", e => {
+    e.preventDefault();
+
+    const record = {
+      date: date.value,
+      quantity: quantity.value,
+      expenses: expenses.value || 0
+    };
+
+    const tx = db.transaction("records", "readwrite");
+    tx.objectStore("records").add(record);
+
+    tx.oncomplete = () => {
+      loadRecords();
+      e.target.reset();
+    };
+  });
+
+  /* =========================
+     LOAD RECORDS
+  ========================= */
+  function loadRecords() {
+    const tx = db.transaction("records", "readonly");
+    const store = tx.objectStore("records");
+    const req = store.getAll();
+
+    req.onsuccess = () => {
+      const list = document.getElementById("records");
+      list.innerHTML = "";
+
+      req.result.forEach(r => {
+        list.innerHTML += `
+          <li>
+            📅 ${r.date}<br>
+            🧺 Quantity: ${r.quantity}<br>
+            💰 Expenses: KES ${r.expenses}
+          </li>
+        `;
+      });
+    };
+  }
+
+  /* =========================
+     SERVICE WORKER
+  ========================= */
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("service-worker.js");
+  }
+
 });
-
-/* =========================
-   LOAD RECORDS
-========================= */
-function loadRecords() {
-  const tx = db.transaction("records", "readonly");
-  const store = tx.objectStore("records");
-  const req = store.getAll();
-
-  req.onsuccess = () => {
-    const list = document.getElementById("records");
-    list.innerHTML = "";
-
-    req.result.forEach(r => {
-      list.innerHTML += `
-        <li>
-          📅 ${r.date}<br>
-          🧺 Quantity: ${r.quantity}<br>
-          💰 Expenses: KES ${r.expenses}
-        </li>
-      `;
-    });
-  };
-}
-
-/* =========================
-   SERVICE WORKER
-========================= */
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("service-worker.js");
-}
