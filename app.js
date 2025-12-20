@@ -119,25 +119,20 @@ form.addEventListener("submit", (e) => {
     const req = tx.objectStore("records").getAll();
 
     req.onsuccess = () => {
-      const allRecords = req.result;
-      const selectedMonth = monthFilter.value;
-      recordsList.innerHTML = "";
+      // Inside loadRecords() req.onsuccess:
+    const txSettings = db.transaction("settings", "readonly");
+    const currentTypeReq = txSettings.objectStore("settings").get("farmType");
 
-      let totalQty = 0;
-      let totalExp = 0;
-      let totalRevenue = 0;
-
-      const existingMonthsInData = new Set();
-      allRecords.forEach(r => existingMonthsInData.add(getMonthKey(r.date)));
-
-      const currentOptions = Array.from(monthFilter.options).map(opt => opt.value);
-      Array.from(existingMonthsInData).sort().reverse().forEach(m => {
-        if (!currentOptions.includes(m)) {
-          const opt = document.createElement("option");
-          opt.value = m;
-          opt.textContent = m;
-          monthFilter.appendChild(opt);
-        }
+    currentTypeReq.onsuccess = () => {
+      const currentType = currentTypeReq.result.value;
+  
+      allRecords.forEach(r => {
+    // Filter by BOTH month AND farm type
+        if (r.type && r.type !== currentType) return; 
+    
+        const recordMonth = getMonthKey(r.date);
+        if (selectedMonth !== "all" && recordMonth !== selectedMonth) return;
+ }
       });
 
       allRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -243,5 +238,6 @@ form.addEventListener("submit", (e) => {
     document.getElementById("monthFilter").value = "all";
   });
 }); // End of DOMContentLoaded
+
 
 
