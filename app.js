@@ -13,6 +13,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const monthFilter = document.getElementById("monthFilter");
   const qtyLabel = document.getElementById("qtyLabel");
 
+  // Create Archive Button dynamically
+  const archiveBtn = document.createElement('button');
+  archiveBtn.id = "archiveBtn";
+  archiveBtn.innerHTML = "📂 Close & Archive Batch";
+  archiveBtn.style.cssText = "background: #455a64; margin-top: 10px; display: none; width: 100%; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer;";
+  document.getElementById("dashboard").appendChild(archiveBtn);
+
   const request = indexedDB.open("FarmDB", 1);
 
   request.onupgradeneeded = (e) => {
@@ -58,11 +65,11 @@ document.addEventListener("DOMContentLoaded", () => {
     farmTypeScreen.style.display = "none";
     appScreen.style.display = "block";
     
-    // UI Reset
     document.querySelectorAll('.extra-fields').forEach(div => div.style.display = 'none');
     const isPoultry = type === "poultry";
     document.getElementById("poultrySubtypeToggle").style.display = isPoultry ? "block" : "none";
     document.getElementById("poultryKpis").style.display = isPoultry ? "grid" : "none";
+    archiveBtn.style.display = isPoultry ? "block" : "none";
 
     if (type === "dairy") {
       qtyLabel.innerText = "Milk Collected (Litres)";
@@ -102,6 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
         flockSize: currentType === "poultry" ? Number(document.getElementById("flockSize").value) || 0 : 0,
         feed: currentType === "poultry" ? Number(document.getElementById("feed").value) || 0 : 0,
         weight: currentType === "poultry" ? Number(document.getElementById("avgWeight").value) || 0 : 0,
+        archived: false, // Default to false
         extra: currentType === "dairy" ? document.getElementById("cowId").value :
                currentType === "poultry" ? document.getElementById("batchId").value :
                document.getElementById("fieldName").value
@@ -133,13 +141,16 @@ document.addEventListener("DOMContentLoaded", () => {
         let pStats = { mortality: 0, feed: 0, eggs: 0, size: 0, weightSum: 0, weightCount: 0 };
         const months = new Set();
 
-        updateChart(allRecords, currentType);
+        // Only chart non-archived records
+        const activeRecords = allRecords.filter(r => !r.archived);
+        updateChart(activeRecords, currentType);
 
         allRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
         
         allRecords.forEach(r => {
           if (r.type !== currentType) return;
           if (currentType === "poultry" && r.subtype !== activePoultrySub) return;
+          if (r.archived) return; // Hide archived records from current dashboard
 
           const mKey = r.date.substring(0, 7);
           months.add(mKey);
@@ -159,7 +170,6 @@ document.addEventListener("DOMContentLoaded", () => {
           recordsList.innerHTML += `<li><div><strong>📅 ${r.date}</strong> ${extraLabel}<br><small>Qty: ${r.quantity} | Exp: ${r.expenses}</small></div><div style="text-align:right"><strong>KES ${(r.quantity * r.price).toLocaleString()}</strong><br><button class="delete-btn" data-id="${r.id}">✕</button></div></li>`;
         });
 
-        // Dashboard Updates
         document.getElementById("totalQuantity").innerText = totalQty.toFixed(1);
         document.getElementById("totalProfit").innerText = (totalRev - totalExp).toLocaleString();
         
@@ -178,14 +188,13 @@ document.addEventListener("DOMContentLoaded", () => {
           document.getElementById("statWeight").innerText = avgW + "kg";
         }
 
-        // Filter Setup
         const currentOpts = Array.from(monthFilter.options).map(o => o.value);
         Array.from(months).sort().reverse().forEach(m => { if (!currentOpts.includes(m)) monthFilter.add(new Option(m, m)); });
       };
     };
   }
 
-  function updateChart(allRecords, currentType) {
+  function updateChart(data, currentType) {
     const chartContainer = document.getElementById("productionChart");
     if (!chartContainer) return;
     chartContainer.innerHTML = "";
@@ -197,7 +206,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     const dailyTotals = {};
     last7Days.forEach(date => dailyTotals[date] = 0);
-    allRecords.forEach(r => { if (r.type === currentType && dailyTotals.hasOwnProperty(r.date)) dailyTotals[r.date] += r.quantity; });
+    data.forEach(r => { if (r.type === currentType && dailyTotals.hasOwnProperty(r.date)) dailyTotals[r.date] += r.quantity; });
     const maxVal = Math.max(...Object.values(dailyTotals), 1);
     last7Days.forEach(date => {
       const val = dailyTotals[date];
@@ -205,6 +214,26 @@ document.addEventListener("DOMContentLoaded", () => {
       chartContainer.innerHTML += `<div class="chart-bar-wrapper"><span class="bar-value">${val > 0 ? val.toFixed(1) : ''}</span><div class="bar" style="height: ${heightPercent}%"></div><span class="bar-label">${date.split('-')[2]}</span></div>`;
     });
   }
+
+  archiveBtn.addEventListener("click", () => {
+    const sub = document.getElementById("poultrySubtypeToggle").value;
+    if (confirm(`Are you sure you want to close the current ${sub} batch?`)) {
+      const tx = db.transaction("records", "readwrite");
+      const store = tx.objectStore("records");
+      store.getAll().onsuccess = (ev) => {
+        ev.target.result.forEach(r => {
+          if (r.type === "poultry" && r.subtype === sub && !r.archived) {
+            r.archived = true;
+            store.put(r);
+          }
+        });
+      };
+      tx.oncomplete = () => {
+        loadRecords();
+        showToast(`${sub} Batch Archived!`);
+      };
+    }
+  });
 
   monthFilter.addEventListener("change", loadRecords);
   recordsList.addEventListener("click", (e) => {
