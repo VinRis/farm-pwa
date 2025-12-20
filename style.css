@@ -56,7 +56,8 @@ li {
   border-radius: 5px;
 }
 
-#farmTypeScreen button {
+#farmTypeScreen 
+button {
   width: 100%;
   padding: 15px;
   margin-bottom: 15px;
@@ -65,3 +66,4 @@ li {
   border: 2px solid #2e7d32;
   border-radius: 8px;
 }
+
