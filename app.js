@@ -102,7 +102,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   });
 
-  function getMonthKey(dateStr) {
+function getMonthKey(dateStr) {
   const d = new Date(dateStr);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
@@ -110,7 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
   /* =========================
      LOAD RECORDS
   ========================= */
-  const selectedMonth = document.getElementById("monthFilter").value;
+const selectedMonth = document.getElementById("monthFilter").value;
   function loadRecords() {
   const tx = db.transaction("records", "readonly");
   const store = tx.objectStore("records");
@@ -160,6 +160,7 @@ monthFilter.innerHTML = '<option value="all">All Time</option>';
   }
 
 });
+
 
 
 
