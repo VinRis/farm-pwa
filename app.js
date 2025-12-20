@@ -104,27 +104,37 @@ document.addEventListener("DOMContentLoaded", () => {
   /* =========================
      LOAD RECORDS
   ========================= */
-  function loadRecords() {
-    const tx = db.transaction("records", "readonly");
-    const store = tx.objectStore("records");
-    const req = store.getAll();
+function loadRecords() {
+  const tx = db.transaction("records", "readonly");
+  const store = tx.objectStore("records");
+  const req = store.getAll();
 
-    req.onsuccess = () => {
-      const list = document.getElementById("records");
-      list.innerHTML = "";
+  req.onsuccess = () => {
+    const list = document.getElementById("records");
+    list.innerHTML = "";
 
-      req.result.forEach(r => {
-        list.innerHTML += `
-          <li>
-            📅 ${r.date}<br>
-            🧺 Quantity: ${r.quantity}<br>
-            💰 Expenses: KES ${r.expenses}
-          </li>
-        `;
-      });
-    };
-  }
+    let totalQty = 0;
+    let totalExp = 0;
 
+    req.result.forEach(r => {
+      totalQty += Number(r.quantity);
+      totalExp += Number(r.expenses);
+
+      list.innerHTML += `
+        <li>
+          📅 ${r.date}<br>
+          🧺 Quantity: ${r.quantity}<br>
+          💰 Expenses: KES ${r.expenses}
+        </li>
+      `;
+    });
+
+    // Dashboard values
+    document.getElementById("totalRecords").innerText = req.result.length;
+    document.getElementById("totalQuantity").innerText = totalQty;
+    document.getElementById("totalExpenses").innerText = totalExp;
+  };
+}
   /* =========================
      SERVICE WORKER
   ========================= */
@@ -133,3 +143,4 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
 });
+
