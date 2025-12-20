@@ -89,6 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const record = {
       date: date.value,
       quantity: quantity.value,
+      price: price.value,
       expenses: expenses.value || 0
     };
 
@@ -143,4 +144,5 @@ function loadRecords() {
   }
 
 });
+
 
