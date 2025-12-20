@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const monthFilter = document.getElementById("monthFilter");
   const qtyLabel = document.getElementById("qtyLabel");
 
-  // Create Archive Button dynamically
+  // Create Archive Button
   const archiveBtn = document.createElement('button');
   archiveBtn.id = "archiveBtn";
   archiveBtn.innerHTML = "📂 Close & Archive Batch";
@@ -64,11 +64,12 @@ document.addEventListener("DOMContentLoaded", () => {
   function showApp(type) {
     farmTypeScreen.style.display = "none";
     appScreen.style.display = "block";
-    
     document.querySelectorAll('.extra-fields').forEach(div => div.style.display = 'none');
+    
     const isPoultry = type === "poultry";
     document.getElementById("poultrySubtypeToggle").style.display = isPoultry ? "block" : "none";
     document.getElementById("poultryKpis").style.display = isPoultry ? "grid" : "none";
+    document.getElementById("historySection").style.display = isPoultry ? "block" : "none";
     archiveBtn.style.display = isPoultry ? "block" : "none";
 
     if (type === "dairy") {
@@ -109,7 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
         flockSize: currentType === "poultry" ? Number(document.getElementById("flockSize").value) || 0 : 0,
         feed: currentType === "poultry" ? Number(document.getElementById("feed").value) || 0 : 0,
         weight: currentType === "poultry" ? Number(document.getElementById("avgWeight").value) || 0 : 0,
-        archived: false, // Default to false
+        archived: false,
         extra: currentType === "dairy" ? document.getElementById("cowId").value :
                currentType === "poultry" ? document.getElementById("batchId").value :
                document.getElementById("fieldName").value
@@ -121,7 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
         form.reset();
         document.getElementById("date").valueAsDate = new Date();
         showApp(currentType);
-        showToast("Record Saved Successfully! ✅");
+        showToast("Record Saved! ✅");
       };
     };
   });
@@ -137,11 +138,14 @@ document.addEventListener("DOMContentLoaded", () => {
         const activePoultrySub = document.getElementById("poultrySubtypeToggle").value;
         
         recordsList.innerHTML = "";
+        const historyList = document.getElementById("historyList");
+        if(historyList) historyList.innerHTML = "";
+
         let [totalQty, totalExp, totalRev] = [0, 0, 0];
         let pStats = { mortality: 0, feed: 0, eggs: 0, size: 0, weightSum: 0, weightCount: 0 };
+        let archivedGroups = {}; // For history section
         const months = new Set();
 
-        // Only chart non-archived records
         const activeRecords = allRecords.filter(r => !r.archived);
         updateChart(activeRecords, currentType);
 
@@ -150,8 +154,18 @@ document.addEventListener("DOMContentLoaded", () => {
         allRecords.forEach(r => {
           if (r.type !== currentType) return;
           if (currentType === "poultry" && r.subtype !== activePoultrySub) return;
-          if (r.archived) return; // Hide archived records from current dashboard
 
+          // HANDLE ARCHIVED DATA (History Section)
+          if (r.archived && currentType === "poultry") {
+            const batchKey = r.extra || "Unknown Batch";
+            if (!archivedGroups[batchKey]) archivedGroups[batchKey] = { qty: 0, profit: 0, mortality: 0 };
+            archivedGroups[batchKey].qty += r.quantity;
+            archivedGroups[batchKey].profit += (r.quantity * r.price) - r.expenses;
+            archivedGroups[batchKey].mortality += (r.mortality || 0);
+            return;
+          }
+
+          // HANDLE ACTIVE DATA
           const mKey = r.date.substring(0, 7);
           months.add(mKey);
           if (selectedMonth !== "all" && mKey !== selectedMonth) return;
@@ -170,6 +184,7 @@ document.addEventListener("DOMContentLoaded", () => {
           recordsList.innerHTML += `<li><div><strong>📅 ${r.date}</strong> ${extraLabel}<br><small>Qty: ${r.quantity} | Exp: ${r.expenses}</small></div><div style="text-align:right"><strong>KES ${(r.quantity * r.price).toLocaleString()}</strong><br><button class="delete-btn" data-id="${r.id}">✕</button></div></li>`;
         });
 
+        // Update Dashboard
         document.getElementById("totalQuantity").innerText = totalQty.toFixed(1);
         document.getElementById("totalProfit").innerText = (totalRev - totalExp).toLocaleString();
         
@@ -186,6 +201,17 @@ document.addEventListener("DOMContentLoaded", () => {
           document.getElementById("statLaying").innerText = ratio + "%";
           const avgW = pStats.weightCount > 0 ? (pStats.weightSum / pStats.weightCount).toFixed(2) : 0;
           document.getElementById("statWeight").innerText = avgW + "kg";
+
+          // Render History Cards
+          Object.keys(archivedGroups).forEach(batch => {
+            const data = archivedGroups[batch];
+            historyList.innerHTML += `<div class="card" style="background:#f1f8e9; border-left: 4px solid #2e7d32;">
+              <p><strong>📦 ${batch}</strong></p>
+              <small>Profit: KES ${data.profit.toLocaleString()}<br>
+              Total Qty: ${data.qty.toFixed(1)}<br>
+              Total Mortality: ${data.mortality}</small>
+            </div>`;
+          });
         }
 
         const currentOpts = Array.from(monthFilter.options).map(o => o.value);
@@ -217,7 +243,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   archiveBtn.addEventListener("click", () => {
     const sub = document.getElementById("poultrySubtypeToggle").value;
-    if (confirm(`Are you sure you want to close the current ${sub} batch?`)) {
+    if (confirm(`Archive the current ${sub} batch? Dashboard will reset for a new flock.`)) {
       const tx = db.transaction("records", "readwrite");
       const store = tx.objectStore("records");
       store.getAll().onsuccess = (ev) => {
@@ -228,10 +254,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         });
       };
-      tx.oncomplete = () => {
-        loadRecords();
-        showToast(`${sub} Batch Archived!`);
-      };
+      tx.oncomplete = () => { loadRecords(); showToast("Batch Archived! 📂"); };
     }
   });
 
