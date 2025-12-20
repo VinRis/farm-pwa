@@ -2,32 +2,33 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Farm Tracker</title>
+  <title>Farm Tracker Pro</title>
 
   <link rel="manifest" href="manifest.json">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#2e7d32">
-
   <link rel="apple-touch-icon" href="icon-192.png"> 
-
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
 <header>
   <h1>Farm Production Tracker</h1>
-  <p>Offline Farm Records</p>
-  <div style="display: flex; gap: 10px; justify-content: center;">
+  <p>Offline Farm Management</p>
+  <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
     <button id="switchTypeBtn" type="button" style="width: auto; margin-top: 10px; padding: 5px 15px; background: #689f38;">🔄 Switch Farm Type</button>
-    <button id="resetBtn" type="button" style="width: auto; margin-top: 10px; padding: 5px 15px; background: #d32f2f;">Reset App</button>
+    <button id="resetBtn" type="button" style="width: auto; margin-top: 10px; padding: 5px 15px; background: #d32f2f;">⚠️ Reset App</button>
   </div>
 </header>
 
 <main>
   <section id="farmTypeScreen">
     <h2>Select Your Farm Type</h2>
-    <button type="button" data-type="dairy">🐄 Dairy Farming</button>
-    <button type="button" data-type="poultry">🐔 Poultry Farming</button>
-    <button type="button" data-type="crops">🌽 Crop Farming</button>
+    <div class="stats-grid">
+      <button type="button" data-type="dairy" class="card">🐄<br>Dairy Farming</button>
+      <button type="button" data-type="poultry" class="card">🐔<br>Poultry Farming</button>
+      <button type="button" data-type="crops" class="card">🌽<br>Crop Farming</button>
+    </div>
   </section>
 
   <section id="appScreen" style="display:none;">
@@ -47,17 +48,14 @@
           <p>Records</p>
           <h3 id="totalRecords">0</h3>
         </div>
-
         <div class="card">
           <p>Production</p>
           <h3 id="totalQuantity">0</h3>
         </div>
-
         <div class="card">
           <p>Expenses</p>
           <h3 id="totalExpenses">0</h3>
         </div>
-
         <div class="card profit">
           <p>Total Profit</p>
           <h3 id="totalProfit">0</h3>
@@ -65,58 +63,50 @@
       </div>
     </section>
 
-<form id="farmForm">
-  <h3>Add New Record</h3>
+    <form id="farmForm">
+      <h3>Add New Record</h3>
 
-  <label for="date">Date</label>
-  <input type="date" id="date" required>
+      <label for="date">Date</label>
+      <input type="date" id="date" required>
 
-  <div id="dairyFields" class="extra-fields" style="display:none;">
-    <label for="cowId">Cow Name/ID</label>
-    <input type="text" id="cowId" placeholder="e.g. Daisy">
-  </div>
+      <div id="dairyFields" class="extra-fields" style="display:none;">
+        <label for="cowId">Cow Name/ID</label>
+        <input type="text" id="cowId" placeholder="e.g. Daisy">
+      </div>
 
-  <div id="poultryFields" class="extra-fields" style="display:none;">
-    <label for="batchId">Batch/Flock ID</label>
-    <input type="text" id="batchId" placeholder="e.g. Batch B-2024">
-  </div>
+      <div id="poultryFields" class="extra-fields" style="display:none;">
+        <label for="batchId">Batch/Flock ID</label>
+        <input type="text" id="batchId" placeholder="e.g. Batch B-2024">
+      </div>
 
-  <div id="cropFields" class="extra-fields" style="display:none;">
-    <label for="fieldName">Field/Plot Name</label>
-    <input type="text" id="fieldName" placeholder="e.g. North Hill">
-  </div>
+      <div id="cropFields" class="extra-fields" style="display:none;">
+        <label for="fieldName">Field/Plot Name</label>
+        <input type="text" id="fieldName" placeholder="e.g. North Hill">
+      </div>
 
-  <label id="qtyLabel" for="quantity">Production Quantity</label>
-  <input type="number" id="quantity" step="0.01" inputmode="decimal" required>
+      <label id="qtyLabel" for="quantity">Production Quantity</label>
+      <input type="number" id="quantity" step="0.01" inputmode="decimal" required>
 
-  <label for="price">Price per Unit (KES)</label>
-  <input type="number" id="price" step="0.01" inputmode="decimal" required>
+      <label for="price">Price per Unit (KES)</label>
+      <input type="number" id="price" step="0.01" inputmode="decimal" required>
 
-  <label for="expenses">Expenses (KES)</label>
-  <input type="number" id="expenses" step="0.01" inputmode="decimal">
+      <label for="expenses">Expenses (KES)</label>
+      <input type="number" id="expenses" step="0.01" inputmode="decimal" placeholder="0.00">
 
-  <button type="submit">Save Record</button>
-</form>
+      <button type="submit">✅ Save Record</button>
+    </form>
 
-    <section>
-      <h2>Saved Records</h2>
-      <ul id="records"></ul>
-    </section>
     <section>
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-        <h2>Export Records</h2>
+        <h2>Saved Records</h2>
         <button id="exportBtn" type="button" style="width: auto; margin: 0; padding: 8px 15px; background: #1b5e20;">📥 Export CSV</button>
       </div>
       <ul id="records"></ul>
     </section>
+
   </section>
 </main>
 
-  <script src="app.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
-
-
-
-
-
