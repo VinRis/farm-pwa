@@ -15,34 +15,44 @@
 <header>
   <h1>Farm Production Tracker</h1>
   <p>Offline Farm Management</p>
-  <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
-    <button id="switchTypeBtn" type="button" style="width: auto; margin-top: 10px; padding: 5px 15px; background: #689f38;">🔄 Switch Farm Type</button>
-    <button id="resetBtn" type="button" style="width: auto; margin-top: 10px; padding: 5px 15px; background: #d32f2f;">⚠️ Reset App</button>
+  <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; padding: 5px;">
+    <button id="switchTypeBtn" type="button" style="width: auto; margin: 0; padding: 8px 15px; background: #689f38; font-size: 0.85rem;">🔄 Switch Type</button>
+    <button id="resetBtn" type="button" style="width: auto; margin: 0; padding: 8px 15px; background: #d32f2f; font-size: 0.85rem;">⚠️ Reset App</button>
   </div>
 </header>
 
 <main>
   <section id="farmTypeScreen">
-    <h2>Select Your Farm Type</h2>
+    <h2 style="text-align: center; margin-top: 20px;">Select Your Farm Type</h2>
     <div class="stats-grid">
-      <button type="button" data-type="dairy" class="card">🐄<br>Dairy Farming</button>
-      <button type="button" data-type="poultry" class="card">🐔<br>Poultry Farming</button>
-      <button type="button" data-type="crops" class="card">🌽<br>Crop Farming</button>
+      <button type="button" data-type="dairy" class="card" style="cursor: pointer; border: none; width: 100%;">
+        <span style="font-size: 2rem;">🐄</span><br>
+        <strong>Dairy Farming</strong>
+      </button>
+      <button type="button" data-type="poultry" class="card" style="cursor: pointer; border: none; width: 100%;">
+        <span style="font-size: 2rem;">🐔</span><br>
+        <strong>Poultry Farming</strong>
+      </button>
+      <button type="button" data-type="crops" class="card" style="cursor: pointer; border: none; width: 100%;">
+        <span style="font-size: 2rem;">🌽</span><br>
+        <strong>Crop Farming</strong>
+      </button>
     </div>
   </section>
 
   <section id="appScreen" style="display:none;">
-
-   <section id="analytics" class="card" style="margin-bottom: 20px;">
+    
+    <section id="analytics" class="card" style="margin-bottom: 20px;">
       <h2 style="font-size: 1.1rem; margin-bottom: 15px;">📈 Last 7 Days Production</h2>
       <div id="productionChart" class="chart-container">
         </div>
-   </section>
+    </section>
+
     <section id="dashboard">
       <h2>📊 Farm Summary</h2>
       
-      <div class="filter-container">
-        <label for="monthFilter">Filter by Month:</label>
+      <div class="filter-container" style="margin-bottom: 15px;">
+        <label for="monthFilter" style="display: block; font-size: 0.8rem; margin-bottom: 5px;">Filter by Month:</label>
         <select id="monthFilter">
           <option value="all">All Time</option>
         </select>
@@ -68,7 +78,7 @@
       </div>
     </section>
 
-    <form id="farmForm">
+    <form id="farmForm" style="margin-top: 20px;">
       <h3>Add New Record</h3>
 
       <label for="date">Date</label>
@@ -101,7 +111,7 @@
       <button type="submit">✅ Save Record</button>
     </form>
 
-    <section>
+    <section style="margin-top: 30px;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
         <h2>Saved Records</h2>
         <button id="exportBtn" type="button" style="width: auto; margin: 0; padding: 8px 15px; background: #1b5e20;">📥 Export CSV</button>
@@ -115,4 +125,3 @@
 <script src="app.js"></script>
 </body>
 </html>
-
