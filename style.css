@@ -227,3 +227,13 @@ li {
   from { bottom: 30px; opacity: 1; }
   to { bottom: 0; opacity: 0; }
 }
+
+/* Add to style.css */
+.broiler-only, .layer-only { display: block; }
+
+/* In app.js, we will hide/show these based on the subtype selection */
+#poultrySubtype.addEventListener('change', (e) => {
+    const isBroiler = e.target.value === 'broilers';
+    document.querySelectorAll('.broiler-only').forEach(el => el.style.display = isBroiler ? 'block' : 'none');
+    document.querySelector('#qtyLabel').innerText = isBroiler ? "Total Weight Sold (Kg)" : "Eggs Collected (Trays/Pcs)";
+});
