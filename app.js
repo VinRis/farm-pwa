@@ -110,56 +110,61 @@ function getMonthKey(dateStr) {
   /* =========================
      LOAD RECORDS
   ========================= */
-const selectedMonth = document.getElementById("monthFilter").value;
-  function loadRecords() {
+function loadRecords() {
   const tx = db.transaction("records", "readonly");
   const store = tx.objectStore("records");
   const req = store.getAll();
-  const months = new Set();
 
-req.result.forEach(r => {
-  const recordMonth = getMonthKey(r.date);
-  months.add(recordMonth);
+  req.onsuccess = () => {
+    const list = document.getElementById("records");
+    const monthFilter = document.getElementById("monthFilter");
+    const selectedMonth = monthFilter.value;
 
-  if (selectedMonth !== "all" && recordMonth !== selectedMonth) return;
+    list.innerHTML = "";
 
-  totalQty += Number(r.quantity);
-  totalExp += Number(r.expenses);
-  totalRevenue += Number(r.quantity) * Number(r.price);
+    let totalQty = 0;
+    let totalExp = 0;
+    let totalRevenue = 0;
 
-  list.innerHTML += `
-    <li>
-      📅 ${r.date}<br>
-      🧺 Quantity: ${r.quantity}<br>
-      💰 Expenses: KES ${r.expenses}
-    </li>
-  `;
-});
-  const monthFilter = document.getElementById("monthFilter");
-monthFilter.innerHTML = '<option value="all">All Time</option>';
+    const months = new Set();
 
-[...months].sort().reverse().forEach(m => {
-  const opt = document.createElement("option");
-  opt.value = m;
-  opt.textContent = m;
-  monthFilter.appendChild(opt);
-});
-  document.getElementById("monthFilter").addEventListener("change", loadRecords);
-    
-    // Dashboard values
+    req.result.forEach(r => {
+      const recordMonth = getMonthKey(r.date);
+      months.add(recordMonth);
+
+      if (selectedMonth !== "all" && recordMonth !== selectedMonth) return;
+
+      totalQty += Number(r.quantity);
+      totalExp += Number(r.expenses);
+      totalRevenue += Number(r.quantity) * Number(r.price);
+
+      list.innerHTML += `
+        <li>
+          📅 ${r.date}<br>
+          🧺 Quantity: ${r.quantity}<br>
+          💰 Expenses: KES ${r.expenses}
+        </li>
+      `;
+    });
+
+    // Populate month dropdown
+    monthFilter.innerHTML = `<option value="all">All Time</option>`;
+    [...months].sort().reverse().forEach(m => {
+      const opt = document.createElement("option");
+      opt.value = m;
+      opt.textContent = m;
+      monthFilter.appendChild(opt);
+    });
+
+    // Dashboard updates
     document.getElementById("totalRecords").innerText = req.result.length;
     document.getElementById("totalQuantity").innerText = totalQty;
     document.getElementById("totalExpenses").innerText = totalExp;
+    document.getElementById("totalProfit").innerText =
+      totalRevenue - totalExp;
   };
 }
-  /* =========================
-     SERVICE WORKER
-  ========================= */
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("service-worker.js");
-  }
 
-});
 
 
 
