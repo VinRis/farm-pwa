@@ -196,5 +196,46 @@ function showApp(type) {
       a.click();
     };
   });
+  function updateChart(allRecords, currentType) {
+  const chartContainer = document.getElementById("productionChart");
+  chartContainer.innerHTML = "";
+
+  // 1. Get the last 7 days dates
+  const last7Days = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    last7Days.push(d.toISOString().split('T')[0]);
+  }
+
+  // 2. Sum production per day
+  const dailyTotals = {};
+  last7Days.forEach(date => dailyTotals[date] = 0);
+
+  allRecords.forEach(r => {
+    if (r.type === currentType && dailyTotals.hasOwnProperty(r.date)) {
+      dailyTotals[r.date] += r.quantity;
+    }
+  });
+
+  // 3. Find max value for scaling
+  const maxVal = Math.max(...Object.values(dailyTotals), 1);
+
+  // 4. Render Bars
+  last7Days.forEach(date => {
+    const val = dailyTotals[date];
+    const heightPercent = (val / maxVal) * 100;
+    const dayLabel = date.split('-')[2]; // Just the day number
+
+    chartContainer.innerHTML += `
+      <div class="chart-bar-wrapper">
+        <span class="bar-value">${val > 0 ? val.toFixed(1) : ''}</span>
+        <div class="bar" style="height: ${heightPercent}%"></div>
+        <span class="bar-label">${dayLabel}</span>
+      </div>
+    `;
+  });
+}
 });
+
 
