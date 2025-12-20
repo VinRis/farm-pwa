@@ -123,88 +123,86 @@ function showApp(type) {
     };
   });
 
-  function getMonthKey(dateStr) {
-    const d = new Date(dateStr);
-    // Fix: Ensure valid date before parsing
-    if (isNaN(d)) return "Unknown";
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-  }
+function getMonthKey(dateStr) {
+  // Instead of creating a Date object, just slice the YYYY-MM part of the string
+  // If dateStr is "2023-11-25", this returns "2023-11"
+  return dateStr.substring(0, 7); 
+}
 
   /* =========================
       LOAD RECORDS
   ========================= */
-  // BUG FIX: Event listener moved OUTSIDE the function
-  monthFilter.addEventListener("change", loadRecords);
+function loadRecords() {
+  const tx = db.transaction("records", "readonly");
+  const store = tx.objectStore("records");
+  const req = store.getAll();
 
-  function loadRecords() {
-    const tx = db.transaction("records", "readonly");
-    const req = tx.objectStore("records").getAll();
+  req.onsuccess = () => {
+    const allRecords = req.result;
+    const list = document.getElementById("records");
+    const monthFilter = document.getElementById("monthFilter");
+    const selectedMonth = monthFilter.value;
 
-    req.onsuccess = () => {
-      const allRecords = req.result;
-      const selectedMonth = monthFilter.value;
-      
-      // Clear list
-      recordsList.innerHTML = "";
+    list.innerHTML = "";
 
-      let totalQty = 0;
-      let totalExp = 0;
-      let totalRevenue = 0;
-      let filteredCount = 0; // Track count of filtered items
+    let totalQty = 0;
+    let totalExp = 0;
+    let totalRevenue = 0;
 
-      const months = new Set();
+    // 1. Get all unique months from the data
+    const existingMonthsInData = new Set();
+    allRecords.forEach(r => {
+      existingMonthsInData.add(getMonthKey(r.date));
+    });
 
-      // 1. Collect all available months first
-      allRecords.forEach(r => {
-          months.add(getMonthKey(r.date));
-      });
+    // 2. Update the Dropdown Menu
+    // Get currently existing options in the dropdown to avoid duplicates
+    const currentOptions = Array.from(monthFilter.options).map(opt => opt.value);
 
-      // 2. Handle Dropdown (Only rebuild if empty to prevent resetting selection)
-      // If the dropdown has only 1 child (the "All" option), populate it.
-      if (monthFilter.children.length <= 1) {
-          [...months].sort().reverse().forEach((m) => {
-            // Check if option already exists to avoid duplicates if logic changes
-            if (!monthFilter.querySelector(`option[value="${m}"]`)) {
-                const opt = document.createElement("option");
-                opt.value = m;
-                opt.textContent = m;
-                monthFilter.appendChild(opt);
-            }
-          });
+    // Sort months newest to oldest
+    const sortedMonths = Array.from(existingMonthsInData).sort().reverse();
+
+    sortedMonths.forEach(m => {
+      if (!currentOptions.includes(m)) {
+        const opt = document.createElement("option");
+        opt.value = m;
+        opt.textContent = m;
+        monthFilter.appendChild(opt);
       }
+    });
 
-      // 3. Process and Display Records
-      // Sort records by date descending (newest first)
-      allRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
+    // 3. Filter and Display
+    allRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-      allRecords.forEach((r) => {
-        const recordMonth = getMonthKey(r.date);
+    allRecords.forEach(r => {
+      const recordMonth = getMonthKey(r.date);
 
-        if (selectedMonth !== "all" && recordMonth !== selectedMonth) return;
+      if (selectedMonth !== "all" && recordMonth !== selectedMonth) return;
 
-        filteredCount++;
-        totalQty += Number(r.quantity);
-        totalExp += Number(r.expenses);
-        totalRevenue += Number(r.quantity) * Number(r.price);
+      totalQty += Number(r.quantity);
+      totalExp += Number(r.expenses);
+      totalRevenue += Number(r.quantity) * Number(r.price);
 
-        recordsList.innerHTML += `
-          <li>
-             <strong>📅 ${r.date}</strong><br>
-             🧺 Qty: ${r.quantity} | 
-             💰 Exp: ${r.expenses}
-          </li>
-        `;
-      });
+      list.innerHTML += `
+        <li>
+          <div>
+            <strong>📅 ${r.date}</strong><br>
+            <small>Qty: ${r.quantity} | Exp: ${r.expenses}</small>
+          </div>
+          <div style="text-align:right">
+            <strong>KES ${Number(r.quantity) * Number(r.price)}</strong>
+          </div>
+        </li>
+      `;
+    });
 
-      // Dashboard updates
-      // BUG FIX: Show count of displayed records, not database total
-      document.getElementById("totalRecords").innerText = filteredCount; 
-      document.getElementById("totalQuantity").innerText = totalQty;
-      document.getElementById("totalExpenses").innerText = totalExp;
-      document.getElementById("totalProfit").innerText = totalRevenue - totalExp;
-    };
-  }
-});
+    // Dashboard updates
+    document.getElementById("totalRecords").innerText = (selectedMonth === "all") ? allRecords.length : list.children.length;
+    document.getElementById("totalQuantity").innerText = totalQty;
+    document.getElementById("totalExpenses").innerText = totalExp;
+    document.getElementById("totalProfit").innerText = totalRevenue - totalExp;
+  };
+}
 /* =========================
       RESET APP (Delete DB)
   ========================= */
@@ -230,5 +228,6 @@ function showApp(type) {
       };
     }
   });
+
 
 
