@@ -135,6 +135,16 @@ req.result.forEach(r => {
     </li>
   `;
 });
+  const monthFilter = document.getElementById("monthFilter");
+monthFilter.innerHTML = '<option value="all">All Time</option>';
+
+[...months].sort().reverse().forEach(m => {
+  const opt = document.createElement("option");
+  opt.value = m;
+  opt.textContent = m;
+  monthFilter.appendChild(opt);
+});
+  document.getElementById("monthFilter").addEventListener("change", loadRecords);
     
     // Dashboard values
     document.getElementById("totalRecords").innerText = req.result.length;
@@ -150,6 +160,7 @@ req.result.forEach(r => {
   }
 
 });
+
 
 
 
