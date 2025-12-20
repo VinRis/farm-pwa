@@ -115,6 +115,7 @@ function showApp(type) {
         recordsList.innerHTML = "";
 
         let [totalQty, totalExp, totalRevenue] = [0, 0, 0];
+        updateChart(allRecords, currentType);
         const months = new Set();
 
         // Sort records newest first
@@ -237,5 +238,6 @@ function showApp(type) {
   });
 }
 });
+
 
 
