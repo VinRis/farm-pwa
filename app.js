@@ -143,11 +143,18 @@ function loadRecords() {
     const monthFilter = document.getElementById("monthFilter");
     const selectedMonth = monthFilter.value;
 
-    list.innerHTML = "";
-
-    let totalQty = 0;
-    let totalExp = 0;
-    let totalRevenue = 0;
+    list.innerHTML += `
+        <li>
+          <div>
+            <strong>📅 ${r.date}</strong><br>
+            <small>Qty: ${r.quantity} | Exp: ${r.expenses}</small>
+          </div>
+          <div style="text-align:right; display: flex; align-items: center; gap: 10px;">
+            <strong>KES ${Number(r.quantity) * Number(r.price)}</strong>
+            <button class="delete-btn" data-id="${r.id}" style="width: auto; margin: 0; padding: 5px 10px; background: #c62828;">✕</button>
+          </div>
+        </li>
+      `;
 
     // 1. Get all unique months from the data
     const existingMonthsInData = new Set();
@@ -204,6 +211,21 @@ function loadRecords() {
   };
 }
 /* =========================
+      DELETE RECORD
+  ========================= */
+  document.getElementById("records").addEventListener("click", (e) => {
+    if (e.target.classList.contains("delete-btn")) {
+      const id = Number(e.target.dataset.id);
+      if (confirm("Delete this record?")) {
+        const tx = db.transaction("records", "readwrite");
+        tx.objectStore("records").delete(id);
+        tx.oncomplete = () => {
+          loadRecords(); // Refresh the list and dashboard
+        };
+      }
+    }
+  });  
+/* =========================
       RESET APP (Delete DB)
   ========================= */
   document.getElementById("resetBtn").addEventListener("click", () => {
@@ -228,6 +250,7 @@ function loadRecords() {
       };
     }
   });
+
 
 
 
