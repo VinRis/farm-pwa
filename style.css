@@ -33,7 +33,7 @@ header p { margin: 5px 0 0; opacity: 0.9; font-size: 0.9rem; }
 
 main { padding: 15px; max-width: 600px; margin: 0 auto; }
 
-/* DASHBOARD GRID (New) */
+/* DASHBOARD GRID */
 .stats-grid {
   display: grid;
   grid-template-columns: 1fr 1fr; /* 2 columns */
@@ -104,7 +104,7 @@ button {
   font-weight: bold;
   border-radius: 8px;
   cursor: pointer;
-  margin-top: 20px;
+  margin-top: 10px; /* Reduced from 20px for tighter fit */
 }
 
 button:active { transform: scale(0.98); }
@@ -115,10 +115,57 @@ button:active { transform: scale(0.98); }
   color: #2e7d32;
   border: 2px solid #2e7d32;
   margin-bottom: 15px;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
-#farmTypeScreen button:hover {
-  background: #f1f8e9;
+/* CHART STYLING */
+.chart-container {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around; /* Changed from space-between for better bar centering */
+  height: 150px;
+  padding: 10px 5px; /* Added padding */
+  border-bottom: 2px solid #ddd;
+  gap: 2px;
+}
+
+.chart-bar-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  height: 100%; /* Ensure wrapper takes full height for labels */
+  justify-content: flex-end;
+}
+
+.bar {
+  width: 70%; /* Slightly narrower for better spacing */
+  background: #2e7d32;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+  transition: height 0.5s ease-out;
+  min-height: 2px;
+}
+
+.bar-label {
+  font-size: 10px;
+  color: #666;
+  margin-top: 5px;
+  /* FIXED: Removed the extra dash in -45-deg */
+  transform: rotate(-45deg); 
+  display: block;
+  white-space: nowrap;
+}
+
+.bar-value {
+  font-size: 9px;
+  font-weight: bold;
+  margin-bottom: 2px;
+  color: #2e7d32;
 }
 
 /* RECORD LIST */
@@ -138,61 +185,12 @@ li {
   line-height: 1.4;
 }
 
+/* DELETE BUTTON SPECIFIC FIXES */
 .delete-btn {
-  background: #ffcdd2;
-  color: #c62828;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+  background: #ffcdd2 !important; /* Ensure override */
+  color: #c62828 !important;
+  width: auto;
+  padding: 5px 10px;
+  margin: 0;
   font-size: 12px;
-  transition: background 0.2s;
-}
-
-.delete-btn:hover {
-  background: #ef9a9a;
-}
-
-li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.chart-container {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  height: 150px;
-  padding-top: 20px;
-  border-bottom: 2px solid #ddd;
-  gap: 5px;
-}
-
-.chart-bar-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  flex: 1;
-}
-
-.bar {
-  width: 80%;
-  background: #2e7d32;
-  border-top-left-radius: 4px;
-  border-top-right-radius: 4px;
-  transition: height 0.5s ease-out;
-  min-height: 2px;
-}
-
-.bar-label {
-  font-size: 10px;
-  color: #666;
-  margin-top: 5px;
-  transform: rotate(-45-deg);
-}
-
-.bar-value {
-  font-size: 9px;
-  font-weight: bold;
-  margin-bottom: 2px;
 }
