@@ -99,6 +99,13 @@ function showApp(type) {
     quantityLabel.innerText = "Harvest Quantity (Kg)";
   }
 }
+document.addEventListener("click", function (e) {
+  if (e.target.matches("#farmTypeScreen button")) {
+    const type = e.target.getAttribute("data-type");
+    setFarmType(type);
+  }
+});
+
 
 
 
