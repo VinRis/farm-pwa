@@ -55,3 +55,13 @@ li {
   padding: 10px;
   border-radius: 5px;
 }
+
+#farmTypeScreen button {
+  width: 100%;
+  padding: 15px;
+  margin-bottom: 15px;
+  font-size: 18px;
+  background: #ffffff;
+  border: 2px solid #2e7d32;
+  border-radius: 8px;
+}
