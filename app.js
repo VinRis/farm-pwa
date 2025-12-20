@@ -8,7 +8,8 @@ request.onupgradeneeded = event => {
   db = event.target.result;
   db.createObjectStore("records", { keyPath: "id", autoIncrement: true });
   db.createObjectStore("settings", { keyPath: "key" });
-  function setFarmType(type) {
+  
+function setFarmType(type) {
   const tx = db.transaction("settings", "readwrite");
   tx.objectStore("settings").put({ key: "farmType", value: type });
 
@@ -98,6 +99,7 @@ function showApp(type) {
     quantityLabel.innerText = "Harvest Quantity (Kg)";
   }
 }
+
 
 
 
