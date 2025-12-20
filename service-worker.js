@@ -1,4 +1,4 @@
-const CACHE_NAME = "farm-pwa-v1";
+const CACHE_NAME = "farm-pwa-v2";
 
 const FILES_TO_CACHE = [
   "./",
@@ -41,3 +41,4 @@ self.addEventListener("fetch", event => {
     })
   );
 });
+
