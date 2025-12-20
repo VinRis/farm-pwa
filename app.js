@@ -248,8 +248,9 @@ function loadRecords() {
         // If the database is open in another tab, this might happen
         window.location.reload();
       };
-    }
+    })
   });
+
 
 
 
