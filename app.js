@@ -163,7 +163,9 @@ function loadRecords() {
     document.getElementById("totalProfit").innerText =
       totalRevenue - totalExp;
   };
+  document.getElementById("monthFilter").addEventListener("change", loadRecords);
 }
+
 
 
 
