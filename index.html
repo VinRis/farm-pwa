@@ -69,25 +69,38 @@
       <label for="date">Date</label>
       <input type="date" id="date" required>
 
-      <div id="dairyFields" class="extra-fields" style="display:none;">
-        <label for="cowId">Cow Name/ID</label>
-        <input type="text" id="cowId" placeholder="e.g. Daisy">
-      </div>
       <div id="poultryFields" class="extra-fields" style="display:none;">
-        <label for="batchId">Batch/Flock ID</label>
-        <input type="text" id="batchId" placeholder="e.g. Batch B-2024">
-      </div>
-      <div id="cropFields" class="extra-fields" style="display:none;">
-        <label for="fieldName">Field/Plot Name</label>
-        <input type="text" id="fieldName" placeholder="e.g. North Hill">
-      </div>
+  <label for="poultrySubtype">Poultry Type</label>
+  <select id="poultrySubtype">
+    <option value="layers">Layers (Egg Production)</option>
+    <option value="broilers">Broilers (Meat Production)</option>
+  </select>
 
-      <label id="qtyLabel" for="quantity">Production Quantity</label>
-      <input type="number" id="quantity" step="0.01" inputmode="decimal" required>
-      <label for="price">Price per Unit (KES)</label>
-      <input type="number" id="price" step="0.01" inputmode="decimal" required>
-      <label for="expenses">Expenses (KES)</label>
-      <input type="number" id="expenses" step="0.01" inputmode="decimal" placeholder="0.00">
+  <label for="batchId">Batch/Flock ID</label>
+  <input type="text" id="batchId" placeholder="e.g. Batch B-2024">
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+    <div>
+      <label for="mortality">Mortality (Birds Lost)</label>
+      <input type="number" id="mortality" placeholder="0">
+    </div>
+    <div>
+      <label for="flockSize">Current Flock Size</label>
+      <input type="number" id="flockSize" placeholder="Total Birds">
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+    <div>
+      <label for="feed">Feed Used (Kg)</label>
+      <input type="number" id="feed" step="0.1">
+    </div>
+    <div>
+      <label for="avgWeight" class="broiler-only">Avg Weight (Kg)</label>
+      <input type="number" id="avgWeight" step="0.01" class="broiler-only">
+    </div>
+  </div>
+</div>
 
       <button type="submit">✅ Save Record</button>
     </form>
@@ -105,4 +118,5 @@
   <div id="toast" class="toast">Record Saved Successfully! ✅</div>
 </body>
 </html>
+
 
