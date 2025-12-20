@@ -143,7 +143,7 @@ function loadRecords() {
     const monthFilter = document.getElementById("monthFilter");
     const selectedMonth = monthFilter.value;
 
-    list.innerHTML += `
+  list.innerHTML += `
         <li>
           <div>
             <strong>📅 ${r.date}</strong><br>
@@ -250,6 +250,7 @@ function loadRecords() {
       };
     }
   });
+
 
 
 
