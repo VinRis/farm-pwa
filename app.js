@@ -55,13 +55,24 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  function showApp(type) {
-    farmTypeScreen.style.display = "none";
-    appScreen.style.display = "block";
-    if (type === "dairy") qtyLabel.innerText = "Milk Collected (Litres)";
-    else if (type === "poultry") qtyLabel.innerText = "Eggs Collected";
-    else if (type === "crops") qtyLabel.innerText = "Harvest Quantity (Kg)";
+function showApp(type) {
+  farmTypeScreen.style.display = "none";
+  appScreen.style.display = "block";
+
+  // Hide all extra fields first
+  document.querySelectorAll('.extra-fields').forEach(div => div.style.display = 'none');
+
+  if (type === "dairy") {
+    qtyLabel.innerText = "Milk Collected (Litres)";
+    document.getElementById("dairyFields").style.display = "block";
+  } else if (type === "poultry") {
+    qtyLabel.innerText = "Eggs Collected (Trays/Pcs)";
+    document.getElementById("poultryFields").style.display = "block";
+  } else if (type === "crops") {
+    qtyLabel.innerText = "Harvest Quantity (Kg)";
+    document.getElementById("cropFields").style.display = "block";
   }
+}
 
   function getMonthKey(dateStr) { return dateStr.substring(0, 7); }
 
@@ -70,13 +81,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const txS = db.transaction("settings", "readonly");
     txS.objectStore("settings").get("farmType").onsuccess = (ev) => {
       const currentType = ev.target.result.value;
-      const record = {
-        type: currentType,
-        date: document.getElementById("date").value,
-        quantity: Number(document.getElementById("quantity").value),
-        price: Number(document.getElementById("price").value),
-        expenses: Number(document.getElementById("expenses").value) || 0
-      };
+    const record = {
+      type: currentType,
+      date: document.getElementById("date").value,
+      quantity: Number(document.getElementById("quantity").value),
+      price: Number(document.getElementById("price").value),
+      expenses: Number(document.getElementById("expenses").value) || 0,
+      // Capture extra data
+      extra: currentType === "dairy" ? document.getElementById("cowId").value :
+         currentType === "poultry" ? document.getElementById("batchId").value :
+         document.getElementById("fieldName").value
+};
       const tx = db.transaction("records", "readwrite");
       tx.objectStore("records").add(record);
       tx.oncomplete = () => {
@@ -182,3 +197,4 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   });
 });
+
