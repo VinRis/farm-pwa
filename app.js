@@ -8,15 +8,7 @@ request.onupgradeneeded = event => {
   db = event.target.result;
   db.createObjectStore("records", { keyPath: "id", autoIncrement: true });
   db.createObjectStore("settings", { keyPath: "key" });
-};
-
-// Database ready
-request.onsuccess = event => {
-  db = event.target.result;
-  getFarmType();
-  loadRecords();
-};
-function setFarmType(type) {
+  function setFarmType(type) {
   const tx = db.transaction("settings", "readwrite");
   tx.objectStore("settings").put({ key: "farmType", value: type });
 
@@ -38,6 +30,14 @@ function getFarmType() {
     }
   };
 }
+};
+
+// Database ready
+request.onsuccess = event => {
+  db = event.target.result;
+  getFarmType();
+  loadRecords();
+};
 
 // Save data
 document.getElementById("farmForm").addEventListener("submit", e => {
@@ -98,4 +98,5 @@ function showApp(type) {
     quantityLabel.innerText = "Harvest Quantity (Kg)";
   }
 }
+
 
