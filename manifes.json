@@ -1,7 +1,7 @@
 {
   "name": "Farm Production Tracker",
   "short_name": "FarmTracker",
-  "start_url": "index.html",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#2e7d32",
@@ -13,3 +13,4 @@
     }
   ]
 }
+
