@@ -200,3 +200,28 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 });
+/* =========================
+      RESET APP (Delete DB)
+  ========================= */
+  document.getElementById("resetBtn").addEventListener("click", () => {
+    if (confirm("Are you sure? This will delete all records.")) {
+      // Close the current connection first
+      if (db) db.close();
+      
+      const req = indexedDB.deleteDatabase("FarmDB");
+      
+      req.onsuccess = () => {
+        console.log("Database deleted");
+        window.location.reload();
+      };
+      
+      req.onerror = () => {
+        alert("Could not delete database.");
+      };
+      
+      req.onblocked = () => {
+        // If the database is open in another tab, this might happen
+        window.location.reload();
+      };
+    }
+  });
