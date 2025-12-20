@@ -67,3 +67,13 @@ button {
   border-radius: 8px;
 }
 
+#farmTypeScreen {
+  position: relative;
+  z-index: 10;
+}
+
+#appScreen {
+  position: relative;
+  z-index: 1;
+}
+
