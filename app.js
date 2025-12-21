@@ -6,7 +6,6 @@ if ("serviceWorker" in navigator) {
 
 document.addEventListener("DOMContentLoaded", () => {
   let db;
-  // UI Elements
   const farmTypeScreen = document.getElementById("farmTypeScreen");
   const appScreen = document.getElementById("appScreen");
   const bottomNav = document.getElementById("bottomNav");
@@ -37,20 +36,18 @@ document.addEventListener("DOMContentLoaded", () => {
     getFarmType();
   };
 
-  // --- FIXED NAVIGATION LOGIC ---
+  // --- NAVIGATION LOGIC ---
   document.querySelectorAll('.nav-item').forEach(btn => {
     btn.onclick = () => {
       const target = btn.dataset.screen;
       document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-
       document.querySelectorAll('.view-section').forEach(section => section.style.display = 'none');
 
       if (target === 'finance-view') {
         document.getElementById('financeView').style.display = 'block';
       } else if (target === 'settings-view') {
         document.getElementById('settingsView').style.display = 'block';
-        loadSettings();
       } else if (target === 'dashboard') {
         document.getElementById('dashboardView').style.display = 'block';
         loadRecords(); 
@@ -63,18 +60,16 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   });
 
-  // --- FEATURE: SHOW/HIDE APP LAYOUT ---
+  // --- SHOW/HIDE APP LAYOUT ---
   function showApp(type) {
     const titles = { 'dairy': '🐄 Dairy Manager', 'poultry': '🐔 Poultry Tracker', 'crops': '🌽 Crop Manager' };
     if (mainHeader && titles[type]) mainHeader.innerText = titles[type];
-    
     const poultryToggle = document.getElementById("poultryToggleContainer");
     if (poultryToggle) poultryToggle.style.display = (type === 'poultry') ? "block" : "none";
 
     farmTypeScreen.style.display = "none";
     appScreen.style.display = "block";
     if (bottomNav) bottomNav.style.display = "flex"; 
-    
     const dashTab = document.querySelector('[data-screen="dashboard"]');
     if (dashTab) dashTab.click();
     
@@ -83,56 +78,44 @@ document.addEventListener("DOMContentLoaded", () => {
     if (document.getElementById(fieldId)) document.getElementById(fieldId).style.display = "block";
   }
 
-  // --- DATA LOADING & VISUALS (With Finance Integration) ---
+  // --- DATA LOADING ---
   function loadRecords() {
     if (!db) return;
     const tx = db.transaction(["records", "settings", "finance"], "readonly");
-    
     tx.objectStore("settings").get("currency").onsuccess = (curEvent) => {
       const symbol = curEvent.target.result ? curEvent.target.result.value : "KES";
-      
       tx.objectStore("settings").get("farmType").onsuccess = (typeEvent) => {
         const type = typeEvent.target.result?.value;
         if (!type) return;
 
-        // Load Financial Data for the Dashboard
         tx.objectStore("finance").getAll().onsuccess = (finEv) => {
           const finances = finEv.target.result;
           let totalSales = finances.filter(f => f.type === 'sale').reduce((s, r) => s + r.amount, 0);
           let totalExpenses = finances.filter(f => f.type === 'expense').reduce((s, r) => s + r.amount, 0);
 
-          // Load Production Records
           tx.objectStore("records").getAll().onsuccess = (ev) => {
             const all = ev.target.result;
             let filtered = all.filter(r => r.type === type);
-
             if (type === 'poultry') {
               const subtype = document.getElementById("poultrySubtypeToggle").value;
               filtered = filtered.filter(r => r.subtype === subtype);
             }
             
-            let totalQtyProduced = filtered.reduce((s, r) => s + (r.eggsCollected || r.avgWeight || 0), 0);
+            let totalQty = filtered.reduce((s, r) => s + (r.eggsCollected || r.avgWeight || 0), 0);
             
-            // Update Dashboard UI
-            if (document.getElementById("totalProfit")) {
-              document.getElementById("totalProfit").innerText = `${symbol} ${(totalSales - totalExpenses).toLocaleString()}`;
-              document.getElementById("totalExpensesDisplay").innerText = `${symbol} ${totalExpenses.toLocaleString()}`;
-              document.getElementById("totalQuantity").innerText = totalQtyProduced.toFixed(1);
-              
-              updateChart(filtered.slice(-7));
-              updateInsights(filtered, type);
-            }
+            document.getElementById("totalProfit").innerText = `${symbol} ${(totalSales - totalExpenses).toLocaleString()}`;
+            document.getElementById("totalExpensesDisplay").innerText = `${symbol} ${totalExpenses.toLocaleString()}`;
+            document.getElementById("totalQuantity").innerText = totalQty.toFixed(1);
+            
+            updateChart(filtered.slice(-7));
+            updateInsights(filtered, type);
 
-            // Render History List
             recordsList.innerHTML = "";
             filtered.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(r => {
               const li = document.createElement("li");
               li.className = "record-item";
-              li.innerHTML = `
-                <div class="record-info"><strong>${r.date}</strong><br><small>${r.subtype || r.type}</small></div>
-                <div class="action-btns">
-                   <button onclick="deleteRecord(${r.id})" class="delete-btn">🗑️</button>
-                </div>`;
+              li.innerHTML = `<div class="record-info"><strong>${r.date}</strong><br><small>${r.subtype || r.type}</small></div>
+                              <button onclick="deleteRecord(${r.id})" class="delete-btn">🗑️</button>`;
               recordsList.appendChild(li);
             });
           };
@@ -141,12 +124,11 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  // --- FORM SUBMISSION (Updated for Poultry Subtypes) ---
+  // --- SUBMISSIONS ---
   form.onsubmit = (e) => {
     e.preventDefault();
     db.transaction("settings").objectStore("settings").get("farmType").onsuccess = (ev) => {
       const type = ev.target.result.value;
-      
       const feedItems = Array.from(document.querySelectorAll(".feed-row")).map(row => ({
         type: row.querySelector(".feed-type").value,
         qty: parseFloat(row.querySelector(".feed-qty").value) || 0
@@ -164,8 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
         feedData: feedItems
       };
 
-      const tx = db.transaction("records", "readwrite");
-      tx.objectStore("records").add(record).onsuccess = () => {
+      db.transaction("records", "readwrite").objectStore("records").add(record).onsuccess = () => {
         form.reset();
         showToast("Production Logged! ✅");
         document.querySelector('[data-screen="dashboard"]').click();
@@ -173,7 +154,6 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   };
 
-  // --- FINANCE FORM SUBMISSION ---
   document.getElementById("financeForm").onsubmit = (e) => {
     e.preventDefault();
     const trans = {
@@ -183,7 +163,6 @@ document.addEventListener("DOMContentLoaded", () => {
         amount: parseFloat(document.getElementById("finAmount").value),
         category: document.getElementById("finCat").value
     };
-
     db.transaction("finance", "readwrite").objectStore("finance").add(trans).onsuccess = () => {
         showToast("Finance Recorded! 💰");
         document.getElementById("financeForm").reset();
@@ -205,18 +184,40 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => toast.classList.remove("show"), 3000);
   }
 
-  // Event Listeners for Dynamic UI
+  function updateChart(data) {
+    const container = document.getElementById("productionChart");
+    if (!container) return;
+    container.innerHTML = data.length ? "" : "<p style='text-align:center; padding:20px; color:var(--text-sub)'>No data for this type yet</p>";
+    const maxQty = Math.max(...data.map(r => r.eggsCollected || r.avgWeight || 0), 5);
+    data.forEach(r => {
+      const val = (r.eggsCollected || r.avgWeight || 0);
+      const height = (val / maxQty) * 100;
+      const barWrapper = document.createElement("div");
+      barWrapper.className = "chart-bar-wrapper";
+      barWrapper.innerHTML = `<div class="bar" style="height: ${height}%"></div><span class="bar-label">${r.date.slice(-5)}</span>`;
+      container.appendChild(barWrapper);
+    });
+  }
+
+  function updateInsights(data, type) {
+      const insightText = document.getElementById("insightText");
+      if (!insightText) return;
+      if (data.length < 2) {
+          insightText.innerText = "Log more days to see production trends!";
+          return;
+      }
+      const last = (data[data.length-1].eggsCollected || data[data.length-1].avgWeight);
+      const prev = (data[data.length-2].eggsCollected || data[data.length-2].avgWeight);
+      insightText.innerText = last >= prev ? "Production is improving or steady! 🚀" : "Production dip detected. Check feed/health. ⚠️";
+  }
+
+  // UI EVENT LISTENERS
   document.getElementById("poultrySubtype").onchange = (e) => {
     const isLayers = e.target.value === 'layers';
     document.getElementById("layerSpecificFields").style.display = isLayers ? "block" : "none";
     document.getElementById("broilerSpecificFields").style.display = isLayers ? "none" : "block";
-  if (target === 'finance-view') {
-    document.getElementById('financeView').style.display = 'block';
-  }
   };
 
   document.getElementById("poultrySubtypeToggle").onchange = () => loadRecords();
-
   darkModeBtn.onclick = () => document.body.classList.toggle("dark-mode");
 });
-
