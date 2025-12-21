@@ -292,9 +292,11 @@ document.addEventListener("DOMContentLoaded", () => {
         // UPDATE UI SUMMARY
         document.getElementById("totalQuantity").innerText = totalQty.toFixed(1);
         document.getElementById("totalProfit").innerText = (totalRev - totalExp).toLocaleString();
+        const profitVal = totalRev - totalExp;
+        profitElement.innerText = `KES ${profitVal.toLocaleString()}`;
+        profitElement.style.color = profitVal >= 0 ? "#2e7d32" : "#d32f2f";
         
-        const expenseDisplay = document.getElementById("totalExpensesDisplay");
-        if (expenseDisplay) expenseDisplay.innerText = `KES ${totalExp.toLocaleString()}`;
+        const expenseDisplay = document.getElementById("totalExpensesDisplay").innerText = `KES ${totalExp.toLocaleString()}`;
         
         if (currentType === "poultry") {
           document.getElementById("kpiLabel3").innerText = "Flock Size";
@@ -465,4 +467,5 @@ document.addEventListener("DOMContentLoaded", () => {
   // Initial check
   updateOnlineStatus();
 });
+
 
