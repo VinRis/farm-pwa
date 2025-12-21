@@ -278,3 +278,22 @@ li {
 #totalExpensesCard:hover {
     transform: translateY(-2px);
 }
+
+.card {
+    background: var(--card-bg); /* Ensure this matches your theme */
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.kpi-card {
+    background: var(--card-bg);
+    border-radius: 10px;
+    text-align: center;
+    border: 1px solid var(--border-color);
+}
+
+.kpi-card span {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--text-sub);
+}
