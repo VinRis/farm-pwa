@@ -36,36 +36,55 @@
       <div id="productionChart" class="chart-container"></div>
     </section>
 
-    <section id="dashboard">
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h2>📊 Summary</h2>
-        <select id="poultrySubtypeToggle" style="width: auto; margin: 0; display: none;">
+    <section id="dashboard" class="modern-dashboard">
+      <div class="dashboard-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 1.5rem;">📊</span>
+          <h2 style="margin: 0;">Summary</h2>
+        </div>
+        <select id="poultrySubtypeToggle" class="modern-select">
           <option value="layers">Layers</option>
           <option value="broilers">Broilers</option>
         </select>
       </div>
-
-      <div id="expenseBreakdown" class="card" style="margin-top: 10px; display:none;">
-        <p style="font-size: 0.9rem; font-weight: bold; margin-bottom: 8px;">💰 Expense Breakdown</p>
-        <div id="breakdownList" style="font-size: 0.85rem;"></div>
+    
+      <div class="filter-section">
+        <label for="monthFilter">Filter by Month:</label>
+        <select id="monthFilter" class="full-width-select">
+          <option value="all">All Time</option>
+        </select>
       </div>
-
-      <div class="filter-container" style="margin-top: 15px; margin-bottom: 15px;">
-        <label for="monthFilter" style="display: block; font-size: 0.8rem; margin-bottom: 5px;">Filter by Month:</label>
-        <select id="monthFilter"><option value="all">All Time</option></select>
+    
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <p>Production</p>
+          <h3 id="totalQuantity">0.0</h3>
+        </div>
+        <div class="kpi-card profit-highlight">
+          <p>Total Profit</p>
+          <h3 id="totalProfit">0</h3>
+        </div>
+        <div class="kpi-card">
+          <p id="kpiLabel3">Flock Size</p>
+          <h3 id="statFlock">0</h3>
+        </div>
+        <div class="kpi-card">
+          <p id="kpiLabel4">Mortality</p>
+          <h3 id="statMortality">0.0</h3>
+        </div>
       </div>
-
-      <div class="stats-grid">
-        <div class="card"><p>Production</p><h3 id="totalQuantity">0</h3></div>
-        <div class="card profit"><p>Total Profit</p><h3 id="totalProfit">0</h3></div>
-      </div>
-
-      <div id="poultryKpis" class="stats-grid" style="display: none; margin-top: 10px;">
-        <div class="card"><p>Flock Size</p><h3 id="statFlock">0</h3></div>
-        <div class="card"><p>Mortality</p><h3 id="statMortality">0</h3></div>
-        <div class="card layer-only"><p>Laying Ratio</p><h3 id="statLaying">0%</h3></div>
-        <div class="card broiler-only"><p>Avg Weight</p><h3 id="statWeight">0kg</h3></div>
-        <div class="card"><p>Feed (Kg)</p><h3 id="statFeed">0</h3></div>
+    
+      <div id="expenseBreakdown" class="card breakdown-container" style="display:none;">
+        <div class="breakdown-header">
+          <span style="color: #fbc02d;">💰</span>
+          <h4 style="margin: 0;">Expense Breakdown</h4>
+        </div>
+        <div class="breakdown-content">
+          <div id="breakdownList" class="breakdown-list"></div>
+          <div class="breakdown-chart-placeholder">
+            <div id="miniPieChart"></div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -147,3 +166,4 @@
 <script src="app.js"></script>
 </body>
 </html>
+
