@@ -9,11 +9,12 @@ document.addEventListener("DOMContentLoaded", () => {
   // UI Elements
   const farmTypeScreen = document.getElementById("farmTypeScreen");
   const appScreen = document.getElementById("appScreen");
-  const bottomNav = document.getElementById("bottomNav"); // Added reference
+  const bottomNav = document.getElementById("bottomNav");
   const form = document.getElementById("farmForm");
   const recordsList = document.getElementById("records");
   const darkModeBtn = document.getElementById("darkModeBtn");
   const expenseContainer = document.getElementById("expenseContainer");
+  const mainHeader = document.getElementById("mainHeader"); // Reference to header h1
 
   const catColors = {
     "Feed": "#2e7d32", "Medication": "#d32f2f", "Chicks": "#fbc02d",
@@ -37,25 +38,20 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- NAVIGATION LOGIC ---
   document.querySelectorAll('.nav-item').forEach(btn => {
     btn.onclick = () => {
-      // 1. Update active button UI
       document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
 
-      // 2. Identify the target view
       const target = btn.dataset.screen;
-
-      // 3. Hide all view sections
       document.querySelectorAll('.view-section').forEach(section => {
         section.style.display = 'none';
       });
 
-      // 4. Show the correct view based on the target
       if (target === 'dashboard') {
         document.getElementById('dashboardView').style.display = 'block';
-        loadRecords(); // Refresh charts and KPIs
+        loadRecords(); 
       } else if (target === 'records-section') {
         document.getElementById('recordsView').style.display = 'block';
-        loadRecords(); // Ensure list is up to date
+        loadRecords(); 
       } else if (target === 'main-form') {
         document.getElementById('formView').style.display = 'block';
       }
@@ -64,49 +60,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- FEATURE: SHOW/HIDE APP LAYOUT ---
   function showApp(type) {
+    // Define titles for each farm type
+    const titles = {
+      'dairy': '🐄 Dairy Manager',
+      'poultry': '🐔 Poultry Tracker',
+      'crops': '🌽 Crop Manager'
+    };
+
+    // Update Header Text
+    if (mainHeader && titles[type]) {
+      mainHeader.innerText = titles[type];
+    }
+
     farmTypeScreen.style.display = "none";
     appScreen.style.display = "block";
-    bottomNav.style.display = "flex"; // Show Nav Bar when app starts
-  function showApp(type) {
-  const farmTypeScreen = document.getElementById("farmTypeScreen");
-  const appScreen = document.getElementById("appScreen");
-  const bottomNav = document.getElementById("bottomNav");
-  const mainHeader = document.getElementById("mainHeader"); // Reference to header h1
-
-  // Define titles for each farm type
-  const titles = {
-    'dairy': '🐄 Dairy Manager',
-    'poultry': '🐔 Poultry Tracker',
-    'crops': '🌽 Crop Manager'
-  };
-
-  // Change the header text based on type
-  if (mainHeader && titles[type]) {
-    mainHeader.innerText = titles[type];
-  }
-
-  farmTypeScreen.style.display = "none";
-  appScreen.style.display = "block";
-  bottomNav.style.display = "flex"; 
-  
-  // Set default view to dashboard
-  document.querySelector('[data-screen="dashboard"]').click();
-  
-  // Configure form fields
-  document.querySelectorAll(".extra-fields").forEach(f => f.style.display = "none");
-  if (type === "poultry") document.getElementById("poultryFields").style.display = "block";
-  if (type === "dairy") document.getElementById("dairyFields").style.display = "block";
-  if (type === "crops") document.getElementById("cropFields").style.display = "block";
-}
+    if (bottomNav) bottomNav.style.display = "flex"; 
     
     // Set default view to dashboard
-    document.querySelector('[data-screen="dashboard"]').click();
+    const dashTab = document.querySelector('[data-screen="dashboard"]');
+    if (dashTab) dashTab.click();
     
-    // Configure form fields based on type
+    // Configure specific form fields
     document.querySelectorAll(".extra-fields").forEach(f => f.style.display = "none");
-    if (type === "poultry") document.getElementById("poultryFields").style.display = "block";
-    if (type === "dairy") document.getElementById("dairyFields").style.display = "block";
-    if (type === "crops") document.getElementById("cropFields").style.display = "block";
+    const fieldId = type + "Fields";
+    if (document.getElementById(fieldId)) {
+        document.getElementById(fieldId).style.display = "block";
+    }
   }
 
   function getFarmType() {
@@ -125,11 +104,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("switchTypeBtn").onclick = () => {
     appScreen.style.display = "none";
-    bottomNav.style.display = "none"; 
+    if (bottomNav) bottomNav.style.display = "none"; 
     farmTypeScreen.style.display = "block";
-    
-    // Reset header to default
-    document.getElementById("mainHeader").innerText = "Farm Production Tracker";
+    if (mainHeader) mainHeader.innerText = "Farm Production Tracker";
   };
 
   // --- DYNAMIC EXPENSE ROWS ---
@@ -143,7 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
     expenseContainer.appendChild(newRow);
   };
 
-  // --- DATA LOADING & VISUALS ---
+  // --- DATA LOADING, VISUALS & PROJECTIONS ---
   function loadRecords() {
     if (!db) return;
     const tx = db.transaction(["records", "settings"], "readonly");
@@ -160,7 +137,6 @@ document.addEventListener("DOMContentLoaded", () => {
         let [rev, exp, qty] = [0, 0, 0];
         let cats = {};
         recordsList.innerHTML = "";
-
         const sorted = [...filtered].sort((a, b) => new Date(b.date) - new Date(a.date));
 
         sorted.forEach(r => {
@@ -176,7 +152,6 @@ document.addEventListener("DOMContentLoaded", () => {
           </li>`;
         });
 
-        // Update Dashboard Elements
         if (document.getElementById("totalProfit")) {
             document.getElementById("totalProfit").innerText = `KES ${(rev - exp).toLocaleString()}`;
             document.getElementById("totalExpensesDisplay").innerText = `KES ${exp.toLocaleString()}`;
@@ -189,7 +164,6 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  // --- CHARTING FUNCTIONS ---
   function updateChart(data) {
     const container = document.getElementById("productionChart");
     if (!container) return;
@@ -201,11 +175,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const height = (r.quantity / maxQty) * 100;
       const barWrapper = document.createElement("div");
       barWrapper.className = "chart-bar-wrapper";
-      barWrapper.innerHTML = `
-        <span class="bar-value">${r.quantity}</span>
-        <div class="bar" style="height: ${height}%"></div>
-        <span class="bar-label">${r.date.split('-').slice(1).join('/')}</span>
-      `;
+      barWrapper.innerHTML = `<div class="bar" style="height: ${height}%"></div><span class="bar-label">${r.date.split('-').slice(2)}</span>`;
       container.appendChild(barWrapper);
     });
   }
@@ -220,14 +190,13 @@ document.addEventListener("DOMContentLoaded", () => {
     Object.entries(categories).forEach(([cat, val]) => {
       const percent = (val / total) * 100;
       const color = catColors[cat] || "#757575";
-      list.innerHTML += `<div><small style="color:${color}">●</small> ${cat}: ${percent.toFixed(0)}%</div>`;
+      list.innerHTML += `<div><small style="color:${color}">●</small> ${cat}</div>`;
       gradient.push(`${color} ${currentPercent}% ${currentPercent + percent}%`);
       currentPercent += percent;
     });
     pie.style.background = `conic-gradient(${gradient.join(", ")})`;
   }
 
-  // --- FORM SUBMISSION ---
   form.onsubmit = (e) => {
     e.preventDefault();
     db.transaction("settings").objectStore("settings").get("farmType").onsuccess = (ev) => {
@@ -244,13 +213,12 @@ document.addEventListener("DOMContentLoaded", () => {
         price: parseFloat(document.getElementById("price").value),
         expenses: expItems.reduce((sum, i) => sum + i.amount, 0),
         expenseItems: expItems,
-        subtype: document.getElementById("poultrySubtype").value
+        subtype: document.getElementById("poultrySubtype") ? document.getElementById("poultrySubtype").value : ""
       };
 
       db.transaction("records", "readwrite").objectStore("records").add(record).onsuccess = () => {
         form.reset();
         document.getElementById("date").valueAsDate = new Date();
-        // Redirect to Dashboard after saving
         document.querySelector('[data-screen="dashboard"]').click();
         const toast = document.getElementById("toast");
         toast.classList.add("show");
@@ -259,9 +227,6 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   };
 
-  darkModeBtn.onclick = () => document.body.classList.toggle("dark-mode");
-  
-  // Projection logic helper
   function updateProjections(filteredRecords) {
     const now = new Date();
     const currentMonth = now.toISOString().substring(0, 7);
@@ -274,9 +239,10 @@ document.addEventListener("DOMContentLoaded", () => {
       totalMonthProfit += (r.quantity * r.price) - r.expenses;
       totalMonthQty += r.quantity;
     });
-    document.getElementById("projectedProfit").innerText = `KES ${Math.round(totalMonthProfit / now.getDate() * 30).toLocaleString()}`;
-    document.getElementById("projectedQty").innerText = (totalMonthQty / now.getDate() * 30).toFixed(1);
+    const prog = now.getDate() / 30;
+    document.getElementById("projectedProfit").innerText = `KES ${Math.round(totalMonthProfit / prog).toLocaleString()}`;
+    document.getElementById("projectedQty").innerText = (totalMonthQty / prog).toFixed(1);
   }
+
+  darkModeBtn.onclick = () => document.body.classList.toggle("dark-mode");
 });
-
-
