@@ -1,50 +1,201 @@
-index.html
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FarmTrack</title>
-  <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css">
-  <meta name="theme-color" content="#4CAF50">
-  <!-- CDN libraries -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/idb/7.1.1/idb.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FarmTrack - Farm Management</title>
+    <meta name="description" content="Offline-first farm management for Dairy, Poultry, Pig, and Goat.">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2E7D32">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
-  <header id="header">
-    <h1 id="title">FarmTrack</h1>
-  </header>
-  <main id="main-content"></main>
-  <nav id="bottom-nav" style="display: none;">
-    <button id="dashboard-btn">Dashboard</button>
-    <button id="add-record-btn">Add Record</button>
-    <button id="records-btn">Records</button>
-    <button id="finance-btn">Finance</button>
-    <button id="reports-btn">Reports</button>
-  </nav>
-  <div id="modal" class="modal" style="display: none;">
-    <div class="modal-content">
-      <h2>Select Livestock</h2>
-      <button onclick="selectLivestock('dairy')">Dairy production</button>
-      <button onclick="selectLivestock('poultry')">Poultry production</button>
-      <button onclick="selectLivestock('pig')">Pig production</button>
-      <button onclick="selectLivestock('goat')">Goat production</button>
+
+    <div id="landing-page" class="view-section active">
+        <div class="landing-content">
+            <h1>FarmTrack</h1>
+            <p>Select your livestock to begin</p>
+            <div class="livestock-grid">
+                <div class="card" onclick="app.selectLivestock('dairy')">
+                    <i class="fa-solid fa-cow fa-3x"></i>
+                    <h3>Dairy</h3>
+                </div>
+                <div class="card" onclick="app.selectLivestock('poultry')">
+                    <i class="fa-solid fa-egg fa-3x"></i>
+                    <h3>Poultry</h3>
+                </div>
+                <div class="card" onclick="app.selectLivestock('pig')">
+                    <i class="fa-solid fa-piggy-bank fa-3x"></i> <h3>Pig</h3>
+                </div>
+                <div class="card" onclick="app.selectLivestock('goat')">
+                    <i class="fa-solid fa-sheet-plastic fa-3x"></i> <h3>Goat</h3>
+                </div>
+            </div>
+            <div class="landing-footer">
+                <button id="backup-btn" class="btn-secondary"><i class="fa-solid fa-download"></i> Backup Data</button>
+                <input type="file" id="restore-file" style="display:none" accept=".json">
+                <button id="restore-btn" class="btn-secondary"><i class="fa-solid fa-upload"></i> Restore</button>
+            </div>
+        </div>
     </div>
-  </div>
-  <script type="module" src="app.js"></script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js')
-          .then(reg => console.log('SW registered:', reg))
-          .catch(err => console.log('SW registration failed:', err));
-      });
-    }
-  </script>
+
+    <div id="app-shell" class="view-section hidden">
+        <header class="app-header">
+            <button id="home-btn" class="icon-btn"><i class="fa-solid fa-house"></i></button>
+            <h2 id="header-title">Dashboard</h2>
+            <button id="theme-toggle" class="icon-btn"><i class="fa-solid fa-moon"></i></button>
+        </header>
+
+        <main id="main-content">
+            
+            <section id="view-dashboard" class="tab-view active">
+                <div class="kpi-grid" id="kpi-container">
+                    </div>
+                <div class="chart-container">
+                    <canvas id="productionChart"></canvas>
+                </div>
+                <div class="recent-list">
+                    <h3>Recent Activity</h3>
+                    <ul id="recent-records-list"></ul>
+                </div>
+            </section>
+
+            <section id="view-add" class="tab-view">
+                <h3>Add Production Record</h3>
+                <form id="add-record-form">
+                    <div id="dynamic-fields"></div>
+                    <button type="submit" class="btn-primary">Save Record</button>
+                </form>
+            </section>
+
+            <section id="view-records" class="tab-view">
+                <div class="toolbar">
+                    <input type="month" id="record-filter-date">
+                    <button id="bulk-delete-btn" class="btn-danger hidden"><i class="fa-solid fa-trash"></i> Delete Selected</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table" id="records-table">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="select-all-records"></th>
+                                <th>Date</th>
+                                <th>Details</th>
+                                <th>Qty</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div id="pagination-controls"></div>
+            </section>
+
+            <section id="view-finance" class="tab-view">
+                <div class="finance-summary">
+                    <div class="card income">
+                        <span>Income</span>
+                        <h3 id="fin-income">$0</h3>
+                    </div>
+                    <div class="card expense">
+                        <span>Expense</span>
+                        <h3 id="fin-expense">$0</h3>
+                    </div>
+                </div>
+
+                <h3>Add Transaction</h3>
+                <form id="add-transaction-form">
+                    <div class="form-group">
+                        <select name="type" required>
+                            <option value="expense">Expense</option>
+                            <option value="income">Income</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <input type="number" name="amount" placeholder="Amount" required step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <input type="date" name="date" required id="trans-date">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" name="category" placeholder="Category (e.g., Feed, Vet)" list="cat-suggestions">
+                        <datalist id="cat-suggestions">
+                            <option value="Feed">
+                            <option value="Medication">
+                            <option value="Sales">
+                            <option value="Equipment">
+                        </datalist>
+                    </div>
+                    <button type="submit" class="btn-primary">Add Transaction</button>
+                </form>
+
+                <div class="toolbar" style="margin-top: 20px;">
+                    <h3>History</h3>
+                    <button id="export-finance-btn" class="btn-secondary btn-sm">Export CSV</button>
+                </div>
+                <ul id="transaction-list" class="list-group"></ul>
+            </section>
+
+            <section id="view-reports" class="tab-view">
+                <div class="report-card">
+                    <h3>Generate Report</h3>
+                    <p>Create a PDF summary for the selected livestock.</p>
+                    <div class="form-group">
+                        <label>From:</label>
+                        <input type="date" id="report-start">
+                    </div>
+                    <div class="form-group">
+                        <label>To:</label>
+                        <input type="date" id="report-end">
+                    </div>
+                    <button id="generate-pdf-btn" class="btn-primary full-width">Download PDF Report</button>
+                </div>
+                
+                <div class="report-card">
+                    <h3>Data Management</h3>
+                    <button id="export-csv-btn" class="btn-secondary full-width">Export Records (CSV)</button>
+                </div>
+            </section>
+
+        </main>
+
+        <nav class="bottom-nav">
+            <button class="nav-btn active" data-target="view-dashboard">
+                <i class="fa-solid fa-chart-pie"></i>
+                <span>Dash</span>
+            </button>
+            <button class="nav-btn" data-target="view-add">
+                <i class="fa-solid fa-circle-plus"></i>
+                <span>Add</span>
+            </button>
+            <button class="nav-btn" data-target="view-records">
+                <i class="fa-solid fa-list"></i>
+                <span>Records</span>
+            </button>
+            <button class="nav-btn" data-target="view-finance">
+                <i class="fa-solid fa-wallet"></i>
+                <span>Finance</span>
+            </button>
+            <button class="nav-btn" data-target="view-reports">
+                <i class="fa-solid fa-file-pdf"></i>
+                <span>Reports</span>
+            </button>
+        </nav>
+    </div>
+
+    <script type="module" src="app.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./service-worker.js')
+                .then(() => console.log('SW Registered'))
+                .catch(err => console.error('SW Fail', err));
+        }
+    </script>
 </body>
 </html>
