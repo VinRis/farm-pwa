@@ -37,14 +37,15 @@
 
   <section id="appScreen" style="display:none; padding-bottom: 80px;">
         
-    <div class="dashboard-header">
-      <h2 style="margin: 0; font-size: 1.2rem;">📊 Summary</h2>
-      <select id="poultrySubtypeToggle" class="modern-select">
-        <option value="layers">Layers</option>
-        <option value="broilers">Broilers</option>
-      </select>
-    </div>
     <div id="dashboardView" class="view-section">
+      <div class="dashboard-header">
+        <h2 style="margin: 0; font-size: 1.2rem;">📊 Summary</h2>
+        <select id="poultrySubtypeToggle" class="modern-select">
+          <option value="layers">Layers</option>
+          <option value="broilers">Broilers</option>
+        </select>
+      </div>
+
       <section id="analytics" class="card">
         <h2 class="section-title">📈 7-Day Production</h2>
         <div id="productionChart" class="chart-container"></div>
@@ -136,7 +137,7 @@
         <label>Quantity Produced</label>
         <input type="number" id="quantity" step="0.01" required>
         
-        <label>Price per Unit (KES)</label>
+        <label>Price per Unit</label>
         <input type="number" id="price" step="0.01" required>
 
         <label>Expenses</label>
@@ -156,27 +157,28 @@
       </form>
     </div>
 
-  </section>
-  <div id="settingsView" class="view-section" style="display:none;">
-  <section class="card">
-    <h3>⚙️ App Settings</h3>
-    <div class="form-group">
-      <label>Farm Name</label>
-      <input type="text" id="settingFarmName" placeholder="My Awesome Farm">
-    </div>
-    <div class="form-group">
-      <label>Currency Symbol</label>
-      <input type="text" id="settingCurrency" placeholder="KES">
-    </div>
-    <button id="saveSettingsBtn" class="save-btn">💾 Save Settings</button>
-  </section>
+    <div id="settingsView" class="view-section" style="display:none;">
+      <section class="card">
+        <h3>⚙️ App Settings</h3>
+        <div class="form-group">
+          <label>Farm Name</label>
+          <input type="text" id="settingFarmName" placeholder="My Awesome Farm">
+        </div>
+        <div class="form-group">
+          <label>Currency Symbol</label>
+          <input type="text" id="settingCurrency" placeholder="KES">
+        </div>
+        <button id="saveSettingsBtn" class="save-btn">💾 Save Settings</button>
+      </section>
 
-  <section class="card" style="margin-top: 20px; border-top: 4px solid var(--accent-blue);">
-    <h3>📊 Data Management</h3>
-    <p><small>Backup your data to a CSV file for safekeeping.</small></p>
-    <button id="settingsExportBtn" class="btn-secondary" style="width:100%">📥 Export All Data (CSV)</button>
+      <section class="card" style="margin-top: 20px; border-top: 4px solid var(--accent-blue);">
+        <h3>📊 Data Management</h3>
+        <p><small>Backup your data to a CSV file for safekeeping.</small></p>
+        <button id="settingsExportBtn" class="btn-secondary" style="width:100%">📥 Export All Data (CSV)</button>
+      </section>
+    </div>
+
   </section>
-</div>
 </main>
 
 <nav class="bottom-nav" id="bottomNav" style="display: none;">
@@ -189,8 +191,6 @@
   <button class="nav-item" data-screen="main-form">
     <span>➕</span><small>Add New</small>
   </button>
-</nav>
-<nav class="bottom-nav" id="bottomNav" style="display: none;">
   <button class="nav-item" data-screen="settings-view">
     <span>⚙️</span><small>Settings</small>
   </button>
@@ -198,7 +198,6 @@
 
 <div id="toast" class="toast">Record Saved Successfully! ✅</div>
 
-<script src="app.js"></script>
 <div id="confirmModal" class="modal-overlay">
   <div class="modal-content">
     <div class="modal-icon">⚠️</div>
@@ -210,9 +209,7 @@
     </div>
   </div>
 </div>
+
+<script src="app.js"></script>
 </body>
 </html>
-
-
-
-
