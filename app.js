@@ -187,6 +187,30 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
+  // --- NAVIGATION LOGIC ---
+document.querySelectorAll('.nav-item').forEach(btn => {
+    btn.onclick = () => {
+        // Update active button UI
+        document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // Toggle Views
+        const target = btn.dataset.screen;
+        document.querySelectorAll('.view-section').forEach(section => {
+            section.style.display = 'none';
+        });
+
+        if (target === 'dashboard') {
+            document.getElementById('dashboardView').style.display = 'block';
+            loadRecords(); // Reload to refresh charts
+        } else if (target === 'records-section') {
+            document.getElementById('recordsView').style.display = 'block';
+        } else {
+            document.getElementById('formView').style.display = 'block';
+        }
+    };
+});
+
   // --- NAVIGATION & FORM ---
   function showApp(type) {
     farmTypeScreen.style.display = "none";
@@ -251,3 +275,4 @@ document.addEventListener("DOMContentLoaded", () => {
   // Re-load data when sub-type toggle changes
   document.getElementById("poultrySubtypeToggle").onchange = loadRecords;
 });
+
