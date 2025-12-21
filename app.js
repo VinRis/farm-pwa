@@ -187,11 +187,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const maxQty = Math.max(...recent.map(r => r.quantity), 5);
 
     recent.forEach(r => {
-      const height = (r.quantity / maxQty) * 100;
-      const barWrapper = document.createElement("div");
-      barWrapper.className = "chart-bar-wrapper";
-      barWrapper.innerHTML = `<div class="bar" style="height: ${height}%"></div><span class="bar-label">${r.date.split('-').slice(2)}</span>`;
-      container.appendChild(barWrapper);
+      // Inside updateChart recent.forEach loop:
+      const dateParts = r.date.split('-'); // [YYYY, MM, DD]
+      const label = `${dateParts[1]}/${dateParts[2]}`; // Shows MM/DD
+      barWrapper.innerHTML = `
+        <div class="bar" style="height: ${height}%"></div>
+        <span class="bar-label">${label}</span>
+      `;
     });
   }
 
@@ -214,12 +216,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   form.onsubmit = (e) => {
     e.preventDefault();
-    db.transaction("settings").objectStore("settings").get("farmType").onsuccess = (ev) => {
-      const type = ev.target.result.value;
-      const expItems = Array.from(document.querySelectorAll(".expense-row")).map(row => ({
-        category: row.querySelector(".exp-cat").value,
-        amount: parseFloat(row.querySelector(".exp-amt").value) || 0
-      })).filter(i => i.amount > 0);
+    db.transaction("records", "readwrite").add(record).onsuccess = () => {
+      form.reset();
+      document.getElementById("date").valueAsDate = new Date();
+      document.querySelector('[data-screen="dashboard"]').click();
+      
+      // Use your helper function here
+      showToast("Record Saved Successfully! ✅"); 
+    };
 
       const record = {
         date: document.getElementById("date").value,
@@ -298,6 +302,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const tx = db.transaction("records", "readonly");
     tx.objectStore("records").get(id).onsuccess = (e) => {
       const r = e.target.result;
+      // Inside window.editRecord .onsuccess block:
+    // Clear existing expense rows first
+    expenseContainer.innerHTML = ''; 
+    // If record had expenses, recreate rows (simplified for now)
+    if (r.expenseItems && r.expenseItems.length > 0) {
+        r.expenseItems.forEach(item => {
+            // You can trigger your addExpenseRow logic here to refill the form
+        });
+}
       
       // Switch to form view
       document.querySelector('[data-screen="main-form"]').click();
@@ -329,5 +342,6 @@ document.addEventListener("DOMContentLoaded", () => {
       setTimeout(() => toast.classList.remove("show"), 3000);
   }
 });
+
 
 
