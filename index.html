@@ -58,6 +58,20 @@
             <section id="view-dashboard" class="tab-view active">
                 <div class="kpi-grid" id="kpi-container">
                     </div>
+                <div id="view-dashboard" class="tab-view active">
+                    <div id="kpi-container" class="kpi-grid"></div>
+                    
+                    <div id="insight-card" class="card insight-card">
+                        <div class="insight-content">
+                            <i class="fa-solid fa-lightbulb" style="color: #ffd700; margin-right: 10px;"></i>
+                            <span id="insight-text">Gathering data for your farm...</span>
+                        </div>
+                    </div>
+                
+                    <div class="card chart-card">
+                        <canvas id="productionChart"></canvas>
+                    </div>
+                    </div>
                 <div class="chart-container">
                     <canvas id="productionChart"></canvas>
                 </div>
@@ -215,5 +229,6 @@
     </script>
 </body>
 </html>
+
 
 
