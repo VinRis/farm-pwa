@@ -44,6 +44,25 @@ body { background-color: var(--bg-body); color: var(--text-main); height: 100vh;
 .icon-btn { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; }
 
 #main-content { flex: 1; overflow-y: auto; padding: 15px; padding-bottom: calc(var(--nav-height) + 20px); }
+/* ... existing code ... */
+
+/* TAB VIEWS - CORE NAVIGATION LOGIC */
+.tab-view {
+    display: none; /* Hide all views by default */
+}
+
+.tab-view.active {
+    display: block; /* Only show the view with the 'active' class */
+    animation: fadeIn 0.2s ease-in-out; /* Optional: smooth fade in */
+}
+
+/* Simple fade animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ... existing code for BOTTOM NAV ... */
 
 /* BOTTOM NAV */
 .bottom-nav { position: fixed; bottom: 0; width: 100%; height: var(--nav-height); background: var(--bg-card); display: flex; border-top: 1px solid #ddd; z-index: 10; }
@@ -89,3 +108,4 @@ body.dark-mode .data-table th { background: #2c2c2c; }
     #landing-page, #app-shell { max-width: 800px; margin: 0 auto; box-shadow: 0 0 20px rgba(0,0,0,0.1); height: 100vh; border-left: 1px solid #eee; border-right: 1px solid #eee; }
     .bottom-nav { max-width: 800px; left: 50%; transform: translateX(-50%); }
 }
+
