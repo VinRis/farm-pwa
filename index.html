@@ -137,7 +137,9 @@
 
                 <div class="toolbar" style="margin-top: 20px;">
                     <h3>History</h3>
-                    <button id="export-finance-btn" class="btn-secondary btn-sm">Export CSV</button>
+                    <button onclick="app.exportTransactionsCSV()" class="btn-secondary">
+                        <i class="fa-solid fa-file-csv"></i> Export CSV
+                    </button>
                 </div>
                 <ul id="transaction-list" class="list-group"></ul>
             </section>
@@ -199,3 +201,4 @@
     </script>
 </body>
 </html>
+
