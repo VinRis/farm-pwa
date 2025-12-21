@@ -37,8 +37,58 @@ document.addEventListener("DOMContentLoaded", () => {
   request.onsuccess = (e) => {
     db = e.target.result;
     if (document.getElementById("date")) document.getElementById("date").valueAsDate = new Date();
-    getFarmType();
+    getFarmType(); // Load saved preference
   };
+
+  // --- CHARTING FUNCTIONS ---
+  function updateChart(data, type) {
+    const container = document.getElementById("productionChart");
+    if (!container) return;
+    container.innerHTML = "";
+    
+    // Take last 7 records for the trend
+    const recent = data.slice(-7).reverse();
+    const maxQty = Math.max(...recent.map(r => r.quantity), 10);
+
+    recent.forEach(r => {
+      const height = (r.quantity / maxQty) * 100;
+      const bar = document.createElement("div");
+      bar.className = "chart-bar-wrapper";
+      bar.innerHTML = `
+        <span class="bar-value">${r.quantity}</span>
+        <div class="bar" style="height: ${height}%"></div>
+        <span class="bar-label">${r.date.split('-')[2]}/${r.date.split('-')[1]}</span>
+      `;
+      container.appendChild(bar);
+    });
+  }
+
+  function renderPie(categories, total) {
+    const list = document.getElementById("breakdownList");
+    const pie = document.getElementById("pieChartCircle");
+    if (!list || !pie) return;
+
+    list.innerHTML = "";
+    document.getElementById("expenseBreakdown").style.display = total > 0 ? "block" : "none";
+
+    let gradient = [];
+    let currentPercent = 0;
+
+    Object.keys(categories).forEach(cat => {
+      const val = categories[cat];
+      const percent = (val / total) * 100;
+      const color = catColors[cat] || "#757575";
+
+      list.innerHTML += `<div style="font-size:0.8rem; margin-bottom:4px;">
+        <span style="color:${color}">●</span> ${cat}: <strong>${percent.toFixed(0)}%</strong>
+      </div>`;
+
+      gradient.push(`${color} ${currentPercent}% ${currentPercent + percent}%`);
+      currentPercent += percent;
+    });
+
+    pie.style.background = `conic-gradient(${gradient.join(", ")})`;
+  }
 
   // --- INSIGHTS & REPORTS LOGIC ---
   function updateSmartInsights(profit, totalQty, type) {
@@ -62,7 +112,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       insightDiv.style.background = "rgba(211, 47, 47, 0.1)";
       icon.innerText = "📉";
-      insightText.innerText = "Expenses are exceeding revenue. Check your Breakdown chart.";
+      insightText.innerText = "Expenses exceed revenue. Check your Breakdown chart.";
     }
   }
 
@@ -71,117 +121,36 @@ document.addEventListener("DOMContentLoaded", () => {
     const fcr = data.weight > 0 ? (data.feed / data.weight).toFixed(2) : "N/A";
 
     return `
-      <div class="batch-report-card" style="background:var(--card-bg); border:1px solid var(--border-color); border-radius:12px; padding:15px; margin-bottom:12px;">
-        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+      <div class="batch-report-card">
+        <div class="report-header">
           <strong>📦 ${batchName}</strong>
-          <span style="font-size:0.7rem; padding:2px 8px; border-radius:10px; background:${mortalityRate > 5 ? '#ffebee' : '#e8f5e9'}; color:${mortalityRate > 5 ? '#c62828' : '#2e7d32'};">
+          <span class="status-tag ${mortalityRate > 5 ? 'warn' : 'good'}">
             ${mortalityRate}% Mortality
           </span>
         </div>
-        <div style="display:flex; justify-content:space-between; font-size:0.85rem;">
-          <div><small>Profit</small><p style="margin:0; font-weight:bold;">KES ${data.profit.toLocaleString()}</p></div>
-          <div style="text-align:right;"><small>FCR (Feed Conv.)</small><p style="margin:0; font-weight:bold;">${fcr}</p></div>
+        <div class="report-stats">
+          <div class="stat-item"><small>Profit</small><p>KES ${data.profit.toLocaleString()}</p></div>
+          <div class="stat-item" style="text-align:right;"><small>FCR</small><p>${fcr}</p></div>
         </div>
+        <div class="performance-bar"><div class="fill" style="width:${Math.min(100, (1/fcr)*200)}%"></div></div>
       </div>`;
   }
 
-  // --- DATA LOADING ---
-  function loadRecords() {
-    if (!db) return;
-    const tx = db.transaction(["records", "settings"], "readonly");
+  // --- DATA SAVING & NAVIGATION ---
+  function getFarmType() {
+    const tx = db.transaction("settings", "readonly");
     tx.objectStore("settings").get("farmType").onsuccess = (e) => {
-      const currentType = e.target.result.value;
-      tx.objectStore("records").getAll().onsuccess = (ev) => {
-        const allRecords = ev.target.result;
-        const selectedMonth = monthFilter.value;
-        const activePoultrySub = document.getElementById("poultrySubtypeToggle").value;
-        
-        recordsList.innerHTML = "";
-        const historyList = document.getElementById("historyList");
-        const breakdownList = document.getElementById("breakdownList");
-        
-        if (historyList) historyList.innerHTML = "";
-        if (breakdownList) breakdownList.innerHTML = "";
-
-        let [totalQty, totalExp, totalRev] = [0, 0, 0];
-        let pStats = { mortality: 0, feed: 0, size: 0, weight: 0, count: 0 };
-        let categoryTotals = {}; 
-        let archivedGroups = {}; 
-        const months = new Set();
-
-        allRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
-        
-        allRecords.forEach(r => {
-          if (r.type !== currentType) return;
-
-          // History Logic
-          if (r.archived && currentType === "poultry") {
-            const batchKey = r.extra || "Unnamed Batch";
-            if (!archivedGroups[batchKey]) archivedGroups[batchKey] = { profit: 0, mortality: 0, size: 0, weight: 0, feed: 0 };
-            archivedGroups[batchKey].profit += (r.quantity * r.price) - r.expenses;
-            archivedGroups[batchKey].mortality += (r.mortality || 0);
-            archivedGroups[batchKey].size = Math.max(archivedGroups[batchKey].size, r.flockSize || 0);
-            archivedGroups[batchKey].weight += (r.weight || 0);
-            archivedGroups[batchKey].feed += (r.feed || 0);
-            return;
-          }
-
-          if (currentType === "poultry" && r.subtype !== activePoultrySub) return;
-
-          const mKey = r.date.substring(0, 7);
-          months.add(mKey);
-          if (selectedMonth !== "all" && mKey !== selectedMonth) return;
-
-          totalQty += r.quantity; 
-          totalExp += r.expenses; 
-          totalRev += (r.quantity * r.price);
-          
-          if (r.expenseItems) {
-            r.expenseItems.forEach(item => {
-              const cat = item.category !== "none" ? item.category : "Other";
-              categoryTotals[cat] = (categoryTotals[cat] || 0) + item.amount;
-            });
-          }
-
-          if (currentType === "poultry") {
-            pStats.mortality += (r.mortality || 0);
-            pStats.feed += (r.feed || 0);
-            pStats.size = r.flockSize || pStats.size;
-            if(r.weight > 0) { pStats.weight += r.weight; pStats.count++; }
-          }
-
-          recordsList.innerHTML += `<li><div><strong>📅 ${r.date}</strong><br><small>Qty: ${r.quantity} | Exp: ${r.expenses}</small></div><div style="text-align:right"><strong>KES ${(r.quantity * r.price).toLocaleString()}</strong><br><button class="delete-btn" data-id="${r.id}">✕</button></div></li>`;
-        });
-
-        const profitVal = totalRev - totalExp;
-        document.getElementById("totalQuantity").innerText = totalQty.toFixed(1);
-        document.getElementById("totalProfit").innerText = `KES ${profitVal.toLocaleString()}`;
-        document.getElementById("totalProfit").style.color = profitVal >= 0 ? "#2e7d32" : "#d32f2f";
-        document.getElementById("totalExpensesDisplay").innerText = `KES ${totalExp.toLocaleString()}`;
-        
-        updateSmartInsights(profitVal, totalQty, currentType);
-
-        if (currentType === "poultry") {
-          document.getElementById("statFlock").innerText = pStats.size;
-          document.getElementById("statMortality").innerText = pStats.mortality;
-          document.getElementById("statWeight").innerText = pStats.count > 0 ? (pStats.weight / pStats.count).toFixed(2) + "kg" : "0kg";
-          document.getElementById("statFeed").innerText = pStats.feed.toFixed(1) + "kg";
-          
-          // Render Reports
-          if (historyList) {
-            Object.keys(archivedGroups).forEach(batch => {
-              historyList.innerHTML += generateBatchReport(batch, archivedGroups[batch]);
-            });
-          }
-        }
-
-        renderPie(categoryTotals, totalExp);
-        updateChart(allRecords.filter(r => !r.archived && r.type === currentType), currentType);
-      };
+      if (e.target.result) showApp(e.target.result.value);
     };
   }
 
-  // --- REST OF NAVIGATION & UI LOGIC (Remains similar but cleaned) ---
+  function setFarmType(type) {
+    const tx = db.transaction("settings", "readwrite");
+    tx.objectStore("settings").put({ key: "farmType", value: type });
+    showApp(type);
+    loadRecords();
+  }
+
   function showApp(type) {
     farmTypeScreen.style.display = "none";
     appScreen.style.display = "block";
@@ -202,6 +171,7 @@ document.addEventListener("DOMContentLoaded", () => {
       qtyLabel.innerText = "Harvest Quantity (Kg)";
       document.getElementById("cropFields").style.display = "block";
     }
+    loadRecords();
   }
 
   function updatePoultryUI() {
@@ -211,17 +181,148 @@ document.addEventListener("DOMContentLoaded", () => {
     qtyLabel.innerText = isBroiler ? "Weight Sold (Kg)" : "Eggs Collected (Pcs/Trays)";
   }
 
-  // Event Listeners
+  // --- LOAD RECORDS ---
+  function loadRecords() {
+    if (!db) return;
+    const tx = db.transaction(["records", "settings"], "readonly");
+    tx.objectStore("settings").get("farmType").onsuccess = (e) => {
+      const currentType = e.target.result ? e.target.result.value : null;
+      if(!currentType) return;
+
+      tx.objectStore("records").getAll().onsuccess = (ev) => {
+        const allRecords = ev.target.result;
+        const selectedMonth = monthFilter.value;
+        const activePoultrySub = document.getElementById("poultrySubtypeToggle").value;
+        
+        recordsList.innerHTML = "";
+        const historyList = document.getElementById("historyList");
+        const breakdownList = document.getElementById("breakdownList");
+        
+        if (historyList) historyList.innerHTML = "";
+        if (breakdownList) breakdownList.innerHTML = "";
+
+        let [totalQty, totalExp, totalRev] = [0, 0, 0];
+        let pStats = { mortality: 0, feed: 0, size: 0, weight: 0, count: 0 };
+        let categoryTotals = {}; 
+        let archivedGroups = {}; 
+
+        allRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        allRecords.forEach(r => {
+          if (r.type !== currentType) return;
+
+          if (r.archived && currentType === "poultry") {
+            const batchKey = r.batchId || "Unnamed Batch";
+            if (!archivedGroups[batchKey]) archivedGroups[batchKey] = { profit: 0, mortality: 0, size: 0, weight: 0, feed: 0 };
+            archivedGroups[batchKey].profit += (r.quantity * r.price) - r.expenses;
+            archivedGroups[batchKey].mortality += (r.mortality || 0);
+            archivedGroups[batchKey].size = Math.max(archivedGroups[batchKey].size, r.flockSize || 0);
+            archivedGroups[batchKey].weight += (r.avgWeight || 0);
+            archivedGroups[batchKey].feed += (r.feed || 0);
+            return;
+          }
+
+          if (currentType === "poultry" && r.subtype !== activePoultrySub) return;
+
+          const mKey = r.date.substring(0, 7);
+          if (selectedMonth !== "all" && mKey !== selectedMonth) return;
+
+          totalQty += r.quantity; 
+          totalExp += (r.expenses || 0); 
+          totalRev += (r.quantity * r.price);
+          
+          if (r.expenseItems) {
+            r.expenseItems.forEach(item => {
+              const cat = item.category !== "none" ? item.category : "Other";
+              categoryTotals[cat] = (categoryTotals[cat] || 0) + item.amount;
+            });
+          }
+
+          recordsList.innerHTML += `<li>
+            <div><strong>📅 ${r.date}</strong><br><small>Qty: ${r.quantity} | Exp: ${r.expenses}</small></div>
+            <div style="text-align:right"><strong>KES ${(r.quantity * r.price).toLocaleString()}</strong></div>
+          </li>`;
+        });
+
+        const profitVal = totalRev - totalExp;
+        document.getElementById("totalQuantity").innerText = totalQty.toFixed(1);
+        document.getElementById("totalProfit").innerText = `KES ${profitVal.toLocaleString()}`;
+        document.getElementById("totalExpensesDisplay").innerText = `KES ${totalExp.toLocaleString()}`;
+        
+        updateSmartInsights(profitVal, totalQty, currentType);
+        renderPie(categoryTotals, totalExp);
+        updateChart(allRecords.filter(r => !r.archived && r.type === currentType), currentType);
+
+        if (currentType === "poultry" && historyList) {
+          Object.keys(archivedGroups).forEach(batch => {
+            historyList.innerHTML += generateBatchReport(batch, archivedGroups[batch]);
+          });
+        }
+      };
+    };
+  }
+
+  // --- EVENT LISTENERS ---
+  document.querySelectorAll(".type-btn").forEach(btn => {
+    btn.addEventListener("click", () => setFarmType(btn.dataset.type));
+  });
+
+  document.getElementById("switchTypeBtn").addEventListener("click", () => {
+    farmTypeScreen.style.display = "block";
+    appScreen.style.display = "none";
+  });
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const tx = db.transaction("settings", "readonly");
+    tx.objectStore("settings").get("farmType").onsuccess = (ev) => {
+      const type = ev.target.result.value;
+      const expenseRows = document.querySelectorAll(".expense-row");
+      let expenseItems = [];
+      let totalExp = 0;
+
+      expenseRows.forEach(row => {
+        const cat = row.querySelector(".exp-cat").value;
+        const amt = parseFloat(row.querySelector(".exp-amt").value) || 0;
+        if (amt > 0) {
+          expenseItems.push({ category: cat, amount: amt });
+          totalExp += amt;
+        }
+      });
+
+      const record = {
+        date: document.getElementById("date").value,
+        type: type,
+        quantity: parseFloat(document.getElementById("quantity").value),
+        price: parseFloat(document.getElementById("price").value),
+        expenses: totalExp,
+        expenseItems: expenseItems,
+        // Poultry specific
+        subtype: document.getElementById("poultrySubtype").value,
+        batchId: document.getElementById("batchId").value,
+        mortality: parseInt(document.getElementById("mortality").value) || 0,
+        flockSize: parseInt(document.getElementById("flockSize").value) || 0,
+        feed: parseFloat(document.getElementById("feed").value) || 0,
+        avgWeight: parseFloat(document.getElementById("avgWeight").value) || 0
+      };
+
+      const saveTx = db.transaction("records", "readwrite");
+      saveTx.objectStore("records").add(record).onsuccess = () => {
+        form.reset();
+        document.getElementById("date").valueAsDate = new Date();
+        loadRecords();
+        const toast = document.getElementById("toast");
+        toast.classList.add("show");
+        setTimeout(() => toast.classList.remove("show"), 3000);
+      };
+    };
+  });
+
   darkModeBtn.addEventListener("click", () => {
     document.body.classList.toggle("dark-mode");
-    const isDark = document.body.classList.contains("dark-mode");
-    localStorage.setItem("theme", isDark ? "dark" : "light");
   });
 
   document.getElementById("poultrySubtypeToggle").addEventListener("change", loadRecords);
   document.getElementById("poultrySubtype").addEventListener("change", updatePoultryUI);
   monthFilter.addEventListener("change", loadRecords);
-  
-  // Initialize Chart and Dashboard on Start
-  window.loadRecords = loadRecords; // For global access if needed
 });
