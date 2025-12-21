@@ -198,3 +198,40 @@ input, select {
 /* Hide navigation on the Farm Type Selection screen */
 #farmTypeScreen ~ .bottom-nav { display: none; }
 #appScreen:not([style*="display: none"]) ~ .bottom-nav { display: flex; }
+
+.record-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--card-bg);
+}
+
+.record-actions {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.action-btns {
+  display: flex;
+  gap: 8px;
+}
+
+.edit-btn, .delete-btn {
+  background: #f0f0f0;
+  border: none;
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: transform 0.1s;
+}
+
+.delete-btn:active { background: #ffebee; transform: scale(0.9); }
+.edit-btn:active { background: #e3f2fd; transform: scale(0.9); }
+
+.dark-mode .edit-btn, .dark-mode .delete-btn {
+  background: #333;
+}
