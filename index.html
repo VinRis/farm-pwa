@@ -16,8 +16,8 @@
   <p>Offline Farm Management</p>
   <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; padding: 5px;">
     <button id="switchTypeBtn" type="button" style="width: auto; margin: 0; padding: 8px 15px; background: #689f38; font-size: 0.85rem;">🔄 Switch Type</button>
-    <button id="resetBtn" type="button" style="width: auto; margin: 0; padding: 8px 15px; background: #d32f2f; font-size: 0.85rem;">⚠️ Reset App</button>
     <button id="darkModeBtn" type="button" style="width: auto; margin: 0; padding: 8px 15px; background: #455a64; font-size: 0.85rem;">🌙 Dark Mode</button>
+    <button id="resetBtn" type="button" style="width: auto; margin: 0; padding: 8px 15px; background: #d32f2f; font-size: 0.85rem;">⚠️ Reset App</button>
   </div>
 </header>
 
@@ -32,6 +32,7 @@
   </section>
 
   <section id="appScreen" style="display:none;">
+    
     <section id="analytics" class="card" style="margin-bottom: 20px;">
       <h2 style="font-size: 1.1rem; margin-bottom: 15px;">📈 Last 7 Days Production</h2>
       <div id="productionChart" class="chart-container"></div>
@@ -49,7 +50,7 @@
         </select>
       </div>
     
-      <div class="filter-section">
+      <div class="filter-section" style="margin-bottom: 15px;">
         <label for="monthFilter" style="font-size: 0.8rem; color: #666;">Filter by Month:</label>
         <select id="monthFilter" class="full-width-select">
           <option value="all">All Time</option>
@@ -65,13 +66,23 @@
           <p>Total Profit</p>
           <h3 id="totalProfit">0</h3>
         </div>
+        
         <div class="kpi-card">
           <p id="kpiLabel3">Flock Size</p>
           <h3 id="statFlock">0</h3>
         </div>
         <div class="kpi-card">
           <p id="kpiLabel4">Mortality</p>
-          <h3 id="statMortality">0.0</h3>
+          <h3 id="statMortality">0</h3>
+        </div>
+
+        <div class="kpi-card" id="avgWeightCard" style="display: none;">
+          <p>Avg Weight</p>
+          <h3 id="statWeight">0kg</h3>
+        </div>
+        <div class="kpi-card" id="feedCard" style="display: none;">
+          <p>Total Feed</p>
+          <h3 id="statFeed">0</h3>
         </div>
       </div>
     
@@ -80,8 +91,8 @@
           <span style="color: #fbc02d;">💰</span>
           <h4 style="margin: 0;">Expense Breakdown</h4>
         </div>
-        <div class="breakdown-content" style="display: flex; align-items: center; justify-content: space-between; gap: 15px;">
-          <div id="breakdownList" class="breakdown-list" style="flex: 1;"></div>
+        <div class="breakdown-content">
+          <div id="breakdownList" class="breakdown-list"></div>
           <div class="chart-wrapper">
              <div id="pieChartCircle" class="pie-chart"></div>
           </div>
@@ -167,4 +178,3 @@
 <script src="app.js"></script>
 </body>
 </html>
-
