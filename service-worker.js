@@ -1,73 +1,68 @@
-/**
- * Farm Production Tracker - Service Worker
- * Strategy: Stale-While-Revalidate
- */
-
-const CACHE_NAME = "farm-tracker-v2.0.1";
-const ASSETS_TO_CACHE = [
-  "./",
-  "./index.html",
-  "./style.css",
-  "./app.js",
-  "./manifest.json",
-  "./icon-192.png",
-  "./icon-512.png"
+/* service-worker.js - simple cache-first PWA service worker */
+const CACHE_NAME = 'farmtrack-shell-v1';
+const RUNTIME_CACHE = 'farmtrack-runtime-v1';
+const PRECACHE_URLS = [
+  '/',
+  '/index.html',
+  '/style.css',
+  '/app.js',
+  '/db.js',
+  '/utils.js',
+  '/sample-data.js',
+  '/manifest.json'
 ];
 
-// --- INSTALL: Pre-cache the App Shell ---
-self.addEventListener("install", (event) => {
+// CDN libraries to attempt caching for offline
+const CDN_URLS = [
+  'https://cdn.jsdelivr.net/npm/idb@7/build/iife/index-min.js',
+  'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'
+];
+
+self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log("SW: Pre-caching core assets");
-      return cache.addAll(ASSETS_TO_CACHE);
-    })
+    caches.open(CACHE_NAME).then(cache => cache.addAll([...PRECACHE_URLS, ...CDN_URLS])).then(() => self.skipWaiting())
   );
-  // Force the waiting service worker to become active
-  self.skipWaiting();
 });
 
-// --- ACTIVATE: Cleanup Old Cache Versions ---
-self.addEventListener("activate", (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) {
-            console.log("SW: Removing outdated cache:", key);
-            return caches.delete(key);
-          }
-        })
-      );
-    })
-  );
-  // Ensure the new SW takes control of the page immediately
-  self.clients.claim();
+self.addEventListener('activate', event => {
+  event.waitUntil(self.clients.claim());
 });
 
-// --- FETCH: Stale-While-Revalidate Strategy ---
-self.addEventListener("fetch", (event) => {
-  // Only handle GET requests (don't cache form submissions)
-  if (event.request.method !== "GET") return;
+self.addEventListener('fetch', event => {
+  const url = new URL(event.request.url);
 
+  // For navigation requests, show cached shell
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      caches.match('/index.html').then(response => response || fetch(event.request))
+    );
+    return;
+  }
+
+  // Cache-first for app shell & static assets
+  if (PRECACHE_URLS.includes(url.pathname) || CDN_URLS.includes(url.href)) {
+    event.respondWith(
+      caches.match(event.request).then(resp => resp || fetch(event.request).then(res => {
+        return caches.open(RUNTIME_CACHE).then(cache => { cache.put(event.request, res.clone()); return res; });
+      })).catch(()=>caches.match('/index.html'))
+    );
+    return;
+  }
+
+  // For other requests, network-first then cache fallback (useful for online sync)
   event.respondWith(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.match(event.request).then((cachedResponse) => {
-        
-        // Fetch from network to update the cache in background
-        const fetchedResponse = fetch(event.request).then((networkResponse) => {
-          // Check if we received a valid response
-          if (networkResponse && networkResponse.status === 200) {
-            cache.put(event.request, networkResponse.clone());
-          }
-          return networkResponse;
-        }).catch(() => {
-          // Truly offline: If network fails, the user already has the cached version
-          return cachedResponse;
-        });
-
-        // Return the cached response immediately if available, or wait for network
-        return cachedResponse || fetchedResponse;
-      });
-    })
+    fetch(event.request).then(response => {
+      // put in runtime cache
+      return caches.open(RUNTIME_CACHE).then(cache => { cache.put(event.request, response.clone()); return response; });
+    }).catch(() => caches.match(event.request))
   );
+});
+
+// basic message handler
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
