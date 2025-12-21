@@ -6,6 +6,7 @@ if ("serviceWorker" in navigator) {
 
 document.addEventListener("DOMContentLoaded", () => {
   let db;
+  // UI Elements
   const farmTypeScreen = document.getElementById("farmTypeScreen");
   const appScreen = document.getElementById("appScreen");
   const form = document.getElementById("farmForm");
@@ -13,14 +14,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const monthFilter = document.getElementById("monthFilter");
   const qtyLabel = document.getElementById("qtyLabel");
   const darkModeBtn = document.getElementById("darkModeBtn");
+  const totalProfitDisplay = document.getElementById("totalProfit"); // FIXED: Defined missing variable
 
   const catColors = {
-    "Feed": "#2e7d32",
-    "Medication": "#d32f2f",
-    "Chicks": "#fbc02d",
-    "Labor": "#0288d1",
-    "Utilities": "#7b1fa2",
-    "Other": "#757575"
+    "Feed": "#2e7d32", "Medication": "#d32f2f", "Chicks": "#fbc02d",
+    "Labor": "#0288d1", "Utilities": "#7b1fa2", "Other": "#757575"
   };
 
   // Create Archive Button dynamically
@@ -46,7 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
     getFarmType();
   };
 
-  // --- DARK MODE LOGIC ---
+  // --- UI/THEME LOGIC ---
   if (localStorage.getItem("theme") === "dark") {
     document.body.classList.add("dark-mode");
     darkModeBtn.innerText = "☀️ Light Mode";
@@ -86,7 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // --- CORE FARM LOGIC ---
+  // --- NAVIGATION LOGIC ---
   const farmTypeBtns = document.querySelectorAll("#farmTypeScreen button");
   farmTypeBtns.forEach(btn => {
     btn.addEventListener("click", () => {
@@ -117,22 +115,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function showApp(type) {
-    // Dynamic Header Logic
     const headerElement = document.getElementById("mainHeader");
-    if (type === "poultry") {
-      headerElement.innerText = "Poultry Production";
-    } else if (type === "dairy") {
-      headerElement.innerText = "Dairy Production";
-    } else if (type === "crops") {
-      headerElement.innerText = "Crops Production";
-    } else {
-      headerElement.innerText = "Farm Production Tracker";
-    }
+    const titles = { poultry: "Poultry Production", dairy: "Dairy Production", crops: "Crops Production" };
+    headerElement.innerText = titles[type] || "Farm Production Tracker";
 
     farmTypeScreen.style.display = "none";
     appScreen.style.display = "block";
 
-    // Setup UI visibility based on type
     document.querySelectorAll('.extra-fields').forEach(div => div.style.display = 'none');
     
     const isPoultry = (type === "poultry");
@@ -159,10 +148,7 @@ document.addEventListener("DOMContentLoaded", () => {
     qtyLabel.innerText = isBroiler ? "Weight Sold (Kg)" : "Eggs Collected (Pcs/Trays)";
   }
 
-  document.getElementById("poultrySubtype").addEventListener("change", updatePoultryUI);
-  document.getElementById("poultrySubtypeToggle").addEventListener("change", loadRecords);
-
-  // --- SAVING RECORDS ---
+  // --- SAVE RECORD ---
   form.addEventListener("submit", (e) => {
     e.preventDefault();
     const txS = db.transaction("settings", "readonly");
@@ -200,6 +186,7 @@ document.addEventListener("DOMContentLoaded", () => {
         loadRecords();
         form.reset();
         document.getElementById("date").valueAsDate = new Date();
+        // Reset expense container to one blank row
         document.getElementById("expenseContainer").innerHTML = `
           <div class="expense-row" style="display: flex; gap: 5px; margin-bottom: 10px;">
             <select class="exp-cat" style="flex: 2; margin: 0; padding: 8px;">
@@ -220,7 +207,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   });
 
-  // --- LOADING AND DISPLAYING ---
+  // --- DATA LOADING ---
   function loadRecords() {
     if (!db) return;
     const tx = db.transaction(["records", "settings"], "readonly");
@@ -245,7 +232,7 @@ document.addEventListener("DOMContentLoaded", () => {
         let archivedGroups = {}; 
         const months = new Set();
 
-        const activeRecords = allRecords.filter(r => !r.archived);
+        const activeRecords = allRecords.filter(r => !r.archived && r.type === currentType);
         updateChart(activeRecords, currentType);
 
         allRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -289,25 +276,21 @@ document.addEventListener("DOMContentLoaded", () => {
           recordsList.innerHTML += `<li><div><strong>📅 ${r.date}</strong> ${extraLabel}<br><small>Qty: ${r.quantity} | Exp: ${r.expenses}</small></div><div style="text-align:right"><strong>KES ${(r.quantity * r.price).toLocaleString()}</strong><br><button class="delete-btn" data-id="${r.id}">✕</button></div></li>`;
         });
 
-        // UPDATE UI SUMMARY
-        document.getElementById("totalQuantity").innerText = totalQty.toFixed(1);
-        document.getElementById("totalProfit").innerText = (totalRev - totalExp).toLocaleString();
+        // --- UPDATE DASHBOARD UI ---
         const profitVal = totalRev - totalExp;
-        profitElement.innerText = `KES ${profitVal.toLocaleString()}`;
-        profitElement.style.color = profitVal >= 0 ? "#2e7d32" : "#d32f2f";
-        
-        const expenseDisplay = document.getElementById("totalExpensesDisplay").innerText = `KES ${totalExp.toLocaleString()}`;
+        document.getElementById("totalQuantity").innerText = totalQty.toFixed(1);
+        document.getElementById("totalProfit").innerText = `KES ${profitVal.toLocaleString()}`;
+        document.getElementById("totalProfit").style.color = profitVal >= 0 ? "#2e7d32" : "#d32f2f";
+        document.getElementById("totalExpensesDisplay").innerText = `KES ${totalExp.toLocaleString()}`;
         
         if (currentType === "poultry") {
           document.getElementById("kpiLabel3").innerText = "Flock Size";
           document.getElementById("statFlock").innerText = pStats.size;
           document.getElementById("kpiLabel4").innerText = "Mortality";
           document.getElementById("statMortality").innerText = pStats.mortality;
-
           const isBroiler = (activePoultrySub === "broilers");
-          document.getElementById("avgWeightCard").style.display = isBroiler ? "flex" : "none";
-          document.getElementById("feedCard").style.display = "flex"; 
-
+          document.getElementById("avgWeightCard").style.display = isBroiler ? "block" : "none";
+          document.getElementById("feedCard").style.display = "block"; 
           document.getElementById("statWeight").innerText = pStats.count > 0 ? (pStats.weight / pStats.count).toFixed(2) + "kg" : "0kg";
           document.getElementById("statFeed").innerText = pStats.feed.toFixed(1) + "kg";
         } else {
@@ -319,31 +302,10 @@ document.addEventListener("DOMContentLoaded", () => {
           document.getElementById("feedCard").style.display = "none";
         }
 
-        // PIE CHART RENDERING
-        const breakdownDiv = document.getElementById("expenseBreakdown");
-        if (Object.keys(categoryTotals).length > 0 && totalExp > 0) {
-          breakdownDiv.style.display = "block";
-          let gradientParts = [];
-          let currentPct = 0;
-          for (const [cat, amt] of Object.entries(categoryTotals)) {
-            const pct = (amt / totalExp) * 100;
-            const color = catColors[cat] || "#455a64";
-            breakdownList.innerHTML += `
-              <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:0.85rem;">
-                <span><span style="height:8px; width:8px; background:${color}; display:inline-block; border-radius:2px; margin-right:5px;"></span>${cat}</span>
-                <span style="font-weight:bold;">${pct.toFixed(0)}%</span>
-              </div>`;
-            if (pct > 0) {
-              gradientParts.push(`${color} ${currentPct}% ${currentPct + pct}%`);
-              currentPct += pct;
-            }
-          }
-          pieCircle.style.background = `conic-gradient(${gradientParts.join(", ")})`;
-        } else {
-          breakdownDiv.style.display = "none";
-        }
+        // --- RENDER PIE CHART ---
+        renderPie(categoryTotals, totalExp);
 
-        if (currentType === "poultry") {
+        if (currentType === "poultry" && historyList) {
           Object.keys(archivedGroups).forEach(batch => {
             const data = archivedGroups[batch];
             historyList.innerHTML += `<div class="card" style="background:var(--highlight-bg); border-left: 4px solid var(--accent-green);"><p><strong>📦 ${batch}</strong></p><small>Profit: KES ${data.profit.toLocaleString()}<br>Total Qty: ${data.qty.toFixed(1)}<br>Mortality: ${data.mortality}</small></div>`;
@@ -354,6 +316,33 @@ document.addEventListener("DOMContentLoaded", () => {
         Array.from(months).sort().reverse().forEach(m => { if (!currentOpts.includes(m)) monthFilter.add(new Option(m, m)); });
       };
     };
+  }
+
+  function renderPie(totals, totalExp) {
+    const pieCircle = document.getElementById("pieChartCircle");
+    const breakdownList = document.getElementById("breakdownList");
+    const breakdownDiv = document.getElementById("expenseBreakdown");
+    if (Object.keys(totals).length > 0 && totalExp > 0) {
+      breakdownDiv.style.display = "block";
+      let gradientParts = [];
+      let currentPct = 0;
+      for (const [cat, amt] of Object.entries(totals)) {
+        const pct = (amt / totalExp) * 100;
+        const color = catColors[cat] || "#455a64";
+        breakdownList.innerHTML += `
+          <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:0.85rem;">
+            <span><span style="height:8px; width:8px; background:${color}; display:inline-block; border-radius:2px; margin-right:5px;"></span>${cat}</span>
+            <span style="font-weight:bold;">${pct.toFixed(0)}%</span>
+          </div>`;
+        if (pct > 0) {
+          gradientParts.push(`${color} ${currentPct}% ${currentPct + pct}%`);
+          currentPct += pct;
+        }
+      }
+      pieCircle.style.background = `conic-gradient(${gradientParts.join(", ")})`;
+    } else {
+      breakdownDiv.style.display = "none";
+    }
   }
 
   function updateChart(data, currentType) {
@@ -368,7 +357,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     const dailyTotals = {};
     last7Days.forEach(date => dailyTotals[date] = 0);
-    data.forEach(r => { if (r.type === currentType && dailyTotals.hasOwnProperty(r.date)) dailyTotals[r.date] += r.quantity; });
+    data.forEach(r => { if (dailyTotals.hasOwnProperty(r.date)) dailyTotals[r.date] += r.quantity; });
     const maxVal = Math.max(...Object.values(dailyTotals), 1);
     last7Days.forEach(date => {
       const val = dailyTotals[date];
@@ -377,6 +366,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // --- ACTIONS & UTILS ---
   archiveBtn.addEventListener("click", () => {
     const sub = document.getElementById("poultrySubtypeToggle").value;
     if (confirm(`Archive the current ${sub} batch? Dashboard will reset.`)) {
@@ -399,12 +389,8 @@ document.addEventListener("DOMContentLoaded", () => {
     tx.objectStore("records").getAll().onsuccess = (e) => {
       const data = e.target.result;
       if (data.length === 0) return showToast("No records to export!");
-      const headers = ["Date", "Type", "Subtype", "Label/Batch", "Quantity", "Price", "Revenue", "Expenses", "Profit", "Mortality", "Feed(Kg)", "AvgWeight(Kg)", "Status"];
-      const csvRows = data.map(r => {
-        const revenue = r.quantity * r.price;
-        const profit = revenue - r.expenses;
-        return [r.date, r.type, r.subtype || "-", `"${r.extra || ''}"`, r.quantity, r.price, revenue, r.expenses, profit, r.mortality || 0, r.feed || 0, r.weight || 0, r.archived ? "Archived" : "Active"].join(",");
-      });
+      const headers = ["Date", "Type", "Subtype", "Label", "Qty", "Price", "Rev", "Exp", "Profit"];
+      const csvRows = data.map(r => [r.date, r.type, r.subtype||"-", `"${r.extra||''}"`, r.quantity, r.price, r.quantity*r.price, r.expenses, (r.quantity*r.price)-r.expenses].join(","));
       const csvContent = [headers.join(","), ...csvRows].join("\n");
       const blob = new Blob([csvContent], { type: "text/csv" });
       const url = URL.createObjectURL(blob);
@@ -412,11 +398,12 @@ document.addEventListener("DOMContentLoaded", () => {
       link.href = url;
       link.download = `Farm_Report_${new Date().toISOString().split('T')[0]}.csv`;
       link.click();
-      showToast("CSV Exported! 📥");
     };
   });
 
   monthFilter.addEventListener("change", loadRecords);
+  document.getElementById("poultrySubtype").addEventListener("change", updatePoultryUI);
+  document.getElementById("poultrySubtypeToggle").addEventListener("change", loadRecords);
   
   recordsList.addEventListener("click", (e) => {
     if (e.target.classList.contains("delete-btn") && confirm("Delete record?")) {
@@ -429,7 +416,6 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("switchTypeBtn").addEventListener("click", () => { 
     farmTypeScreen.style.display = "block"; 
     appScreen.style.display = "none"; 
-    document.getElementById("mainHeader").innerText = "Farm Production Tracker";
   });
 
   document.getElementById("resetBtn").addEventListener("click", () => { 
@@ -443,29 +429,22 @@ document.addEventListener("DOMContentLoaded", () => {
     const toast = document.getElementById("toast");
     toast.innerText = msg;
     toast.className = "toast show";
-    setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+    setTimeout(() => { toast.className = "toast"; }, 3000);
   }
-    // --- CONNECTION MONITORING ---
+
   function updateOnlineStatus() {
     const dot = document.getElementById("statusIndicator");
     const text = document.getElementById("statusText");
-    
     if (navigator.onLine) {
-      dot.style.background = "#4caf50"; // Green
+      dot.style.background = "#4caf50";
       text.innerText = "Online";
-      showToast("Back Online! 📶");
     } else {
-      dot.style.background = "#f44336"; // Red
-      text.innerText = "Offline (Saving Locally)";
-      showToast("Working Offline 📴");
+      dot.style.background = "#f44336";
+      text.innerText = "Offline";
     }
   }
-  
+
   window.addEventListener('online', updateOnlineStatus);
   window.addEventListener('offline', updateOnlineStatus);
-  
-  // Initial check
   updateOnlineStatus();
 });
-
-
