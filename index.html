@@ -49,7 +49,7 @@
       </div>
     
       <div class="filter-section">
-        <label for="monthFilter">Filter by Month:</label>
+        <label for="monthFilter" style="font-size: 0.8rem; color: #666;">Filter by Month:</label>
         <select id="monthFilter" class="full-width-select">
           <option value="all">All Time</option>
         </select>
@@ -74,15 +74,15 @@
         </div>
       </div>
     
-      <div id="expenseBreakdown" class="card breakdown-container" style="display:none;">
+      <div id="expenseBreakdown" class="card breakdown-container" style="display:none; margin-top: 15px;">
         <div class="breakdown-header">
           <span style="color: #fbc02d;">💰</span>
           <h4 style="margin: 0;">Expense Breakdown</h4>
         </div>
-        <div class="breakdown-content">
-          <div id="breakdownList" class="breakdown-list"></div>
-          <div class="breakdown-chart-placeholder">
-            <div id="miniPieChart"></div>
+        <div class="breakdown-content" style="display: flex; align-items: center; justify-content: space-between; gap: 15px;">
+          <div id="breakdownList" class="breakdown-list" style="flex: 1;"></div>
+          <div class="chart-wrapper">
+             <div id="pieChartCircle" class="pie-chart"></div>
           </div>
         </div>
       </div>
@@ -166,4 +166,3 @@
 <script src="app.js"></script>
 </body>
 </html>
-
