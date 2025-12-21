@@ -1,75 +1,94 @@
-utils.js
-export function formatDate(dateStr) {
-  return new Date(dateStr).toLocaleDateString();
-}
+export const Utils = {
+    uuid() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    },
 
-export function exportCSV(data, filename) {
-  const csv = data.map(row => Object.values(row).join(',')).join('\n');
-  const blob = new Blob([csv], { type: 'text/csv' });
-  downloadBlob(blob, filename);
-}
+    formatDate(dateStr) {
+        if(!dateStr) return '';
+        return new Date(dateStr).toLocaleDateString();
+    },
 
-export function exportJSON(data, filename) {
-  const json = JSON.stringify(data);
-  const blob = new Blob([json], { type: 'application/json' });
-  downloadBlob(blob, filename);
-}
+    formatCurrency(amount) {
+        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+    },
 
-export async function importJSON(data) {
-  // Assume db is global or import
-  const db = await openDB(); // from db.js
-  const tx = db.transaction(['meta', 'records', 'transactions', 'syncQueue'], 'readwrite');
-  await tx.objectStore('meta').put({ key: 'settings', ...data.meta });
-  for (const rec of data.records) {
-    await tx.objectStore('records').put(rec);
-  }
-  for (const t of data.transactions) {
-    await tx.objectStore('transactions').put(t);
-  }
-  for (const q of data.syncQueue || []) {
-    await tx.objectStore('syncQueue').put(q);
-  }
-  await tx.done;
-}
+    downloadCSV(data, filename) {
+        if (!data || !data.length) return;
+        const keys = Object.keys(data[0]);
+        const csvContent = [
+            keys.join(','),
+            ...data.map(row => keys.map(k => `"${String(row[k] || '').replace(/"/g, '""')}"`).join(','))
+        ].join('\n');
 
-export async function generatePDF(contentHtml, filename) {
-  const element = document.createElement('div');
-  element.innerHTML = contentHtml;
-  document.body.appendChild(element); // Temp for rendering
-  const opt = {
-    margin: 1,
-    filename,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2 },
-    jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-  };
-  await html2pdf().set(opt).from(element).save();
-  document.body.removeChild(element);
-}
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", filename);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    },
 
-function downloadBlob(blob, filename) {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-}
+    async generatePDF(title, records, transactions, livestock, start, end) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
 
-export function generateReportContent(meta, records, trans) {
-  // Simple HTML for PDF
-  return `
-    <h1>Farm Report</h1>
-    <p>Farmer: ${meta.farmerName || 'Unknown'}</p>
-    <p>Farm: ${meta.farmName || 'Unknown'}</p>
-    <!-- Add KPIs, charts as images, tables -->
-    <h2>Records</h2>
-    <table>
-      ${records.map(r => `<tr><td>${formatDate(r.date)}</td><td>${r.quantity}</td></tr>`).join('')}
-    </table>
-    <h2>Transactions</h2>
-    <table>
-      ${trans.map(t => `<tr><td>${formatDate(t.date)}</td><td>${t.amount}</td></tr>`).join('')}
-    </table>
-  `;
-}
+        // Header
+        doc.setFillColor(46, 125, 50); // Primary color
+        doc.rect(0, 0, 210, 20, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(16);
+        doc.text("FarmTrack Report", 10, 13);
+        
+        doc.setTextColor(0,0,0);
+        doc.setFontSize(12);
+        doc.text(`Livestock: ${livestock.toUpperCase()}`, 10, 30);
+        doc.text(`Period: ${start} to ${end}`, 10, 36);
+
+        // Production Table
+        const tableData = records.map(r => [
+            r.date, 
+            r.quantity || '-', 
+            r.mortality || '-', 
+            r.feedKg || '-', 
+            r.notes || ''
+        ]);
+
+        doc.text("Production Records", 10, 45);
+        doc.autoTable({
+            startY: 50,
+            head: [['Date', 'Qty', 'Mortality', 'Feed(kg)', 'Notes']],
+            body: tableData,
+            theme: 'striped',
+        });
+
+        // Transactions Table
+        const lastY = doc.lastAutoTable.finalY + 10;
+        doc.text("Financial Transactions", 10, lastY);
+        
+        const transData = transactions.map(t => [
+            t.date, t.type.toUpperCase(), t.category, t.amount
+        ]);
+
+        doc.autoTable({
+            startY: lastY + 5,
+            head: [['Date', 'Type', 'Category', 'Amount']],
+            body: transData,
+            theme: 'grid'
+        });
+
+        // Footer
+        const pageCount = doc.internal.getNumberOfPages();
+        doc.setFontSize(8);
+        for(let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            doc.text('Generated by FarmTrack PWA', 10, 285);
+        }
+
+        doc.save(`farmtrack_report_${livestock}_${start}.pdf`);
+    }
+};
