@@ -57,39 +57,37 @@
         </select>
       </div>
 
-      <div class="card" id="totalExpensesCard" style="margin-bottom: 12px; border-left: 5px solid #d32f2f;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-size: 0.85rem; color: var(--text-sub); font-weight: bold; text-transform: uppercase;">Total Expenses</span>
-          <strong id="totalExpensesDisplay" style="font-size: 1.2rem; color: #d32f2f;">KES 0</strong>
+      <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+        <div class="card" id="totalExpensesCard" style="flex: 1; margin: 0; border-left: 4px solid #d32f2f; padding: 10px 15px;">
+          <span style="font-size: 0.7rem; color: var(--text-sub); font-weight: bold; text-transform: uppercase; display: block;">Expenses</span>
+          <strong id="totalExpensesDisplay" style="font-size: 1.1rem; color: #d32f2f;">KES 0</strong>
+        </div>
+      
+        <div class="card" style="flex: 1; margin: 0; border-left: 4px solid #2e7d32; padding: 10px 15px;">
+          <span style="font-size: 0.7rem; color: var(--text-sub); font-weight: bold; text-transform: uppercase; display: block;">Net Profit</span>
+          <strong id="totalProfit" style="font-size: 1.1rem; color: #2e7d32;">KES 0</strong>
         </div>
       </div>
-
-      <div class="kpi-grid">
-        <div class="kpi-card">
-          <span>Production</span>
-          <strong id="totalQuantity">0.0</strong>
-        </div>
-        <div class="kpi-card profit-highlight">
-          <span>Total Profit</span>
-          <strong id="totalProfit">0</strong>
+      
+      <div class="kpi-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+        <div class="kpi-card" style="padding: 10px;">
+          <span style="font-size: 0.75rem; opacity: 0.8;">Production</span>
+          <strong id="totalQuantity" style="font-size: 1.2rem; display: block;">0.0</strong>
         </div>
         
-        <div class="kpi-card">
-          <span id="kpiLabel3">Flock Size</span>
-          <strong id="statFlock">0</strong>
+        <div class="kpi-card" style="padding: 10px;">
+          <span id="kpiLabel3" style="font-size: 0.75rem; opacity: 0.8;">Flock Size</span>
+          <strong id="statFlock" style="font-size: 1.2rem; display: block;">0</strong>
         </div>
-        <div class="kpi-card">
-          <span id="kpiLabel4">Mortality</span>
-          <strong id="statMortality">0</strong>
+      
+        <div class="kpi-card" style="padding: 10px;">
+          <span id="kpiLabel4" style="font-size: 0.75rem; opacity: 0.8;">Mortality</span>
+          <strong id="statMortality" style="font-size: 1.2rem; display: block;">0</strong>
         </div>
-
-        <div class="kpi-card" id="avgWeightCard" style="display: none;">
-          <span>Avg Weight</span>
-          <strong id="statWeight">0kg</strong>
-        </div>
-        <div class="kpi-card" id="feedCard" style="display: none;">
-          <span>Total Feed</span>
-          <strong id="statFeed">0</strong>
+      
+        <div class="kpi-card" id="avgWeightCard" style="display: none; padding: 10px;">
+          <span style="font-size: 0.75rem; opacity: 0.8;">Avg Weight</span>
+          <strong id="statWeight" style="font-size: 1.2rem; display: block;">0kg</strong>
         </div>
       </div>
     
@@ -188,4 +186,5 @@
 <script src="app.js"></script>
 </body>
 </html>
+
 
