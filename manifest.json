@@ -3,11 +3,11 @@
   "short_name": "FarmTracker",
   "id": "farm-tracker-pro-unique-id",
   "description": "Professional offline management for Poultry, Dairy, and Crop farming.",
-  "start_url": "./index.html",
+  "start_url": "index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#f4f6f8",
+  "background_color": "#f0f2f5",
   "theme_color": "#2e7d32",
   "categories": ["business", "productivity", "utilities"],
   "icons": [
@@ -35,7 +35,7 @@
       "name": "Add New Record",
       "short_name": "Add",
       "description": "Quickly add production data",
-      "url": "./index.html#farmForm",
+      "url": "index.html#formView",
       "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
     }
   ],
@@ -45,14 +45,14 @@
       "sizes": "512x512",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "Farm Dashboard and Analytics"
+      "label": "Mobile Dashboard"
     },
     {
       "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "Desktop View Support"
+      "label": "Desktop Dashboard"
     }
   ]
 }
