@@ -66,10 +66,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const titles = { 'dairy': '🐄 Dairy Manager', 'poultry': '🐔 Poultry Tracker', 'crops': '🌽 Crop Manager' };
     if (mainHeader && titles[type]) mainHeader.innerText = titles[type];
     
-    // Logic to show Poultry Filter ONLY for poultry
+    // Show/Hide the Poultry Subtype selector
     const poultryToggle = document.getElementById("poultryToggleContainer");
     if (poultryToggle) {
-        poultryToggle.style.display = (type === 'poultry') ? "flex" : "none";
+      poultryToggle.style.display = (type === 'poultry') ? "block" : "none";
     }
 
     farmTypeScreen.style.display = "none";
@@ -129,7 +129,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
         tx.objectStore("records").getAll().onsuccess = (ev) => {
           const all = ev.target.result;
-          const filtered = all.filter(r => r.type === type);
+          let filtered = all.filter(r => r.type === type);
+
+          // If we are in Poultry, further filter by Layers/Broilers
+        if (type === 'poultry') {
+          const subtype = document.getElementById("poultrySubtypeToggle").value;
+          filtered = filtered.filter(r => r.subtype === subtype);
+        }
           
           let [rev, exp, qty] = [0, 0, 0];
           let cats = {};
@@ -348,6 +354,10 @@ document.addEventListener("DOMContentLoaded", () => {
     toast.classList.add("show");
     setTimeout(() => toast.classList.remove("show"), 3000);
   }
+  document.getElementById("poultrySubtypeToggle").onchange = () => {
+  loadRecords(); // Refresh the dashboard with filtered data
+};
 
   darkModeBtn.onclick = () => document.body.classList.toggle("dark-mode");
 });
+
