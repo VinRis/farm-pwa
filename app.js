@@ -277,6 +277,8 @@ document.addEventListener("DOMContentLoaded", () => {
         // UPDATE UI SUMMARY
         document.getElementById("totalQuantity").innerText = totalQty.toFixed(1);
         document.getElementById("totalProfit").innerText = (totalRev - totalExp).toLocaleString();
+        // Add this line inside loadRecords() under the summary section
+        document.getElementById("totalExpensesDisplay").innerText = `KES ${totalExp.toLocaleString()}`;
         
         if (currentType === "poultry") {
           document.getElementById("kpiLabel3").innerText = "Flock Size";
@@ -431,3 +433,4 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
   }
 });
+
