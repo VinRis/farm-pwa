@@ -12,8 +12,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const recordsList = document.getElementById("records");
   const monthFilter = document.getElementById("monthFilter");
   const qtyLabel = document.getElementById("qtyLabel");
+  const darkModeBtn = document.getElementById("darkModeBtn");
 
-  // Colors for the Pie Chart
   const catColors = {
     "Feed": "#2e7d32",
     "Medication": "#d32f2f",
@@ -30,6 +30,7 @@ document.addEventListener("DOMContentLoaded", () => {
   archiveBtn.style.cssText = "background: #455a64; margin-top: 15px; display: none; width: 100%; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer;";
   document.getElementById("dashboard").appendChild(archiveBtn);
 
+  // --- DATABASE SETUP ---
   const request = indexedDB.open("FarmDB", 1);
 
   request.onupgradeneeded = (e) => {
@@ -44,29 +45,45 @@ document.addEventListener("DOMContentLoaded", () => {
     getFarmType();
   };
 
-  // --- EXPENSE ROW LOGIC ---
-  document.getElementById("addExpenseRow").addEventListener("click", () => {
-    const container = document.getElementById("expenseContainer");
-    const newRow = document.createElement("div");
-    newRow.className = "expense-row";
-    newRow.style.cssText = "display: flex; gap: 5px; margin-bottom: 10px;";
-    newRow.innerHTML = `
-      <select class="exp-cat" style="flex: 2; margin: 0; padding: 8px;">
-        <option value="none">-- Category --</option>
-        <option value="Feed">🌾 Feed</option>
-        <option value="Medication">💉 Medication</option>
-        <option value="Chicks">🐣 Chicks</option>
-        <option value="Labor">👷 Labor</option>
-        <option value="Utilities">💡 Utilities</option>
-        <option value="Other">📦 Other</option>
-      </select>
-      <input type="number" class="exp-amt" placeholder="Amount" style="flex: 2; margin: 0; padding: 8px;" inputmode="decimal">
-      <button type="button" class="remove-exp" style="flex: 0.5; margin: 0; background: #d32f2f; color:white; border:none; border-radius:4px;">✕</button>
-    `;
-    container.appendChild(newRow);
+  // --- DARK MODE LOGIC ---
+  if (localStorage.getItem("theme") === "dark") {
+    document.body.classList.add("dark-mode");
+    darkModeBtn.innerText = "☀️ Light Mode";
+  }
+
+  darkModeBtn.addEventListener("click", () => {
+    document.body.classList.toggle("dark-mode");
+    const isDark = document.body.classList.contains("dark-mode");
+    localStorage.setItem("theme", isDark ? "dark" : "light");
+    darkModeBtn.innerText = isDark ? "☀️ Light Mode" : "🌙 Dark Mode";
   });
 
+  // --- EXPENSE ROW LOGIC (Using Event Delegation for stability) ---
   document.getElementById("expenseContainer").addEventListener("click", (e) => {
+    const container = document.getElementById("expenseContainer");
+    
+    // Add new row
+    if (e.target.id === "addExpenseRow") {
+      const newRow = document.createElement("div");
+      newRow.className = "expense-row";
+      newRow.style.cssText = "display: flex; gap: 5px; margin-bottom: 10px;";
+      newRow.innerHTML = `
+        <select class="exp-cat" style="flex: 2; margin: 0; padding: 8px;">
+          <option value="none">-- Category --</option>
+          <option value="Feed">🌾 Feed</option>
+          <option value="Medication">💉 Medication</option>
+          <option value="Chicks">🐣 Chicks</option>
+          <option value="Labor">👷 Labor</option>
+          <option value="Utilities">💡 Utilities</option>
+          <option value="Other">📦 Other</option>
+        </select>
+        <input type="number" class="exp-amt" placeholder="Amount" style="flex: 2; margin: 0; padding: 8px;" inputmode="decimal">
+        <button type="button" class="remove-exp" style="flex: 0.5; margin: 0; background: #d32f2f; color:white; border:none; border-radius:4px;">✕</button>
+      `;
+      container.appendChild(newRow);
+    }
+
+    // Remove row
     if (e.target.classList.contains("remove-exp")) {
       e.target.parentElement.remove();
     }
@@ -76,8 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const farmTypeBtns = document.querySelectorAll("#farmTypeScreen button");
   farmTypeBtns.forEach(btn => {
     btn.addEventListener("click", () => {
-      const type = btn.getAttribute("data-type");
-      setFarmType(type);
+      setFarmType(btn.getAttribute("data-type"));
     });
   });
 
@@ -141,7 +157,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const txS = db.transaction("settings", "readonly");
     txS.objectStore("settings").get("farmType").onsuccess = (ev) => {
       const currentType = ev.target.result.value;
-
       const expenseRows = document.querySelectorAll(".expense-row");
       const expenseItems = Array.from(expenseRows).map(row => ({
         category: row.querySelector(".exp-cat").value,
@@ -174,8 +189,8 @@ document.addEventListener("DOMContentLoaded", () => {
         loadRecords();
         form.reset();
         document.getElementById("date").valueAsDate = new Date();
-        const container = document.getElementById("expenseContainer");
-        container.innerHTML = `
+        // Reset expense container to initial single row
+        document.getElementById("expenseContainer").innerHTML = `
           <div class="expense-row" style="display: flex; gap: 5px; margin-bottom: 10px;">
             <select class="exp-cat" style="flex: 2; margin: 0; padding: 8px;">
               <option value="none">-- Category --</option>
@@ -210,11 +225,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const historyList = document.getElementById("historyList");
         const breakdownList = document.getElementById("breakdownList");
         const pieCircle = document.getElementById("pieChartCircle");
+        
         if(historyList) historyList.innerHTML = "";
         if(breakdownList) breakdownList.innerHTML = "";
 
         let [totalQty, totalExp, totalRev] = [0, 0, 0];
-        let pStats = { mortality: 0, feed: 0, eggs: 0, size: 0, weightSum: 0, weightCount: 0 };
+        let pStats = { mortality: 0, feed: 0, size: 0 };
         let categoryTotals = {}; 
         let archivedGroups = {}; 
         const months = new Set();
@@ -256,8 +272,6 @@ document.addEventListener("DOMContentLoaded", () => {
             pStats.mortality += (r.mortality || 0);
             pStats.feed += (r.feed || 0);
             pStats.size = r.flockSize || pStats.size; 
-            if (r.subtype === "layers") pStats.eggs += r.quantity;
-            else { pStats.weightSum += (r.weight || 0); pStats.weightCount++; }
           }
 
           const extraLabel = r.extra ? `<br><small>🏷️ ${r.extra}</small>` : "";
@@ -276,19 +290,19 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
           document.getElementById("kpiLabel3").innerText = currentType === "dairy" ? "Avg Price" : "Total Area";
           document.getElementById("statFlock").innerText = totalQty > 0 ? (totalRev / totalQty).toFixed(1) : "-";
-          document.getElementById("kpiLabel4").innerText = "Days Record";
+          document.getElementById("kpiLabel4").innerText = "Months Active";
           document.getElementById("statMortality").innerText = months.size;
         }
 
-        // EXPENSE PIE CHART & LIST
+        // PIE CHART RENDERING
         const breakdownDiv = document.getElementById("expenseBreakdown");
-        if (Object.keys(categoryTotals).length > 0) {
+        if (Object.keys(categoryTotals).length > 0 && totalExp > 0) {
           breakdownDiv.style.display = "block";
           let gradientParts = [];
           let currentPct = 0;
 
           for (const [cat, amt] of Object.entries(categoryTotals)) {
-            const pct = totalExp > 0 ? (amt / totalExp) * 100 : 0;
+            const pct = (amt / totalExp) * 100;
             const color = catColors[cat] || "#455a64";
             
             breakdownList.innerHTML += `
@@ -307,10 +321,11 @@ document.addEventListener("DOMContentLoaded", () => {
           breakdownDiv.style.display = "none";
         }
 
+        // HISTORY SECTION
         if (currentType === "poultry") {
           Object.keys(archivedGroups).forEach(batch => {
             const data = archivedGroups[batch];
-            historyList.innerHTML += `<div class="card" style="background:#f1f8e9; border-left: 4px solid #2e7d32;"><p><strong>📦 ${batch}</strong></p><small>Profit: KES ${data.profit.toLocaleString()}<br>Total Qty: ${data.qty.toFixed(1)}<br>Total Mortality: ${data.mortality}</small></div>`;
+            historyList.innerHTML += `<div class="card" style="background:#f1f8e9; border-left: 4px solid #2e7d32;"><p><strong>📦 ${batch}</strong></p><small>Profit: KES ${data.profit.toLocaleString()}<br>Total Qty: ${data.qty.toFixed(1)}<br>Mortality: ${data.mortality}</small></div>`;
           });
         }
 
@@ -342,7 +357,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // --- ACTIONS ---
+  // --- ACTIONS & LISTENERS ---
   archiveBtn.addEventListener("click", () => {
     const sub = document.getElementById("poultrySubtypeToggle").value;
     if (confirm(`Archive the current ${sub} batch? Dashboard will reset.`)) {
@@ -388,24 +403,4 @@ document.addEventListener("DOMContentLoaded", () => {
     toast.className = "toast show";
     setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
   }
-  // --- DARK MODE LOGIC ---
-const darkModeBtn = document.getElementById("darkModeBtn");
-
-// Check for saved preference on load
-if (localStorage.getItem("theme") === "dark") {
-  document.body.classList.add("dark-mode");
-  darkModeBtn.innerText = "☀️ Light Mode";
-}
-
-darkModeBtn.addEventListener("click", () => {
-  document.body.classList.toggle("dark-mode");
-  const isDark = document.body.classList.contains("dark-mode");
-  
-  // Save preference
-  localStorage.setItem("theme", isDark ? "dark" : "light");
-  
-  // Update button text
-  darkModeBtn.innerText = isDark ? "☀️ Light Mode" : "🌙 Dark Mode";
 });
-});
-
