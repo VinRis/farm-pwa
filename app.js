@@ -219,7 +219,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   document.getElementById("poultrySubtypeToggle").onchange = () => loadRecords();
-  darkModeBtn.onclick = () => document.body.classList.toggle("dark-mode");
+  
   // Add this inside your DOMContentLoaded block
   document.getElementById("switchTypeBtn").onclick = () => {
     // 1. Hide the app and nav
@@ -235,5 +235,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // 4. Clear the saved farmType so it doesn't auto-load next time
     db.transaction("settings", "readwrite").objectStore("settings").delete("farmType");
   };
+  // Ensure this is at the bottom of your DOMContentLoaded
+  darkModeBtn.onclick = () => {
+    document.body.classList.toggle("dark-mode");
+    // Optional: Save preference to IDB
+    const isDark = document.body.classList.contains("dark-mode");
+    db.transaction("settings", "readwrite").objectStore("settings").put({key: "darkMode", value: isDark});
+  };
 });
+
 
