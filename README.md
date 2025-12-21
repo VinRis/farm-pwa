@@ -1,30 +1,26 @@
-README.md
-# FarmTrack
+# FarmTrack PWA
 
-FarmTrack is an offline-first Progressive Web App (PWA) for farmers to track and monitor production for dairy, poultry, pig, and goat livestock.
+An offline-first Progressive Web App (PWA) for managing farm production (Dairy, Poultry, Pig, Goat).
+
+## Features
+- **Offline First:** Uses IndexedDB and Service Worker. Works completely without internet.
+- **Multi-Livestock:** Track Dairy, Poultry, Pig, and Goat farms separately.
+- **Dashboard:** Visual charts and KPIs for production and finances.
+- **Finance:** Track Income and Expenses.
+- **Reports:** Generate PDF reports and Export CSVs.
+- **Backup:** Export/Import JSON data for local backups.
 
 ## Installation
 
-1. Clone the repository: `git clone <repo-url>`
-2. Push to your GitHub repository.
+### Hosting on GitHub Pages
+1. Fork or Clone this repository.
+2. Go to Repository Settings -> Pages.
+3. Source: `GitHub Actions`.
+4. Push a change to `main`. The included workflow will deploy it automatically.
 
-## Deployment to GitHub Pages
-
-Use the provided GitHub Action in `.github/workflows/deploy.yml` which deploys on push to main.
-
-Alternatively:
-1. Go to repository settings > Pages.
-2. Select source as main branch and root folder.
-3. Save.
-
-## Installing as PWA
-
-Open in Chrome/Android, click "Add to home screen".
-
-## Backup/Restore
-
-Use Reports view to export/import JSON backups.
-
-## Optional Cloud Sync
-
-To enable cloud backup, implement `syncToCloud()` in app.js using e.g., Firebase. Add your API keys via user input (not in code). Warning: Storing sensitive data in cloud has risks; use at own discretion.
+### Running Locally
+No build tools required.
+1. Clone repo.
+2. Use a local server (e.g., VS Code Live Server or Python `http.server`).
+   ```bash
+   python3 -m http.server
