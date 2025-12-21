@@ -6,6 +6,7 @@ const App = {
     state: {
         livestock: localStorage.getItem('ft_livestock') || null,
         theme: localStorage.getItem('ft_theme') || 'light',
+        currency: 'KSh', // <--- Change your currency symbol here
         chartInstance: null
     },
 
@@ -367,33 +368,54 @@ bindEvents() {
     async loadFinance() {
         const trans = await DB.getAll('transactions', 'livestock', this.state.livestock);
         const list = document.getElementById('transaction-list');
-        
-        let income = 0; 
-        let expense = 0;
+        let income = 0, expense = 0;
 
-        // Sort DESC
         trans.sort((a,b) => new Date(b.date) - new Date(a.date));
-
         list.innerHTML = trans.map(t => {
-            if(t.type === 'income') income += t.amount;
-            else expense += t.amount;
-
+            t.type === 'income' ? income += t.amount : expense += t.amount;
             return `
-            <li>
-                <div>
-                    <strong>${t.category}</strong><br>
-                    <small>${t.date}</small>
-                </div>
-                <span class="amount ${t.type}">
-                    ${t.type === 'income' ? '+' : '-'}${Utils.formatCurrency(t.amount)}
-                </span>
-                <i class="fa-solid fa-trash" style="color:#aaa; cursor:pointer; margin-left:10px" onclick="app.deleteTransaction('${t.id}')"></i>
-            </li>
+                <li>
+                    <div><strong>${t.category}</strong><br><small>${t.date}</small></div>
+                    <span class="amount ${t.type}">
+                        ${t.type === 'income' ? '+' : '-'}${this.state.currency} ${t.amount.toLocaleString()}
+                    </span>
+                    <i class="fa-solid fa-trash" style="color:#aaa; cursor:pointer; margin-left:10px" onclick="app.deleteTransaction('${t.id}')"></i>
+                </li>
             `;
         }).join('');
 
-        document.getElementById('fin-income').innerText = Utils.formatCurrency(income);
-        document.getElementById('fin-expense').innerText = Utils.formatCurrency(expense);
+        document.getElementById('fin-income').innerText = `${this.state.currency} ${income.toLocaleString()}`;
+        document.getElementById('fin-expense').innerText = `${this.state.currency} ${expense.toLocaleString()}`;
+    },
+
+    async exportTransactionsCSV() {
+        const trans = await DB.getAll('transactions', 'livestock', this.state.livestock);
+        if (trans.length === 0) return alert("No transactions to export.");
+
+        // Define CSV Headers
+        const headers = ["Date", "Category", "Type", "Amount", "Notes"];
+        
+        // Map data to rows
+        const rows = trans.sort((a,b) => new Date(b.date) - new Date(a.date)).map(t => [
+            t.date,
+            `"${t.category}"`, // Quotes handle commas in text
+            t.type.toUpperCase(),
+            t.amount,
+            `"${t.notes || ''}"`
+        ]);
+
+        // Combine into string
+        const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
+        
+        // Create download link
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `finance_report_${this.state.livestock}_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     },
 
     async deleteTransaction(id) {
@@ -426,3 +448,4 @@ bindEvents() {
 
 window.app = App; // Expose for HTML onclick handlers
 document.addEventListener('DOMContentLoaded', () => App.init());
+
