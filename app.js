@@ -58,11 +58,9 @@ document.addEventListener("DOMContentLoaded", () => {
     darkModeBtn.innerText = isDark ? "☀️ Light Mode" : "🌙 Dark Mode";
   });
 
-  // --- EXPENSE ROW LOGIC (Using Event Delegation for stability) ---
+  // --- EXPENSE ROW LOGIC ---
   document.getElementById("expenseContainer").addEventListener("click", (e) => {
     const container = document.getElementById("expenseContainer");
-    
-    // Add new row
     if (e.target.id === "addExpenseRow") {
       const newRow = document.createElement("div");
       newRow.className = "expense-row";
@@ -82,8 +80,6 @@ document.addEventListener("DOMContentLoaded", () => {
       `;
       container.appendChild(newRow);
     }
-
-    // Remove row
     if (e.target.classList.contains("remove-exp")) {
       e.target.parentElement.remove();
     }
@@ -128,6 +124,10 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("poultrySubtypeToggle").style.display = isPoultry ? "block" : "none";
     document.getElementById("historySection").style.display = isPoultry ? "block" : "none";
     archiveBtn.style.display = isPoultry ? "block" : "none";
+
+    // Reset extra grid cards visibility initially
+    document.getElementById("avgWeightCard").style.display = "none";
+    document.getElementById("feedCard").style.display = "none";
 
     if (type === "dairy") {
       qtyLabel.innerText = "Milk Collected (Litres)";
@@ -189,7 +189,6 @@ document.addEventListener("DOMContentLoaded", () => {
         loadRecords();
         form.reset();
         document.getElementById("date").valueAsDate = new Date();
-        // Reset expense container to initial single row
         document.getElementById("expenseContainer").innerHTML = `
           <div class="expense-row" style="display: flex; gap: 5px; margin-bottom: 10px;">
             <select class="exp-cat" style="flex: 2; margin: 0; padding: 8px;">
@@ -230,7 +229,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if(breakdownList) breakdownList.innerHTML = "";
 
         let [totalQty, totalExp, totalRev] = [0, 0, 0];
-        let pStats = { mortality: 0, feed: 0, size: 0 };
+        let pStats = { mortality: 0, feed: 0, size: 0, weight: 0, count: 0 };
         let categoryTotals = {}; 
         let archivedGroups = {}; 
         const months = new Set();
@@ -271,7 +270,8 @@ document.addEventListener("DOMContentLoaded", () => {
           if (currentType === "poultry") {
             pStats.mortality += (r.mortality || 0);
             pStats.feed += (r.feed || 0);
-            pStats.size = r.flockSize || pStats.size; 
+            pStats.size = r.flockSize || pStats.size;
+            if(r.weight > 0) { pStats.weight += r.weight; pStats.count++; }
           }
 
           const extraLabel = r.extra ? `<br><small>🏷️ ${r.extra}</small>` : "";
@@ -287,11 +287,21 @@ document.addEventListener("DOMContentLoaded", () => {
           document.getElementById("statFlock").innerText = pStats.size;
           document.getElementById("kpiLabel4").innerText = "Mortality";
           document.getElementById("statMortality").innerText = pStats.mortality;
+
+          // Handle Symmetrical Grid cards for Broilers vs Layers
+          const isBroiler = (activePoultrySub === "broilers");
+          document.getElementById("avgWeightCard").style.display = isBroiler ? "flex" : "none";
+          document.getElementById("feedCard").style.display = "flex"; // Show Feed for both
+
+          document.getElementById("statWeight").innerText = pStats.count > 0 ? (pStats.weight / pStats.count).toFixed(2) + "kg" : "0kg";
+          document.getElementById("statFeed").innerText = pStats.feed.toFixed(1) + "kg";
         } else {
           document.getElementById("kpiLabel3").innerText = currentType === "dairy" ? "Avg Price" : "Total Area";
           document.getElementById("statFlock").innerText = totalQty > 0 ? (totalRev / totalQty).toFixed(1) : "-";
           document.getElementById("kpiLabel4").innerText = "Months Active";
           document.getElementById("statMortality").innerText = months.size;
+          document.getElementById("avgWeightCard").style.display = "none";
+          document.getElementById("feedCard").style.display = "none";
         }
 
         // PIE CHART RENDERING
@@ -300,17 +310,14 @@ document.addEventListener("DOMContentLoaded", () => {
           breakdownDiv.style.display = "block";
           let gradientParts = [];
           let currentPct = 0;
-
           for (const [cat, amt] of Object.entries(categoryTotals)) {
             const pct = (amt / totalExp) * 100;
             const color = catColors[cat] || "#455a64";
-            
             breakdownList.innerHTML += `
               <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:0.85rem;">
                 <span><span style="height:8px; width:8px; background:${color}; display:inline-block; border-radius:2px; margin-right:5px;"></span>${cat}</span>
                 <span style="font-weight:bold;">${pct.toFixed(0)}%</span>
               </div>`;
-            
             if (pct > 0) {
               gradientParts.push(`${color} ${currentPct}% ${currentPct + pct}%`);
               currentPct += pct;
@@ -325,7 +332,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (currentType === "poultry") {
           Object.keys(archivedGroups).forEach(batch => {
             const data = archivedGroups[batch];
-            historyList.innerHTML += `<div class="card" style="background:#f1f8e9; border-left: 4px solid #2e7d32;"><p><strong>📦 ${batch}</strong></p><small>Profit: KES ${data.profit.toLocaleString()}<br>Total Qty: ${data.qty.toFixed(1)}<br>Mortality: ${data.mortality}</small></div>`;
+            historyList.innerHTML += `<div class="card" style="background:var(--highlight-bg); border-left: 4px solid var(--accent-green);"><p><strong>📦 ${batch}</strong></p><small>Profit: KES ${data.profit.toLocaleString()}<br>Total Qty: ${data.qty.toFixed(1)}<br>Mortality: ${data.mortality}</small></div>`;
           });
         }
 
