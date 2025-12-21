@@ -157,6 +157,26 @@
     </div>
 
   </section>
+  <div id="settingsView" class="view-section" style="display:none;">
+  <section class="card">
+    <h3>⚙️ App Settings</h3>
+    <div class="form-group">
+      <label>Farm Name</label>
+      <input type="text" id="settingFarmName" placeholder="My Awesome Farm">
+    </div>
+    <div class="form-group">
+      <label>Currency Symbol</label>
+      <input type="text" id="settingCurrency" placeholder="KES">
+    </div>
+    <button id="saveSettingsBtn" class="save-btn">💾 Save Settings</button>
+  </section>
+
+  <section class="card" style="margin-top: 20px; border-top: 4px solid var(--accent-blue);">
+    <h3>📊 Data Management</h3>
+    <p><small>Backup your data to a CSV file for safekeeping.</small></p>
+    <button id="settingsExportBtn" class="btn-secondary" style="width:100%">📥 Export All Data (CSV)</button>
+  </section>
+</div>
 </main>
 
 <nav class="bottom-nav" id="bottomNav" style="display: none;">
@@ -168,6 +188,11 @@
   </button>
   <button class="nav-item" data-screen="main-form">
     <span>➕</span><small>Add New</small>
+  </button>
+</nav>
+<nav class="bottom-nav" id="bottomNav" style="display: none;">
+  <button class="nav-item" data-screen="settings-view">
+    <span>⚙️</span><small>Settings</small>
   </button>
 </nav>
 
@@ -187,6 +212,7 @@
 </div>
 </body>
 </html>
+
 
 
 
