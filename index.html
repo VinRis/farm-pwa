@@ -1,64 +1,64 @@
-<!-- index.html -->
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
+  <title>FarmTrack</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>FarmTrack PWA</title>
-  <meta name="theme-color" content="#2f855a" />
+  <meta name="theme-color" content="#16a34a" />
+
   <link rel="manifest" href="manifest.json" />
   <link rel="stylesheet" href="style.css" />
-  <link rel="icon" href="icon-192.png" />
-  <!-- CDN libs -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+  <!-- Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+  <!-- Charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
-  <header id="app-header">
-    <h1 id="headerTitle">FarmTrack</h1>
-  </header>
+<header class="app-header">
+  <button id="backBtn" class="icon-btn hidden">
+    <i class="bi bi-arrow-left"></i>
+  </button>
+  <h1 id="headerTitle">FarmTrack</h1>
+</header>
 
-  <main id="app" role="main">
-    <!-- Livestock selector -->
-    <section id="selector" class="modal active" role="dialog" aria-modal="true">
-      <div class="modal-content">
-        <h2>Select livestock to monitor</h2>
-        <div class="grid">
-          <button data-livestock="dairy">Dairy production</button>
-          <button data-livestock="poultry">Poultry production</button>
-          <button data-livestock="pig">Pig production</button>
-          <button data-livestock="goat">Goat production</button>
-        </div>
+<main id="app">
+
+  <!-- Livestock selector -->
+  <section id="selector" class="modal active">
+    <div class="modal-content">
+      <h2>Select livestock</h2>
+      <div class="grid">
+        <button data-livestock="dairy">🐄 Dairy</button>
+        <button data-livestock="poultry">🐔 Poultry</button>
+        <button data-livestock="pig">🐖 Pig</button>
+        <button data-livestock="goat">🐐 Goat</button>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!-- Views -->
-    <section id="view-dashboard" class="view active"></section>
-    <section id="view-add" class="view"></section>
-    <section id="view-records" class="view"></section>
-    <section id="view-finance" class="view"></section>
-    <section id="view-reports" class="view"></section>
-  </main>
+  <section id="view-dashboard" class="view active"></section>
+  <section id="view-add" class="view"></section>
+  <section id="view-records" class="view"></section>
+  <section id="view-finance" class="view"></section>
+  <section id="view-reports" class="view"></section>
 
-  <nav id="bottom-nav" role="navigation">
-    <button data-view="dashboard">Dashboard</button>
-    <button data-view="add">Add record</button>
-    <button data-view="records">Records</button>
-    <button data-view="finance">Finance</button>
-    <button data-view="reports">Reports</button>
-  </nav>
+</main>
 
-  <script type="module" src="sample-data.js"></script>
-  <script type="module" src="db.js"></script>
-  <script type="module" src="utils.js"></script>
-  <script type="module" src="app.js"></script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('service-worker.js');
-      });
-    }
-  </script>
+<nav class="bottom-nav">
+  <button data-view="dashboard"><i class="bi bi-speedometer2"></i><span>Dashboard</span></button>
+  <button data-view="add"><i class="bi bi-plus-circle"></i><span>Add</span></button>
+  <button data-view="records"><i class="bi bi-list-ul"></i><span>Records</span></button>
+  <button data-view="finance"><i class="bi bi-cash-coin"></i><span>Finance</span></button>
+  <button data-view="reports"><i class="bi bi-file-earmark-text"></i><span>Reports</span></button>
+</nav>
+
+<script type="module" src="sample-data.js"></script>
+<script type="module" src="db.js"></script>
+<script type="module" src="utils.js"></script>
+<script type="module" src="app.js"></script>
+
 </body>
 </html>
