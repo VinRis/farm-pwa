@@ -125,8 +125,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("switchTypeBtn").onclick = () => {
     appScreen.style.display = "none";
-    bottomNav.style.display = "none"; // Hide Nav when choosing type
+    bottomNav.style.display = "none"; 
     farmTypeScreen.style.display = "block";
+    
+    // Reset header to default
+    document.getElementById("mainHeader").innerText = "Farm Production Tracker";
   };
 
   // --- DYNAMIC EXPENSE ROWS ---
@@ -275,4 +278,5 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("projectedQty").innerText = (totalMonthQty / now.getDate() * 30).toFixed(1);
   }
 });
+
 
