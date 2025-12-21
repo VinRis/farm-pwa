@@ -7,10 +7,12 @@
   --border-color: #eeeeee;
   --header-bg: #2e7d32;
   --accent-green: #2e7d32;
+  --accent-blue: #0288d1; /* For Projections */
   --highlight-bg: #e8f5e9;
   --highlight-border: #c8e6c9;
   --insight-bg: rgba(46, 125, 50, 0.1);
   --insight-border: #2e7d32;
+  --danger: #d32f2f;
 }
 
 body.dark-mode {
@@ -24,10 +26,11 @@ body.dark-mode {
   --highlight-border: #2e4d2e;
   --insight-bg: rgba(76, 175, 80, 0.15);
   --insight-border: #4caf50;
+  --accent-blue: #29b6f6;
 }
 
-/* GLOBAL FIXES */
-* { box-sizing: border-box; }
+/* GLOBAL RESET */
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -36,186 +39,182 @@ body {
   color: var(--text-main);
   transition: background 0.3s, color 0.3s;
   line-height: 1.5;
+  padding-bottom: 40px; /* Space for mobile scrolling */
 }
 
-/* SMART INSIGHTS STYLING */
-#smartInsights {
-  display: flex;
-  align-items: center;
-  padding: 12px;
-  border-radius: 10px;
-  background: var(--insight-bg);
-  border: 1px dashed var(--insight-border);
-  margin-bottom: 20px;
-  animation: shimmer 2s infinite linear;
-}
-
-@keyframes shimmer {
-  0% { opacity: 0.9; }
-  50% { opacity: 1; }
-  100% { opacity: 0.9; }
-}
-
-#insightIcon { font-size: 1.4rem; margin-right: 12px; }
-#insightText { color: var(--text-main); font-weight: 500; font-size: 0.85rem; }
-
-/* BATCH PERFORMANCE REPORTS */
-.batch-report-card {
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 15px;
-  margin-bottom: 12px;
-  transition: transform 0.2s;
-}
-
-.batch-report-card:hover { transform: translateY(-2px); }
-
-.report-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.report-stats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 12px;
-}
-
-.stat-item small {
-  display: block;
-  font-size: 0.65rem;
-  color: var(--text-sub);
-  text-transform: uppercase;
-}
-
-.stat-item p {
-  margin: 2px 0 0;
-  font-weight: bold;
-  font-size: 1rem;
-}
-
-.performance-bar {
-  height: 8px;
-  background: var(--border-color);
-  border-radius: 4px;
-  overflow: hidden;
-  margin-bottom: 6px;
-}
-
-.performance-bar .fill {
-  height: 100%;
-  background: var(--accent-green);
-  border-radius: 4px;
-  transition: width 1s ease-in-out;
-}
-
-/* UI COMPONENTS */
+/* --- LAYOUT COMPONENTS --- */
 header {
   background: var(--header-bg);
   color: white;
   padding: 20px 15px;
   text-align: center;
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
-.status-bar {
+.card {
+  background: var(--card-bg);
+  margin: 15px;
+  padding: 15px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+/* --- BUTTONS & CONTROLS --- */
+button {
+  cursor: pointer;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.2s;
+  border: none;
+  font-family: inherit;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  margin-top: 8px;
 }
 
-.header-controls {
+button:active { transform: scale(0.96); }
+
+.btn-secondary { background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); }
+.btn-danger { background: var(--danger); color: white; }
+
+.type-btn {
+  width: 100%;
+  padding: 25px 10px;
+  font-size: 1rem;
+  background: var(--card-bg);
+  border: 2px solid var(--border-color);
+  color: var(--text-main);
+}
+
+.type-btn:hover { border-color: var(--accent-green); background: var(--highlight-bg); }
+
+/* --- FINANCIAL PROJECTIONS --- */
+#projectionsCard {
+  border-left: 5px solid var(--accent-blue) !important;
+}
+
+#projectionsCard strong {
+  color: var(--accent-blue);
+}
+
+/* --- DYNAMIC EXPENSE ROWS --- */
+#expenseContainer { margin-top: 10px; }
+
+.expense-row {
   display: flex;
   gap: 8px;
-  justify-content: center;
-  margin-top: 15px;
-  flex-wrap: wrap;
+  margin-bottom: 10px;
+  align-items: center;
 }
 
-.header-controls button {
-  width: auto;
-  padding: 6px 12px;
-  font-size: 0.75rem;
-  margin: 0;
-  background: rgba(255,255,255,0.15);
-  border: 1px solid rgba(255,255,255,0.3);
+.expense-row select, .expense-row input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 0.9rem;
 }
 
-/* KPI CARDS */
+.add-row-btn {
+  width: 40px;
+  height: 40px;
+  background: var(--accent-green);
+  color: white;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+/* --- KPI GRID --- */
 .kpi-grid { 
   display: grid; 
   grid-template-columns: 1fr 1fr; 
   gap: 12px; 
+  margin-top: 10px;
 }
 
 .kpi-card {
   background: var(--card-bg);
-  padding: 15px;
-  border-radius: 12px;
+  padding: 12px;
+  border-radius: 10px;
   border: 1px solid var(--border-color);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  text-align: center;
 }
 
-.kpi-card span { font-size: 0.7rem; color: var(--text-sub); margin-bottom: 4px; }
+.kpi-card span { font-size: 0.7rem; color: var(--text-sub); display: block; margin-bottom: 4px; }
 .kpi-card strong { font-size: 1.1rem; color: var(--accent-green); }
 
-/* FORMS & INPUTS */
-.main-form h3 { margin-top: 0; color: var(--accent-green); font-size: 1.1rem; }
+/* --- FORMS --- */
+.main-form label {
+  display: block;
+  font-size: 0.85rem;
+  margin-bottom: 5px;
+  margin-top: 15px;
+  font-weight: 500;
+}
 
 input, select {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
   background: var(--card-bg);
   color: var(--text-main);
   border: 1px solid var(--border-color);
-  transition: border-color 0.2s;
 }
 
-.expense-row button#addExpenseRow {
-  background: var(--accent-green);
-  margin: 0;
-  padding: 0;
-  height: 42px;
-}
-
-/* CHARTS */
+/* --- CHARTS --- */
 .chart-container {
-  height: 160px;
+  height: 180px;
   display: flex;
   align-items: flex-end;
   justify-content: space-around;
-  padding: 20px 0;
+  padding: 10px 0 30px 0;
+  border-bottom: 1px solid var(--border-color);
 }
 
-.bar-value { font-size: 0.65rem; color: var(--accent-green); }
-.bar-label { font-size: 0.6rem; margin-top: 5px; color: var(--text-sub); }
+.chart-bar-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  height: 100%;
+}
 
-/* TOAST */
+.bar {
+  width: 20px;
+  background: var(--accent-green);
+  border-radius: 4px 4px 0 0;
+  transition: height 0.5s ease-out;
+}
+
+/* --- RECORDS LIST --- */
+#records { padding: 0; list-style: none; }
+#records li {
+  background: var(--card-bg);
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  border: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* --- TOAST NOTIFICATION --- */
 .toast {
-  background-color: #333;
-  color: #fff;
+  position: fixed;
+  bottom: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: white;
+  padding: 12px 25px;
   border-radius: 50px;
-  padding: 12px 24px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  z-index: 1000;
+  transition: bottom 0.5s ease;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.2);
 }
 
-/* Ensure the toast doesn't block clicks when hidden */
-.toast {
-  pointer-events: none; /* Allows clicks to pass through to buttons underneath */
-}
-.toast.show {
-  pointer-events: auto;
-}
-
-/* Ensure buttons are always on top */
-button, .type-btn {
-  position: relative;
-  z-index: 10;
-  cursor: pointer;
-}
+.toast.show { bottom: 30px; }
