@@ -64,6 +64,29 @@ bindEvents() {
             e.preventDefault();
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData.entries());
+            const editId = data.editId; // Get the hidden ID if it exists
+
+            const record = {
+                id: editId || Utils.uuid(), // Use old ID if editing, else new UUID
+                livestock: this.state.livestock,
+                updatedAt: Date.now(),
+                ...data
+            };
+            delete record.editId; // Remove helper field before saving
+            
+            if (editId) {
+                await DB.update('records', record);
+                alert('Record updated!');
+            } else {
+                record.createdAt = Date.now();
+                await DB.add('records', record);
+                alert('Record saved!');
+            }
+            
+            e.target.reset();
+            e.target.querySelector('button[type="submit"]').innerText = "Save Record";
+            if (e.target.querySelector('#edit-id')) e.target.querySelector('#edit-id').value = "";
+            this.refreshDashboard();
             
             // Normalize numbers
             ['quantity', 'feedKg', 'weightKg', 'mortality', 'births', 'birdsCount'].forEach(k => {
@@ -326,26 +349,105 @@ bindEvents() {
     },
 
     async loadRecords() {
-        const filterDate = document.getElementById('record-filter-date').value; // YYYY-MM
+        const filterDate = document.getElementById('record-filter-date').value;
         let records = await DB.getAll('records', 'livestock', this.state.livestock);
-
+    
         if (filterDate) {
             records = records.filter(r => r.date.startsWith(filterDate));
         }
         
-        // Sort DESC
         records.sort((a,b) => new Date(b.date) - new Date(a.date));
-
+    
         const tbody = document.querySelector('#records-table tbody');
         tbody.innerHTML = records.map(r => `
             <tr>
-                <td><input type="checkbox" class="rec-check" value="${r.id}"></td>
+                <td><input type="checkbox" class="record-checkbox" value="${r.id}"></td>
                 <td>${r.date}</td>
-                <td><small>${r.cowId || r.flockId || r.pigId || r.goatId || '-'}</small></td>
+                <td><small>${r.cowId || r.flockId || r.pigId || r.goatId || 'N/A'}</small></td>
                 <td>${r.quantity || '-'}${r.unit || ''}</td>
-                <td><button onclick="app.deleteRecord('${r.id}')" class="btn-danger btn-sm"><i class="fa-solid fa-trash"></i></button></td>
+                <td>
+                    <button onclick="app.editRecord('${r.id}')" class="btn-secondary btn-sm"><i class="fa-solid fa-pen"></i></button>
+                    <button onclick="app.deleteRecord('${r.id}')" class="btn-danger btn-sm"><i class="fa-solid fa-trash"></i></button>
+                </td>
             </tr>
         `).join('');
+    
+        this.initRecordListeners();
+    },
+    
+    initRecordListeners() {
+        const selectAll = document.getElementById('select-all-records');
+        const checkboxes = document.querySelectorAll('.record-checkbox');
+        const bulkBtn = document.getElementById('bulk-delete-btn');
+        const countSpan = document.getElementById('selected-count');
+    
+        // Handle "Select All"
+        selectAll.onchange = () => {
+            checkboxes.forEach(cb => cb.checked = selectAll.checked);
+            updateBulkUI();
+        };
+    
+        // Handle individual checkboxes
+        checkboxes.forEach(cb => {
+            cb.onchange = () => updateBulkUI();
+        });
+    
+        const updateBulkUI = () => {
+            const checkedCount = document.querySelectorAll('.record-checkbox:checked').length;
+            if (checkedCount > 0) {
+                bulkBtn.classList.remove('hidden');
+                countSpan.innerText = checkedCount;
+            } else {
+                bulkBtn.classList.add('hidden');
+            }
+        };
+
+    // Bulk Delete Click
+    bulkBtn.onclick = async () => {
+        const ids = Array.from(document.querySelectorAll('.record-checkbox:checked')).map(cb => cb.value);
+        if (confirm(`Are you sure you want to delete ${ids.length} records?`)) {
+            for (const id of ids) {
+                await DB.delete('records', id);
+            }
+            this.loadRecords();
+            this.refreshDashboard();
+            selectAll.checked = false;
+        }
+    };
+},
+    async editRecord(id) {
+        const records = await DB.getAll('records');
+        const record = records.find(r => r.id === id);
+        
+        if (!record) return;
+    
+        // 1. Switch to the Add view
+        this.switchTab('view-add', document.querySelector('[data-target="view-add"]'));
+    
+        // 2. Wait for the form to render (small timeout ensures DOM update)
+        setTimeout(() => {
+            const form = document.getElementById('add-record-form');
+            
+            // Populate fields
+            for (const key in record) {
+                const input = form.elements[key];
+                if (input) input.value = record[key];
+            }
+    
+            // Add a temporary hidden field to indicate we are editing
+            let editIdInput = form.querySelector('#edit-id');
+            if (!editIdInput) {
+                editIdInput = document.createElement('input');
+                editIdInput.type = 'hidden';
+                editIdInput.id = 'edit-id';
+                editIdInput.name = 'editId';
+                form.appendChild(editIdInput);
+            }
+            editIdInput.value = id;
+    
+            // Change button text
+            form.querySelector('button[type="submit"]').innerText = "Update Record";
+        }, 50);
     },
 
     async deleteRecord(id) {
@@ -418,4 +520,5 @@ bindEvents() {
 
 window.app = App; // Expose for HTML onclick handlers
 document.addEventListener('DOMContentLoaded', () => App.init());
+
 
