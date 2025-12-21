@@ -1,133 +1,258 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Farm Tracker Pro</title>
-  <link rel="manifest" href="manifest.json">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <meta name="theme-color" content="#2e7d32">
-  <link rel="apple-touch-icon" href="icon-192.png"> 
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Farm Production Tracker</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2e7d32">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    
+    <link rel="stylesheet" href="style.css">
+    
+    <style>
+        #app-loader {
+            position: fixed; top:0; left:0; width:100%; height:100%; 
+            background: #f4f6f8; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 9999;
+        }
+        .spinner { width: 40px; height: 40px; border: 4px solid #ddd; border-top: 4px solid #2e7d32; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
 </head>
 <body>
 
-<header>
-    <h1 id="mainHeader">Farm Production Tracker</h1>
-    <div class="status-bar">
-      <span id="statusIndicator"></span>
-      <small id="statusText">Online</small>
+    <div id="app-loader">
+        <div class="spinner"></div>
+        <p style="margin-top: 15px; font-family: sans-serif; color: #666;">Starting Farm Tracker...</p>
     </div>
-    
-    <div class="header-controls">
-      <button id="switchTypeBtn" type="button" class="btn-secondary">🔄 Switch Type</button>
-      <button id="darkModeBtn" type="button" class="btn-secondary">🌙 Dark Mode</button>
-      <button id="resetBtn" type="button" class="btn-danger">⚠️ Reset App</button>
-    </div>
-</header>
 
-<main>
-  <section id="farmTypeScreen">
-    <h2 style="text-align: center; margin-top: 20px;">Select Your Farm Type</h2>
-    <div class="kpi-grid type-selection-grid"> 
-      <button type="button" data-type="dairy" class="card type-btn">🐄<br><strong>Dairy Farming</strong></button>
-      <button type="button" data-type="poultry" class="card type-btn">🐔<br><strong>Poultry Farming</strong></button>
-      <button type="button" data-type="crops" class="card type-btn" style="grid-column: span 2;">🌽<br><strong>Crop Farming</strong></button>
-    </div>
-  </section>
-
-  <section id="appScreen" style="display:none; padding-bottom: 80px;">
-    
-    <div id="dashboard" class="view-section">
-      <div class="dashboard-header" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px;">
-        <h2 style="margin: 0; font-size: 1.2rem;">📊 Summary</h2>
-        <div id="poultryToggleContainer" style="display: none;">
-          <select id="poultrySubtypeToggle" class="modern-select">
-            <option value="layers">🥚 Layers</option>
-            <option value="broilers">🍗 Broilers</option>
-          </select>
+    <header>
+        <div class="header-top">
+            <h1 id="mainHeader">Farm Production Tracker</h1>
+            <small id="statusText">Online</small>
         </div>
-      </div>
-      <section id="analytics" class="card">
-        <h2 class="section-title">📈 7-Day Production</h2>
-        <div id="productionChart" class="chart-container"></div>
-      </section>
-      <div class="financial-overview">
-        <div class="card mini-card border-red">
-          <span class="label">Expenses</span>
-          <strong id="totalExpensesDisplay">KES 0</strong>
+        
+        <div class="header-controls">
+            <button id="switchTypeBtn" type="button" class="btn-header">🔄 Switch Type</button>
+            <button id="darkModeBtn" type="button" class="btn-header">🌙 Dark Mode</button>
+            <button id="resetBtn" type="button" class="btn-header btn-danger-text">⚠️ Reset App</button>
         </div>
-        <div class="card mini-card border-green">
-          <span class="label">Net Profit</span>
-          <strong id="totalProfit">KES 0</strong>
+    </header>
+
+    <main id="mainContent">
+        
+        <section id="farmTypeScreen" class="view-section">
+            <div class="welcome-container">
+                <h2>Select Your Farm Type</h2>
+                <div class="type-grid">
+                    <button type="button" data-type="dairy" class="type-card">
+                        <span class="emoji">🐄</span>
+                        <strong>Dairy Farming</strong>
+                    </button>
+                    <button type="button" data-type="poultry" class="type-card">
+                        <span class="emoji">🐔</span>
+                        <strong>Poultry Farming</strong>
+                    </button>
+                    <button type="button" data-type="crops" class="type-card wide">
+                        <span class="emoji">🌽</span>
+                        <strong>Crop Farming</strong>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section id="appScreen" style="display:none;">
+            
+            <div id="dashboardView" class="view-section">
+                <div class="view-header">
+                    <h2>📊 Summary</h2>
+                    <div id="poultryToggleContainer" style="display: none;">
+                        <select id="poultrySubtypeToggle" class="modern-select">
+                            <option value="layers">🥚 Layers</option>
+                            <option value="broilers" selected>🍗 Broilers</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="card chart-card">
+                    <h3 class="card-title">📈 7-Day Production</h3>
+                    <div id="productionChart" class="chart-container">
+                        </div>
+                </div>
+
+                <div id="smartInsights" class="insight-bar">
+                    <span class="insight-icon">💡</span>
+                    <span id="insightText">Keep recording data to see trends!</span>
+                </div>
+
+                <div class="financial-row">
+                    <div class="mini-card border-red">
+                        <label>Expenses</label>
+                        <strong id="totalExpensesDisplay">KES 0</strong>
+                    </div>
+                    <div class="mini-card border-green">
+                        <label>Net Profit</label>
+                        <strong id="totalProfitDisplay">KES 0</strong>
+                    </div>
+                </div>
+
+                <div class="card forecast-card">
+                    <h3 class="card-title">🔮 Monthly Forecast</h3>
+                    <div class="forecast-grid">
+                        <div class="forecast-item">
+                            <label>Estimated Profit</label>
+                            <strong id="estProfit">KES 0</strong>
+                        </div>
+                        <div class="forecast-item">
+                            <label>Est. Production</label>
+                            <strong id="estProduction">0.0</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="kpi-card">
+                        <label>Production</label>
+                        <strong id="statProd">0.0</strong>
+                    </div>
+                    <div class="kpi-card">
+                        <label>Flock Size</label>
+                        <strong id="statFlock">0</strong>
+                    </div>
+                    <div class="kpi-card">
+                        <label>Mortality</label>
+                        <strong id="statMortality">0</strong>
+                    </div>
+                    <div class="kpi-card">
+                        <label>Feed Used</label>
+                        <strong id="statFeed">0kg</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div id="formView" class="view-section" style="display:none;">
+                <form id="farmForm" class="card main-form">
+                    <h3 class="form-title">Add New Record</h3>
+                    
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" id="date" required>
+                    </div>
+
+                    <div id="poultryFields" class="dynamic-fields" style="display:none;">
+                        <div class="form-group">
+                            <label>Poultry Type</label>
+                            <select id="poultrySubtype" class="modern-select">
+                                <option value="layers">Layers</option>
+                                <option value="broilers" selected>Broilers</option>
+                            </select>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group"><label>Mortality</label><input type="number" id="mortality" placeholder="0"></div>
+                            <div class="form-group"><label>Flock Size</label><input type="number" id="flockSize" placeholder="0"></div>
+                        </div>
+                        <div class="form-group">
+                            <label>Quantity Produced</label>
+                            <input type="number" id="quantityProduced" step="0.1" placeholder="0.0">
+                        </div>
+                        <div class="form-group">
+                            <label>Price per Unit</label>
+                            <input type="number" id="pricePerUnit" placeholder="KES">
+                        </div>
+                    </div>
+
+                    <div id="dairyFields" class="dynamic-fields" style="display:none;">
+                        <div class="form-group"><label>Cow ID/Name</label><input type="text" id="cowId" placeholder="e.g. Daisy"></div>
+                        <div class="form-group"><label>Milk Collected (Ltrs)</label><input type="number" id="milkQty" step="0.1" placeholder="0.0"></div>
+                    </div>
+
+                    <div class="expense-section">
+                        <label>Expenses</label>
+                        <div id="feedContainer">
+                            <div class="expense-entry-row">
+                                <select class="expense-cat">
+                                    <option value="Feed">🌾 Feed</option>
+                                    <option value="Medicine">💊 Medicine</option>
+                                    <option value="Other">🛠️ Other</option>
+                                </select>
+                                <input type="number" class="expense-amount" placeholder="Amount">
+                                <button type="button" id="addExpenseBtn" class="add-row-btn">+</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="save-btn">✅ Save Record</button>
+                </form>
+            </div>
+
+            <div id="recordsView" class="view-section" style="display:none;">
+                <div class="view-header">
+                    <h2>📝 History</h2>
+                    <button id="exportBtn" class="btn-text">📥 Export CSV</button>
+                </div>
+                <div id="recordsList" class="records-container">
+                    </div>
+            </div>
+
+            <div id="financeView" class="view-section" style="display:none;">
+                <div class="card">
+                    <h3>💰 Financial Management</h3>
+                    <p>Coming soon: Detailed cash flow reports.</p>
+                </div>
+            </div>
+
+            <div id="settingsView" class="view-section" style="display:none;">
+                <div class="card">
+                    <h3>⚙️ Settings</h3>
+                    <div class="form-group">
+                        <label>Farm Name</label>
+                        <input type="text" id="settingFarmName" placeholder="My Farm">
+                    </div>
+                    <button id="saveSettingsBtn" class="save-btn">💾 Save Settings</button>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <nav id="bottomNav" class="bottom-nav" style="display: none;">
+        <button class="nav-item active" data-screen="dashboardView">
+            <span class="nav-icon">📊</span>
+            <small>Dash</small>
+        </button>
+        <button class="nav-item" data-screen="financeView">
+            <span class="nav-icon">💰</span>
+            <small>Finance</small>
+        </button>
+        <button class="nav-item" data-screen="formView">
+            <span class="nav-icon">➕</span>
+            <small>Add</small>
+        </button>
+        <button class="nav-item" data-screen="recordsView">
+            <span class="nav-icon">📝</span>
+            <small>History</small>
+        </button>
+        <button class="nav-item" data-screen="settingsView">
+            <span class="nav-icon">⚙️</span>
+            <small>Settings</small>
+        </button>
+    </nav>
+
+    <div id="toast" class="toast">Record Saved Successfully! ✅</div>
+
+    <div id="confirmModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3>Are you sure?</h3>
+            <p id="modalMessage">This action cannot be undone.</p>
+            <div class="modal-buttons">
+                <button id="modalCancel" class="btn-header">Cancel</button>
+                <button id="modalConfirm" class="btn-header btn-danger-text">Delete</button>
+            </div>
         </div>
-      </div>
     </div>
 
-    <div id="records-section" class="view-section" style="display:none;">
-      <section class="records-section">
-        <div class="dashboard-header" style="padding: 15px;">
-          <h2>History</h2>
-          <button id="exportBtn" type="button" class="export-btn">📥 Export CSV</button>
-        </div>
-        <ul id="records"></ul>
-      </section>
-    </div>
-
-    <div id="main-form" class="view-section" style="display:none;">
-      <form id="farmForm" class="card main-form">
-        <h3>Add New Record</h3>
-        <div class="form-group">
-          <label>Date</label>
-          <input type="date" id="date" required>
-        </div>
-        <div id="poultryFields" class="extra-fields" style="display:none;">
-            <label>Type</label>
-            <select id="poultrySubtype" class="modern-select">
-                <option value="layers">Layers</option>
-                <option value="broilers">Broilers</option>
-            </select>
-        </div>
-        <div id="dairyFields" class="extra-fields" style="display:none;">
-            <label>Cow ID</label>
-            <input type="text" id="cowId" placeholder="e.g. Daisy">
-        </div>
-        <button type="submit" class="save-btn">✅ Save Record</button>
-      </form>
-    </div>
-
-    <div id="finance-view" class="view-section" style="display:none;">
-        <section class="card"><h3>💰 Financials</h3></section>
-    </div>
-
-    <div id="settings-view" class="view-section" style="display:none;">
-        <section class="card"><h3>⚙️ Settings</h3></section>
-    </div>
-  </section>
-</main>
-
-<nav class="bottom-nav" id="bottomNav" style="display: none;">
-  <button class="nav-item active" data-screen="dashboard"><span>📊</span><small>Dash</small></button>
-  <button class="nav-item" data-screen="finance-view"><span>💰</span><small>Finance</small></button>
-  <button class="nav-item" data-screen="main-form"><span>➕</span><small>Add</small></button>
-  <button class="nav-item" data-screen="records-section"><span>📝</span><small>History</small></button>
-  <button class="nav-item" data-screen="settings-view"><span>⚙️</span><small>Settings</small></button>
-</nav>
-
-<div id="toast" class="toast">Record Saved Successfully! ✅</div>
-
-<div id="confirmModal" class="modal-overlay">
-  <div class="modal-content">
-    <div class="modal-icon">⚠️</div>
-    <h3>Are you sure?</h3>
-    <p id="modalMessage">This action cannot be undone.</p>
-    <div class="modal-actions">
-      <button id="modalCancel" class="btn-secondary">Cancel</button>
-      <button id="modalConfirm" class="btn-danger">Delete</button>
-    </div>
-  </div>
-</div>
-
-<script src="app.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
-
