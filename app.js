@@ -34,9 +34,37 @@ document.addEventListener("DOMContentLoaded", () => {
     getFarmType();
   };
 
+  // UI Event Listeners
   document.addEventListener("click", (e) => {
     const btn = e.target.closest("#farmTypeScreen button");
     if (btn) setFarmType(btn.dataset.type);
+  });
+
+  document.getElementById("addExpenseRow").addEventListener("click", () => {
+    const container = document.getElementById("expenseContainer");
+    const newRow = document.createElement("div");
+    newRow.className = "expense-row";
+    newRow.style.cssText = "display: flex; gap: 5px; margin-bottom: 5px;";
+    newRow.innerHTML = `
+      <select class="exp-cat" style="flex: 2; margin: 0;">
+        <option value="none">-- Category --</option>
+        <option value="Feed">🌾 Feed</option>
+        <option value="Medication">💉 Medication</option>
+        <option value="Chicks">🐣 Chicks</option>
+        <option value="Labor">👷 Labor</option>
+        <option value="Utilities">💡 Utilities</option>
+        <option value="Other">📦 Other</option>
+      </select>
+      <input type="number" class="exp-amt" placeholder="Amount" style="flex: 2; margin: 0;" inputmode="decimal">
+      <button type="button" class="remove-exp" style="flex: 0.5; margin: 0; background: #d32f2f; color:white; border:none; border-radius:4px;">✕</button>
+    `;
+    container.appendChild(newRow);
+  });
+
+  document.getElementById("expenseContainer").addEventListener("click", (e) => {
+    if (e.target.classList.contains("remove-exp")) {
+      e.target.parentElement.remove();
+    }
   });
 
   function setFarmType(type) {
@@ -94,18 +122,29 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("poultrySubtype").addEventListener("change", updatePoultryUI);
   document.getElementById("poultrySubtypeToggle").addEventListener("change", loadRecords);
 
+  // FORM SUBMISSION
   form.addEventListener("submit", (e) => {
     e.preventDefault();
     const txS = db.transaction("settings", "readonly");
     txS.objectStore("settings").get("farmType").onsuccess = (ev) => {
       const currentType = ev.target.result.value;
+
+      // Handle Multiple Expenses
+      const expenseRows = document.querySelectorAll(".expense-row");
+      const expenseItems = Array.from(expenseRows).map(row => ({
+        category: row.querySelector(".exp-cat").value,
+        amount: Number(row.querySelector(".exp-amt").value) || 0
+      })).filter(item => item.amount > 0);
+
+      const totalExpenses = expenseItems.reduce((sum, item) => sum + item.amount, 0);
+
       const record = {
         type: currentType,
         date: document.getElementById("date").value,
         quantity: Number(document.getElementById("quantity").value),
         price: Number(document.getElementById("price").value),
-        expenses: Number(document.getElementById("expenses").value) || 0,
-        expenseCategory: document.getElementById("expenseCategory").value,
+        expenses: totalExpenses,
+        expenseItems: expenseItems,
         subtype: currentType === "poultry" ? document.getElementById("poultrySubtype").value : null,
         mortality: currentType === "poultry" ? Number(document.getElementById("mortality").value) || 0 : 0,
         flockSize: currentType === "poultry" ? Number(document.getElementById("flockSize").value) || 0 : 0,
@@ -123,7 +162,9 @@ document.addEventListener("DOMContentLoaded", () => {
         loadRecords();
         form.reset();
         document.getElementById("date").valueAsDate = new Date();
-        showApp(currentType);
+        // Reset expense rows to one
+        const container = document.getElementById("expenseContainer");
+        container.innerHTML = container.firstElementChild.outerHTML; 
         showToast("Record Saved! ✅");
       };
     };
@@ -160,6 +201,14 @@ document.addEventListener("DOMContentLoaded", () => {
           if (r.type !== currentType) return;
           if (currentType === "poultry" && r.subtype !== activePoultrySub) return;
 
+          // Process Expenses for Breakdown
+          if (r.expenseItems && r.expenseItems.length > 0) {
+            r.expenseItems.forEach(item => {
+              const cat = item.category !== "none" ? item.category : "Other";
+              categoryTotals[cat] = (categoryTotals[cat] || 0) + item.amount;
+            });
+          }
+
           // HANDLE ARCHIVED DATA
           if (r.archived && currentType === "poultry") {
             const batchKey = r.extra || "Unnamed Batch";
@@ -175,13 +224,10 @@ document.addEventListener("DOMContentLoaded", () => {
           months.add(mKey);
           if (selectedMonth !== "all" && mKey !== selectedMonth) return;
 
-          totalQty += r.quantity; totalExp += r.expenses; totalRev += (r.quantity * r.price);
+          totalQty += r.quantity; 
+          totalExp += r.expenses; 
+          totalRev += (r.quantity * r.price);
           
-          if (r.expenses > 0) {
-            const cat = r.expenseCategory && r.expenseCategory !== "none" ? r.expenseCategory : "Other";
-            categoryTotals[cat] = (categoryTotals[cat] || 0) + r.expenses;
-          }
-
           if (currentType === "poultry") {
             pStats.mortality += (r.mortality || 0);
             pStats.feed += (r.feed || 0);
@@ -190,9 +236,8 @@ document.addEventListener("DOMContentLoaded", () => {
             else { pStats.weightSum += (r.weight || 0); pStats.weightCount++; }
           }
 
-          const catBadge = r.expenses > 0 && r.expenseCategory !== "none" ? `<br><small style="color:#d32f2f;">💸 ${r.expenseCategory}</small>` : "";
           const extraLabel = r.extra ? `<br><small>🏷️ ${r.extra}</small>` : "";
-          recordsList.innerHTML += `<li><div><strong>📅 ${r.date}</strong> ${extraLabel} ${catBadge}<br><small>Qty: ${r.quantity} | Exp: ${r.expenses}</small></div><div style="text-align:right"><strong>KES ${(r.quantity * r.price).toLocaleString()}</strong><br><button class="delete-btn" data-id="${r.id}">✕</button></div></li>`;
+          recordsList.innerHTML += `<li><div><strong>📅 ${r.date}</strong> ${extraLabel}<br><small>Qty: ${r.quantity} | Exp: ${r.expenses}</small></div><div style="text-align:right"><strong>KES ${(r.quantity * r.price).toLocaleString()}</strong><br><button class="delete-btn" data-id="${r.id}">✕</button></div></li>`;
         });
 
         // Update UI
@@ -203,7 +248,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (Object.keys(categoryTotals).length > 0) {
           breakdownDiv.style.display = "block";
           for (const [cat, amt] of Object.entries(categoryTotals)) {
-            const percentage = ((amt / totalExp) * 100).toFixed(0);
+            const percentage = totalExp > 0 ? ((amt / totalExp) * 100).toFixed(0) : 0;
             breakdownList.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>${cat}</span><span>KES ${amt.toLocaleString()} (${percentage}%)</span></div>`;
           }
         } else {
