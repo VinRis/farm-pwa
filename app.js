@@ -431,40 +431,53 @@ bindEvents() {
         }
     };
 },
-    async editRecord(id) {
-        const records = await DB.getAll('records');
-        const record = records.find(r => r.id === id);
+async editRecord(id) {
+    // 1. Get the specific record using the ID
+    const records = await DB.getAll('records', 'livestock', this.state.livestock);
+    const record = records.find(r => String(r.id) === String(id));
+    
+    if (!record) {
+        console.error("Record not found for ID:", id);
+        return;
+    }
+
+    // 2. Switch to the Add view first
+    const navBtn = document.querySelector('[data-target="view-add"]');
+    this.switchTab('view-add', navBtn);
+
+    // 3. Small delay to ensure the form is rendered by renderAddForm()
+    setTimeout(() => {
+        const form = document.getElementById('add-record-form');
+        if (!form) return;
+
+        // 4. Populate standard fields
+        // Note: Using form.elements is safer than querySelector for inputs
+        Object.keys(record).forEach(key => {
+            const input = form.elements[key];
+            if (input) {
+                input.value = record[key];
+            }
+        });
+
+        // 5. Ensure the Hidden Edit ID exists so we don't create a duplicate
+        let editIdInput = document.getElementById('edit-id');
+        if (!editIdInput) {
+            editIdInput = document.createElement('input');
+            editIdInput.type = 'hidden';
+            editIdInput.id = 'edit-id';
+            editIdInput.name = 'editId';
+            form.appendChild(editIdInput);
+        }
+        editIdInput.value = id;
+
+        // 6. Visual feedback
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) submitBtn.innerText = "Update Record";
         
-        if (!record) return;
-    
-        // 1. Switch to the Add view
-        this.switchTab('view-add', document.querySelector('[data-target="view-add"]'));
-    
-        // 2. Wait for the form to render (small timeout ensures DOM update)
-        setTimeout(() => {
-            const form = document.getElementById('add-record-form');
-            
-            // Populate fields
-            for (const key in record) {
-                const input = form.elements[key];
-                if (input) input.value = record[key];
-            }
-    
-            // Add a temporary hidden field to indicate we are editing
-            let editIdInput = form.querySelector('#edit-id');
-            if (!editIdInput) {
-                editIdInput = document.createElement('input');
-                editIdInput.type = 'hidden';
-                editIdInput.id = 'edit-id';
-                editIdInput.name = 'editId';
-                form.appendChild(editIdInput);
-            }
-            editIdInput.value = id;
-    
-            // Change button text
-            form.querySelector('button[type="submit"]').innerText = "Update Record";
-        }, 50);
-    },
+        // Scroll to top so user sees the filled form
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 100); 
+}
 
     async deleteRecord(id) {
         if(confirm('Delete this record?')) {
@@ -536,6 +549,7 @@ bindEvents() {
 
 window.app = App; // Expose for HTML onclick handlers
 document.addEventListener('DOMContentLoaded', () => App.init());
+
 
 
 
