@@ -43,6 +43,10 @@
           <option value="layers">Layers</option>
           <option value="broilers">Broilers</option>
         </select>
+        <div id="expenseBreakdown" class="card" style="margin-top: 10px; display:none;">
+          <p style="font-size: 0.9rem; font-weight: bold; margin-bottom: 8px;">💰 Expense Breakdown</p>
+          <div id="breakdownList" style="font-size: 0.85rem;"></div>
+        </div>
       </div>
 
       <div class="filter-container" style="margin-bottom: 15px;">
@@ -101,6 +105,16 @@
       <input type="number" id="quantity" step="0.01" inputmode="decimal" required>
       <label for="price">Price per Unit (KES)</label>
       <input type="number" id="price" step="0.01" inputmode="decimal" required>
+      <label for="expenseCategory">Expense Category</label>
+      <select id="expenseCategory">
+        <option value="none">-- No Expense --</option>
+        <option value="Feed">🌾 Feed</option>
+        <option value="Medication">💉 Medication/Vaccines</option>
+        <option value="Chicks">🐣 Chick Purchase</option>
+        <option value="Labor">👷 Labor</option>
+        <option value="Utilities">💡 Utilities (Water/Heat)</option>
+        <option value="Other">📦 Other</option>
+      </select>
       <label for="expenses">Expenses (KES)</label>
       <input type="number" id="expenses" step="0.01" inputmode="decimal" placeholder="0.00">
       <button type="submit">✅ Save Record</button>
@@ -124,4 +138,5 @@
 <script src="app.js"></script>
 </body>
 </html>
+
 
