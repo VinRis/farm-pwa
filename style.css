@@ -109,3 +109,22 @@ body.dark-mode .data-table th { background: #2c2c2c; }
     .bottom-nav { max-width: 800px; left: 50%; transform: translateX(-50%); }
 }
 
+.insight-card {
+    background: linear-gradient(to right, #f1f8e9, #ffffff);
+    border-left: 5px solid #2e7d32;
+    margin-bottom: 15px;
+    padding: 15px;
+    font-size: 0.95rem;
+    color: #333;
+    animation: fadeIn 0.5s ease-in;
+}
+
+.insight-content {
+    display: flex;
+    align-items: center;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
