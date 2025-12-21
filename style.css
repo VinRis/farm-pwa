@@ -277,3 +277,33 @@ input, select {
   margin-bottom: 5px;
   color: var(--text-sub);
 }
+
+.chart-container {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    height: 150px; /* Crucial: bars need a height to scale against */
+    padding-top: 20px;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.chart-bar-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    width: 30px;
+}
+
+.bar {
+    width: 100%;
+    background: var(--accent-green);
+    border-radius: 4px 4px 0 0;
+    transition: height 0.5s ease-in-out;
+}
+
+.bar-label {
+    font-size: 10px;
+    margin-top: 5px;
+    color: var(--text-sub);
+}
