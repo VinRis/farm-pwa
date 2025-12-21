@@ -144,12 +144,27 @@ document.addEventListener("DOMContentLoaded", () => {
           exp += r.expenses;
           qty += r.quantity;
           r.expenseItems?.forEach(i => cats[i.category] = (cats[i.category] || 0) + i.amount);
-
-          recordsList.innerHTML += `<li>
-            <span><strong>${r.date}</strong><br>${r.quantity} units</span>
-            <span style="text-align:right">KES ${(r.quantity * r.price).toLocaleString()}<br>
-            <small>Exp: ${r.expenses}</small></span>
-          </li>`;
+        
+          // Create the list item
+          const li = document.createElement("li");
+          li.className = "record-item";
+          li.innerHTML = `
+            <div class="record-info">
+              <strong>${r.date}</strong><br>
+              <small>${r.quantity} units @ ${r.price}</small>
+            </div>
+            <div class="record-actions">
+              <div class="record-finance">
+                KES ${(r.quantity * r.price).toLocaleString()}<br>
+                <small>Exp: ${r.expenses}</small>
+              </div>
+              <div class="action-btns">
+                <button onclick="editRecord(${r.id})" class="edit-btn">✏️</button>
+                <button onclick="deleteRecord(${r.id})" class="delete-btn">🗑️</button>
+              </div>
+            </div>
+          `;
+          recordsList.appendChild(li);
         });
 
         if (document.getElementById("totalProfit")) {
@@ -245,4 +260,47 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   darkModeBtn.onclick = () => document.body.classList.toggle("dark-mode");
+    // --- DELETE RECORD ---
+  window.deleteRecord = (id) => {
+      if (!confirm("Are you sure you want to delete this record?")) return;
+      
+      const tx = db.transaction("records", "readwrite");
+      tx.objectStore("records").delete(id);
+      tx.oncomplete = () => {
+          loadRecords();
+          showToast("Record Deleted 🗑️");
+      };
+  };
+  
+  // --- EDIT RECORD ---
+  window.editRecord = (id) => {
+      const tx = db.transaction("records", "readonly");
+      tx.objectStore("records").get(id).onsuccess = (e) => {
+          const r = e.target.result;
+          
+          // Switch to the form view
+          document.querySelector('[data-screen="main-form"]').click();
+          
+          // Fill the form with existing data
+          document.getElementById("date").value = r.date;
+          document.getElementById("quantity").value = r.quantity;
+          document.getElementById("price").value = r.price;
+          
+          // Note: For a full edit, you'd need to handle expenses and subtypes.
+          // For now, we delete the old one so the "Save" acts as an update.
+          if(confirm("Ready to edit? Note: The old record will be replaced when you save.")) {
+              const delTx = db.transaction("records", "readwrite");
+              delTx.objectStore("records").delete(id);
+          }
+      };
+  };
+  
+  // Helper for toast messages
+  function showToast(msg) {
+      const toast = document.getElementById("toast");
+      toast.innerText = msg;
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 3000);
+  }
 });
+
