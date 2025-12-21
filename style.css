@@ -269,3 +269,12 @@ li {
 
 /* UTILS */
 .hidden { display: none !important; }
+
+#totalExpensesCard {
+    padding: 12px 20px;
+    transition: transform 0.2s ease;
+}
+
+#totalExpensesCard:hover {
+    transform: translateY(-2px);
+}
