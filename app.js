@@ -254,26 +254,8 @@ const App = {
     },
 
     async refreshDashboard() {
-        // 1. Fetch both records and transactions
-        const records = await DB.getAll('records', 'livestock', this.state.livestock);
-        const trans = await DB.getAll('transactions', 'livestock', this.state.livestock);
-        
-        const now = new Date();
-        const currentMonth = now.getMonth();
-        const currentYear = now.getFullYear();
-        
-        // 2. Filter data for the current month
-        const thisMonthRecs = records.filter(r => {
-            const d = new Date(r.date);
-            return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
-        });
 
-        const thisMonthTrans = trans.filter(t => {
-            const d = new Date(t.date);
-            return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
-        });
-
-        generateInsights(records, income, expense) {
+       generateInsights(records, income, expense) {
             const textEl = document.getElementById('insight-text');
             const type = this.state.livestock;
             let insight = "";
@@ -308,6 +290,25 @@ const App = {
     
             textEl.innerText = insight || "Keep up the good work! Your farm records are looking organized.";
         },
+  
+        // 1. Fetch both records and transactions
+        const records = await DB.getAll('records', 'livestock', this.state.livestock);
+        const trans = await DB.getAll('transactions', 'livestock', this.state.livestock);
+        
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+        
+        // 2. Filter data for the current month
+        const thisMonthRecs = records.filter(r => {
+            const d = new Date(r.date);
+            return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+        });
+
+        const thisMonthTrans = trans.filter(t => {
+            const d = new Date(t.date);
+            return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+        });
 
         // 3. Calculate Production and Feed totals
         let totalProd = 0, totalFeed = 0;
@@ -518,6 +519,7 @@ const App = {
 
 window.app = App; // Expose for HTML onclick handlers
 document.addEventListener('DOMContentLoaded', () => App.init());
+
 
 
 
