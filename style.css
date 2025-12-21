@@ -237,3 +237,33 @@ li {
     document.querySelectorAll('.broiler-only').forEach(el => el.style.display = isBroiler ? 'block' : 'none');
     document.querySelector('#qtyLabel').innerText = isBroiler ? "Total Weight Sold (Kg)" : "Eggs Collected (Trays/Pcs)";
 });
+
+.modern-dashboard { background: #f8f9fa; padding: 15px; border-radius: 12px; }
+.dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.modern-select { padding: 6px 12px; border-radius: 8px; border: 1px solid #ddd; }
+.full-width-select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; margin-top: 5px; }
+
+.kpi-grid { 
+  display: grid; 
+  grid-template-columns: 1fr 1fr; 
+  gap: 15px; 
+  margin-top: 20px; 
+}
+
+.kpi-card {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+  border: 1px solid #eee;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.kpi-card p { margin: 0; color: #666; font-size: 0.9rem; margin-bottom: 8px; }
+.kpi-card h3 { margin: 0; color: #2e7d32; font-size: 1.4rem; }
+.profit-highlight { background: #e8f5e9; border: 1px solid #c8e6c9; }
+
+.breakdown-container { margin-top: 20px; background: white; padding: 20px; border-radius: 12px; }
+.breakdown-header { display: flex; gap: 10px; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+.breakdown-content { display: flex; justify-content: space-between; align-items: center; gap: 20px; }
+.breakdown-list { flex: 1; }
