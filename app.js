@@ -260,39 +260,65 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   darkModeBtn.onclick = () => document.body.classList.toggle("dark-mode");
-    // --- DELETE RECORD ---
+
+  // Global variables for the modal
+  const confirmModal = document.getElementById("confirmModal");
+  const modalConfirmBtn = document.getElementById("modalConfirm");
+  const modalCancelBtn = document.getElementById("modalCancel");
+  let deleteId = null;
+  
+ // --- DELETE LOGIC ---
   window.deleteRecord = (id) => {
-      if (!confirm("Are you sure you want to delete this record?")) return;
-      
-      const tx = db.transaction("records", "readwrite");
-      tx.objectStore("records").delete(id);
-      tx.oncomplete = () => {
-          loadRecords();
-          showToast("Record Deleted 🗑️");
-      };
+    deleteId = id;
+    document.getElementById("modalMessage").innerText = "Do you really want to remove this record?";
+    confirmModal.style.display = "flex";
   };
   
-  // --- EDIT RECORD ---
-  window.editRecord = (id) => {
-      const tx = db.transaction("records", "readonly");
-      tx.objectStore("records").get(id).onsuccess = (e) => {
-          const r = e.target.result;
-          
-          // Switch to the form view
-          document.querySelector('[data-screen="main-form"]').click();
-          
-          // Fill the form with existing data
-          document.getElementById("date").value = r.date;
-          document.getElementById("quantity").value = r.quantity;
-          document.getElementById("price").value = r.price;
-          
-          // Note: For a full edit, you'd need to handle expenses and subtypes.
-          // For now, we delete the old one so the "Save" acts as an update.
-          if(confirm("Ready to edit? Note: The old record will be replaced when you save.")) {
-              const delTx = db.transaction("records", "readwrite");
-              delTx.objectStore("records").delete(id);
-          }
+  // Handle Modal Buttons
+  modalConfirmBtn.onclick = () => {
+    if (deleteId) {
+      const tx = db.transaction("records", "readwrite");
+      tx.objectStore("records").delete(deleteId);
+      tx.oncomplete = () => {
+        loadRecords();
+        confirmModal.style.display = "none";
+        showToast("Record Deleted 🗑️");
+        deleteId = null;
       };
+    }
+  };
+  
+  modalCancelBtn.onclick = () => {
+    confirmModal.style.display = "none";
+    deleteId = null;
+  };
+  
+  // --- EDIT LOGIC ---
+  window.editRecord = (id) => {
+    const tx = db.transaction("records", "readonly");
+    tx.objectStore("records").get(id).onsuccess = (e) => {
+      const r = e.target.result;
+      
+      // Switch to form view
+      document.querySelector('[data-screen="main-form"]').click();
+      
+      // Fill basic fields
+      document.getElementById("date").value = r.date;
+      document.getElementById("quantity").value = r.quantity;
+      document.getElementById("price").value = r.price;
+  
+      // Fill poultry fields if they exist
+      if (r.type === 'poultry') {
+          document.getElementById("mortality").value = r.mortality || 0;
+          document.getElementById("flockSize").value = r.flockSize || 0;
+          document.getElementById("poultrySubtype").value = r.subtype;
+      }
+  
+      // Since "Save" creates a new ID, we delete the old one to avoid duplicates
+      const deleteTx = db.transaction("records", "readwrite");
+      deleteTx.objectStore("records").delete(id);
+      showToast("Edit mode active: old record replaced on save.");
+    };
   };
   
   // Helper for toast messages
@@ -303,4 +329,5 @@ document.addEventListener("DOMContentLoaded", () => {
       setTimeout(() => toast.classList.remove("show"), 3000);
   }
 });
+
 
