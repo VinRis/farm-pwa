@@ -275,6 +275,36 @@ document.addEventListener("DOMContentLoaded", () => {
           const extraLabel = r.extra ? `<br><small>🏷️ ${r.extra}</small>` : "";
           recordsList.innerHTML += `<li><div><strong>📅 ${r.date}</strong> ${extraLabel}<br><small>Qty: ${r.quantity} | Exp: ${r.expenses}</small></div><div style="text-align:right"><strong>KES ${(r.quantity * r.price).toLocaleString()}</strong><br><button class="delete-btn" data-id="${r.id}">✕</button></div></li>`;
         });
+        function updateSmartInsights(profit, totalQty, type) {
+  const insightDiv = document.getElementById("smartInsights");
+  const insightText = document.getElementById("insightText");
+  const icon = document.getElementById("insightIcon");
+
+  let message = "";
+  
+  if (profit > 0) {
+    insightDiv.style.display = "flex";
+    insightDiv.style.background = "rgba(46, 125, 50, 0.1)";
+    icon.innerText = "🚀";
+    
+    if (type === "poultry") {
+      message = "Profit is positive! Consider reinvesting in higher quality feed to boost egg/weight yield.";
+    } else if (type === "dairy") {
+      message = "Great milk yield! Ensure your cooling storage is efficient to minimize waste.";
+    } else {
+      message = "Harvest is profitable. Have you considered rotating crops for the next season?";
+    }
+  } else if (profit < 0 && totalQty > 0) {
+    insightDiv.style.display = "flex";
+    insightDiv.style.background = "rgba(211, 47, 47, 0.1)";
+    icon.innerText = "📉";
+    message = "Expenses are exceeding revenue. Review your 'Expense Breakdown' chart to identify leaks.";
+  } else {
+    insightDiv.style.display = "none";
+  }
+
+  insightText.innerText = message;
+}
 
         // --- UPDATE DASHBOARD UI ---
         const profitVal = totalRev - totalExp;
@@ -448,3 +478,4 @@ document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener('offline', updateOnlineStatus);
   updateOnlineStatus();
 });
+
