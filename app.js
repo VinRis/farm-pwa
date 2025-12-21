@@ -115,25 +115,26 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  function showApp(type) {
-    farmTypeScreen.style.display = "none";
-    appScreen.style.display = "block";
-    document.querySelectorAll('.extra-fields').forEach(div => div.style.display = 'none');
+    function showApp(type) {
+        // --- NEW HEADER LOGIC ---
+        const headerElement = document.getElementById("mainHeader");
+        if (type === "poultry") {
+            headerElement.innerText = "Poultry Production";
+        } else if (type === "dairy") {
+            headerElement.innerText = "Dairy Production";
+        } else if (type === "crops") {
+            headerElement.innerText = "Crops Production";
+        } else {
+            headerElement.innerText = "Farm Production Tracker";
+        }
+        // ------------------------
     
-    const isPoultry = (type === "poultry");
-    document.getElementById("poultrySubtypeToggle").style.display = isPoultry ? "block" : "none";
-    document.getElementById("historySection").style.display = isPoultry ? "block" : "none";
-    archiveBtn.style.display = isPoultry ? "block" : "none";
-
-    if (type === "dairy") {
-      qtyLabel.innerText = "Milk Collected (Litres)";
-      document.getElementById("dairyFields").style.display = "block";
-    } else if (type === "poultry") {
-      document.getElementById("poultryFields").style.display = "block";
-      updatePoultryUI();
-    } else if (type === "crops") {
-      qtyLabel.innerText = "Harvest Quantity (Kg)";
-      document.getElementById("cropFields").style.display = "block";
+        farmTypeScreen.style.display = "none";
+        appScreen.style.display = "block";
+        
+        // ... rest of your existing showApp code ...
+        document.querySelectorAll('.extra-fields').forEach(div => div.style.display = 'none');
+        // ...
     }
   }
 
@@ -415,8 +416,10 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   document.getElementById("switchTypeBtn").addEventListener("click", () => { 
-    farmTypeScreen.style.display = "block"; 
-    appScreen.style.display = "none"; 
+      farmTypeScreen.style.display = "block"; 
+      appScreen.style.display = "none"; 
+      // Reset header when choosing a new farm type
+      document.getElementById("mainHeader").innerText = "Farm Production Tracker";
   });
 
   document.getElementById("resetBtn").addEventListener("click", () => { 
@@ -433,4 +436,5 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
   }
 });
+
 
