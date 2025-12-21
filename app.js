@@ -67,6 +67,37 @@ document.addEventListener("DOMContentLoaded", () => {
     farmTypeScreen.style.display = "none";
     appScreen.style.display = "block";
     bottomNav.style.display = "flex"; // Show Nav Bar when app starts
+  function showApp(type) {
+  const farmTypeScreen = document.getElementById("farmTypeScreen");
+  const appScreen = document.getElementById("appScreen");
+  const bottomNav = document.getElementById("bottomNav");
+  const mainHeader = document.getElementById("mainHeader"); // Reference to header h1
+
+  // Define titles for each farm type
+  const titles = {
+    'dairy': '🐄 Dairy Manager',
+    'poultry': '🐔 Poultry Tracker',
+    'crops': '🌽 Crop Manager'
+  };
+
+  // Change the header text based on type
+  if (mainHeader && titles[type]) {
+    mainHeader.innerText = titles[type];
+  }
+
+  farmTypeScreen.style.display = "none";
+  appScreen.style.display = "block";
+  bottomNav.style.display = "flex"; 
+  
+  // Set default view to dashboard
+  document.querySelector('[data-screen="dashboard"]').click();
+  
+  // Configure form fields
+  document.querySelectorAll(".extra-fields").forEach(f => f.style.display = "none");
+  if (type === "poultry") document.getElementById("poultryFields").style.display = "block";
+  if (type === "dairy") document.getElementById("dairyFields").style.display = "block";
+  if (type === "crops") document.getElementById("cropFields").style.display = "block";
+}
     
     // Set default view to dashboard
     document.querySelector('[data-screen="dashboard"]').click();
@@ -244,3 +275,4 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("projectedQty").innerText = (totalMonthQty / now.getDate() * 30).toFixed(1);
   }
 });
+
