@@ -21,29 +21,23 @@ document.addEventListener("DOMContentLoaded", () => {
     "Labor": "#0288d1", "Utilities": "#7b1fa2", "Other": "#757575"
   };
 
-  // --- NEW FEATURE: DAILY REMINDERS ---
+  // --- FEATURE: DAILY REMINDERS ---
   function requestNotificationPermission() {
-    if ("Notification" in window) {
-      Notification.requestPermission().then(permission => {
-        if (permission === "granted") {
-          console.log("Notification permission granted.");
-          scheduleDailyReminder();
-        }
-      });
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission();
     }
   }
 
   function scheduleDailyReminder() {
-    // Check every hour if it's 6:00 PM (18:00)
     setInterval(() => {
       const now = new Date();
       if (now.getHours() === 18 && now.getMinutes() === 0) {
         new Notification("Farm Tracker Pro", {
-          body: "Don't forget to record today's production and expenses!",
+          body: "Time to record today's production!",
           icon: "icon-192.png"
         });
       }
-    }, 60000); // Check every minute
+    }, 60000);
   }
 
   // --- DATABASE SETUP ---
@@ -59,19 +53,55 @@ document.addEventListener("DOMContentLoaded", () => {
     if (document.getElementById("date")) document.getElementById("date").valueAsDate = new Date();
     getFarmType();
     requestNotificationPermission();
+    scheduleDailyReminder();
   };
 
   // --- DYNAMIC EXPENSE ROWS ---
   document.getElementById("addExpenseRow").addEventListener("click", () => {
     const newRow = document.querySelector(".expense-row").cloneNode(true);
     newRow.querySelector(".exp-amt").value = "";
-    // Change plus to minus for new rows
     const btn = newRow.querySelector("button");
     btn.innerText = "✕";
     btn.style.background = "#d32f2f";
     btn.onclick = () => newRow.remove();
     expenseContainer.appendChild(newRow);
   });
+
+  // --- NEW FEATURE: CALCULATE PROJECTIONS ---
+  function updateProjections(filteredRecords) {
+    const now = new Date();
+    const currentMonth = now.toISOString().substring(0, 7);
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    const dayOfMonth = now.getDate();
+
+    // Filter only records from the current month
+    const thisMonthData = filteredRecords.filter(r => r.date.startsWith(currentMonth));
+
+    if (thisMonthData.length === 0) {
+      document.getElementById("projectedProfit").innerText = "Awaiting data...";
+      document.getElementById("projectedQty").innerText = "0.0";
+      return;
+    }
+
+    let totalMonthProfit = 0;
+    let totalMonthQty = 0;
+
+    thisMonthData.forEach(r => {
+      totalMonthProfit += (r.quantity * r.price) - r.expenses;
+      totalMonthQty += r.quantity;
+    });
+
+    // Calculate daily averages
+    const avgDailyProfit = totalMonthProfit / dayOfMonth;
+    const avgDailyQty = totalMonthQty / dayOfMonth;
+
+    // Project for the full month
+    const projectedProfit = avgDailyProfit * daysInMonth;
+    const projectedQty = avgDailyQty * daysInMonth;
+
+    document.getElementById("projectedProfit").innerText = `KES ${Math.round(projectedProfit).toLocaleString()}`;
+    document.getElementById("projectedQty").innerText = projectedQty.toFixed(1);
+  }
 
   // --- CHARTING & VISUALS ---
   function updateChart(data) {
@@ -130,7 +160,10 @@ document.addEventListener("DOMContentLoaded", () => {
         let cats = {};
         recordsList.innerHTML = "";
 
-        filtered.forEach(r => {
+        // Sort by date descending for the list
+        const sorted = [...filtered].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        sorted.forEach(r => {
           rev += (r.quantity * r.price);
           exp += r.expenses;
           qty += r.quantity;
@@ -148,7 +181,8 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("totalQuantity").innerText = qty.toFixed(1);
         
         renderPie(cats, exp);
-        updateChart(filtered);
+        updateChart(filtered.slice(-7)); // Show last 7 for trend
+        updateProjections(filtered);     // Calculate projections
       };
     };
   }
@@ -213,4 +247,7 @@ document.addEventListener("DOMContentLoaded", () => {
     appScreen.style.display = "none";
     farmTypeScreen.style.display = "block";
   };
+  
+  // Re-load data when sub-type toggle changes
+  document.getElementById("poultrySubtypeToggle").onchange = loadRecords;
 });
