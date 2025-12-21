@@ -250,4 +250,32 @@ document.addEventListener("DOMContentLoaded", () => {
   };
   
   document.getElementById("poultrySubtypeToggle").onchange = () => loadRecords();
+  // Ensure buttons on the Selection Screen work
+  document.querySelectorAll(".type-btn").forEach(btn => {
+    btn.onclick = () => {
+      const type = btn.dataset.type;
+      // Save to DB and show the app
+      db.transaction("settings", "readwrite").objectStore("settings").put({ key: "farmType", value: type });
+      showApp(type);
+    };
+  });
+  
+  // Fix the Switch Type button in the header
+  document.getElementById("switchTypeBtn").onclick = () => {
+    db.transaction("settings", "readwrite").objectStore("settings").delete("farmType").onsuccess = () => {
+        appScreen.style.display = "none";
+        bottomNav.style.display = "none";
+        farmTypeScreen.style.display = "block";
+        mainHeader.innerText = "Farm Production Tracker";
+    };
+  };
+  
+  // Fix the Reset App button
+  document.getElementById("resetBtn").onclick = () => {
+    if (confirm("⚠️ This will wipe ALL records. Are you sure?")) {
+      indexedDB.deleteDatabase("FarmDB");
+      location.reload();
+    }
+  };
 });
+
