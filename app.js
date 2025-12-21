@@ -34,19 +34,14 @@ document.addEventListener("DOMContentLoaded", () => {
     getFarmType();
   };
 
-  // UI Event Listeners
-  document.addEventListener("click", (e) => {
-    const btn = e.target.closest("#farmTypeScreen button");
-    if (btn) setFarmType(btn.dataset.type);
-  });
-
+  // --- EXPENSE ROW LOGIC ---
   document.getElementById("addExpenseRow").addEventListener("click", () => {
     const container = document.getElementById("expenseContainer");
     const newRow = document.createElement("div");
     newRow.className = "expense-row";
-    newRow.style.cssText = "display: flex; gap: 5px; margin-bottom: 5px;";
+    newRow.style.cssText = "display: flex; gap: 5px; margin-bottom: 10px;";
     newRow.innerHTML = `
-      <select class="exp-cat" style="flex: 2; margin: 0;">
+      <select class="exp-cat" style="flex: 2; margin: 0; padding: 8px;">
         <option value="none">-- Category --</option>
         <option value="Feed">🌾 Feed</option>
         <option value="Medication">💉 Medication</option>
@@ -55,7 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <option value="Utilities">💡 Utilities</option>
         <option value="Other">📦 Other</option>
       </select>
-      <input type="number" class="exp-amt" placeholder="Amount" style="flex: 2; margin: 0;" inputmode="decimal">
+      <input type="number" class="exp-amt" placeholder="Amount" style="flex: 2; margin: 0; padding: 8px;" inputmode="decimal">
       <button type="button" class="remove-exp" style="flex: 0.5; margin: 0; background: #d32f2f; color:white; border:none; border-radius:4px;">✕</button>
     `;
     container.appendChild(newRow);
@@ -67,6 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // --- CORE FARM LOGIC ---
   function setFarmType(type) {
     const tx = db.transaction("settings", "readwrite");
     tx.objectStore("settings").put({ key: "farmType", value: type });
@@ -94,7 +90,7 @@ document.addEventListener("DOMContentLoaded", () => {
     appScreen.style.display = "block";
     document.querySelectorAll('.extra-fields').forEach(div => div.style.display = 'none');
     
-    const isPoultry = type === "poultry";
+    const isPoultry = (type === "poultry");
     document.getElementById("poultrySubtypeToggle").style.display = isPoultry ? "block" : "none";
     document.getElementById("poultryKpis").style.display = isPoultry ? "grid" : "none";
     document.getElementById("historySection").style.display = isPoultry ? "block" : "none";
@@ -114,7 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function updatePoultryUI() {
     const sub = document.getElementById("poultrySubtype").value;
-    const isBroiler = sub === "broilers";
+    const isBroiler = (sub === "broilers");
     document.querySelectorAll('.broiler-only-field').forEach(el => el.style.display = isBroiler ? "block" : "none");
     qtyLabel.innerText = isBroiler ? "Weight Sold (Kg)" : "Eggs Collected (Pcs/Trays)";
   }
@@ -122,14 +118,14 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("poultrySubtype").addEventListener("change", updatePoultryUI);
   document.getElementById("poultrySubtypeToggle").addEventListener("change", loadRecords);
 
-  // FORM SUBMISSION
+  // --- SAVING RECORDS ---
   form.addEventListener("submit", (e) => {
     e.preventDefault();
     const txS = db.transaction("settings", "readonly");
     txS.objectStore("settings").get("farmType").onsuccess = (ev) => {
       const currentType = ev.target.result.value;
 
-      // Handle Multiple Expenses
+      // Map dynamic expense rows
       const expenseRows = document.querySelectorAll(".expense-row");
       const expenseItems = Array.from(expenseRows).map(row => ({
         category: row.querySelector(".exp-cat").value,
@@ -162,14 +158,29 @@ document.addEventListener("DOMContentLoaded", () => {
         loadRecords();
         form.reset();
         document.getElementById("date").valueAsDate = new Date();
-        // Reset expense rows to one
+        // Reset expense rows to a single row
         const container = document.getElementById("expenseContainer");
-        container.innerHTML = container.firstElementChild.outerHTML; 
+        container.innerHTML = `
+          <div class="expense-row" style="display: flex; gap: 5px; margin-bottom: 10px;">
+            <select class="exp-cat" style="flex: 2; margin: 0; padding: 8px;">
+              <option value="none">-- Category --</option>
+              <option value="Feed">🌾 Feed</option>
+              <option value="Medication">💉 Medication</option>
+              <option value="Chicks">🐣 Chicks</option>
+              <option value="Labor">👷 Labor</option>
+              <option value="Utilities">💡 Utilities</option>
+              <option value="Other">📦 Other</option>
+            </select>
+            <input type="number" class="exp-amt" placeholder="Amount" style="flex: 2; margin: 0; padding: 8px;" inputmode="decimal">
+            <button type="button" id="addExpenseRow" style="flex: 0.5; margin: 0; background: #2e7d32; border:none; border-radius: 4px; color:white; font-weight: bold;">+</button>
+          </div>
+        `;
         showToast("Record Saved! ✅");
       };
     };
   });
 
+  // --- LOADING AND DISPLAYING ---
   function loadRecords() {
     if (!db) return;
     const tx = db.transaction(["records", "settings"], "readonly");
@@ -201,14 +212,6 @@ document.addEventListener("DOMContentLoaded", () => {
           if (r.type !== currentType) return;
           if (currentType === "poultry" && r.subtype !== activePoultrySub) return;
 
-          // Process Expenses for Breakdown
-          if (r.expenseItems && r.expenseItems.length > 0) {
-            r.expenseItems.forEach(item => {
-              const cat = item.category !== "none" ? item.category : "Other";
-              categoryTotals[cat] = (categoryTotals[cat] || 0) + item.amount;
-            });
-          }
-
           // HANDLE ARCHIVED DATA
           if (r.archived && currentType === "poultry") {
             const batchKey = r.extra || "Unnamed Batch";
@@ -228,6 +231,14 @@ document.addEventListener("DOMContentLoaded", () => {
           totalExp += r.expenses; 
           totalRev += (r.quantity * r.price);
           
+          // Sum up expense categories for the breakdown
+          if (r.expenseItems) {
+            r.expenseItems.forEach(item => {
+              const cat = item.category !== "none" ? item.category : "Other";
+              categoryTotals[cat] = (categoryTotals[cat] || 0) + item.amount;
+            });
+          }
+
           if (currentType === "poultry") {
             pStats.mortality += (r.mortality || 0);
             pStats.feed += (r.feed || 0);
@@ -240,7 +251,7 @@ document.addEventListener("DOMContentLoaded", () => {
           recordsList.innerHTML += `<li><div><strong>📅 ${r.date}</strong> ${extraLabel}<br><small>Qty: ${r.quantity} | Exp: ${r.expenses}</small></div><div style="text-align:right"><strong>KES ${(r.quantity * r.price).toLocaleString()}</strong><br><button class="delete-btn" data-id="${r.id}">✕</button></div></li>`;
         });
 
-        // Update UI
+        // Update Summary UI
         document.getElementById("totalQuantity").innerText = totalQty.toFixed(1);
         document.getElementById("totalProfit").innerText = (totalRev - totalExp).toLocaleString();
         
@@ -255,6 +266,7 @@ document.addEventListener("DOMContentLoaded", () => {
           breakdownDiv.style.display = "none";
         }
 
+        // Poultry Specific Stats
         if (currentType === "poultry") {
           document.getElementById("statFlock").innerText = pStats.size;
           document.getElementById("statMortality").innerText = pStats.mortality;
@@ -281,6 +293,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
+  // --- ANALYTICS ---
   function updateChart(data, currentType) {
     const chartContainer = document.getElementById("productionChart");
     if (!chartContainer) return;
@@ -302,6 +315,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // --- ACTIONS ---
   archiveBtn.addEventListener("click", () => {
     const sub = document.getElementById("poultrySubtypeToggle").value;
     if (confirm(`Archive the current ${sub} batch? Dashboard will reset.`)) {
@@ -320,6 +334,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   monthFilter.addEventListener("change", loadRecords);
+  
   recordsList.addEventListener("click", (e) => {
     if (e.target.classList.contains("delete-btn") && confirm("Delete record?")) {
       const tx = db.transaction("records", "readwrite");
@@ -328,8 +343,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  document.getElementById("switchTypeBtn").addEventListener("click", () => { farmTypeScreen.style.display = "block"; appScreen.style.display = "none"; });
-  document.getElementById("resetBtn").addEventListener("click", () => { if (confirm("Wipe all data?")) { db.close(); indexedDB.deleteDatabase("FarmDB").onsuccess = () => window.location.reload(); } });
+  document.getElementById("switchTypeBtn").addEventListener("click", () => { 
+    farmTypeScreen.style.display = "block"; 
+    appScreen.style.display = "none"; 
+  });
+
+  document.getElementById("resetBtn").addEventListener("click", () => { 
+    if (confirm("Wipe all data? This cannot be undone.")) { 
+      db.close(); 
+      indexedDB.deleteDatabase("FarmDB").onsuccess = () => window.location.reload(); 
+    } 
+  });
 
   function showToast(msg) {
     const toast = document.getElementById("toast");
