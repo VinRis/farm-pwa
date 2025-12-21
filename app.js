@@ -16,74 +16,57 @@ const App = {
         if (this.state.livestock) {
             this.loadAppShell();
         } else {
-            // Wait for DB, then load sample, then stay on landing
             loadSampleData(); 
         }
 
-        // Service Worker Communication for Sync (stub)
-        window.addEventListener('online', this.syncToCloud);
+        window.addEventListener('online', () => this.syncToCloud());
     },
 
-bindEvents() {
-    // 1. IMPROVED NAVIGATION HANDLER
-    const navButtons = document.querySelectorAll('.nav-btn');
-    
-    navButtons.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            // Prevent default behavior and stop event bubbling
-            e.preventDefault();
-            e.stopPropagation();
-
-            // Get the target ID from the clicked button's data-target attribute
-            const targetId = btn.getAttribute('data-target');
-            console.log("Navigating to:", targetId); // Debug Log
-
-            if (targetId) {
-                this.switchTab(targetId, btn);
-            }
+    bindEvents() {
+        // Navigation Buttons
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = btn.getAttribute('data-target');
+                if (targetId) this.switchTab(targetId, btn);
+            });
         });
-    });
 
-    // 2. THEME TOGGLE
-    document.getElementById('theme-toggle')?.addEventListener('click', () => {
-        this.state.theme = this.state.theme === 'light' ? 'dark' : 'light';
-        localStorage.setItem('ft_theme', this.state.theme);
-        this.applyTheme();
-    });
+        // Theme Toggle
+        document.getElementById('theme-toggle')?.addEventListener('click', () => {
+            this.state.theme = this.state.theme === 'light' ? 'dark' : 'light';
+            localStorage.setItem('ft_theme', this.state.theme);
+            this.applyTheme();
+        });
 
-    // 3. HOME BUTTON
-    document.getElementById('home-btn')?.addEventListener('click', () => {
-        this.state.livestock = null;
-        localStorage.removeItem('ft_livestock');
-        document.getElementById('app-shell').classList.add('hidden');
-        document.getElementById('landing-page').classList.remove('hidden');
-    });
+        // Home Button
+        document.getElementById('home-btn')?.addEventListener('click', () => {
+            this.state.livestock = null;
+            localStorage.removeItem('ft_livestock');
+            document.getElementById('app-shell').classList.add('hidden');
+            document.getElementById('landing-page').classList.remove('hidden');
+        });
 
-        // Add Record Form
-// --- CORRECTED ADD RECORD FORM HANDLER ---
-        document.getElementById('add-record-form').addEventListener('submit', async (e) => {
+        // FORM SUBMIT: Add/Update Record
+        document.getElementById('add-record-form')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData.entries());
-            const editId = data.editId; // Get the hidden ID if it exists
-        
-            // 1. Normalize numbers (Do this BEFORE creating the record object)
-            ['quantity', 'feedKg', 'weightKg', 'mortality', 'births', 'birdsCount', 'pigletsBorn'].forEach(k => {
-                if (data[k]) data[k] = parseFloat(data[k]);
+            const editId = data.editId;
+
+            // Normalize numbers
+            ['quantity', 'feedKg', 'weightKg', 'mortality', 'pigletsBorn'].forEach(k => {
+                if(data[k]) data[k] = parseFloat(data[k]);
             });
-        
-            // 2. Build the record object
+
             const record = {
-                id: editId || Utils.uuid(), // Use old ID if editing, else new UUID
+                id: editId || Utils.uuid(),
                 livestock: this.state.livestock,
                 updatedAt: Date.now(),
                 ...data
             };
-            
-            // Clean up helper field
-            delete record.editId;
-        
-            // 3. Save or Update logic
+            delete record.editId; 
+
             if (editId) {
                 await DB.update('records', record);
                 alert('Record updated!');
@@ -92,149 +75,72 @@ bindEvents() {
                 await DB.add('records', record);
                 alert('Record saved!');
             }
-        
-            // 4. UI Cleanup
+            
             e.target.reset();
             const submitBtn = e.target.querySelector('button[type="submit"]');
             if (submitBtn) submitBtn.innerText = "Save Record";
-            
-            const hiddenInput = e.target.querySelector('#edit-id');
-            if (hiddenInput) hiddenInput.value = "";
-        
-            this.refreshDashboard();
-        });
-            
-            // Normalize numbers
-            ['quantity', 'feedKg', 'weightKg', 'mortality', 'births', 'birdsCount'].forEach(k => {
-                if(data[k]) data[k] = parseFloat(data[k]);
-            });
-
-            const record = {
-                id: Utils.uuid(),
-                livestock: this.state.livestock,
-                createdAt: Date.now(),
-                ...data
-            };
-
-            await DB.add('records', record);
-            e.target.reset();
-            alert('Record saved');
             this.refreshDashboard();
         });
 
-        // Add Transaction Form
-        document.getElementById('add-transaction-form').addEventListener('submit', async (e) => {
+        // Other Listeners
+        document.getElementById('add-transaction-form')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData.entries());
             data.amount = parseFloat(data.amount);
-            
-            const trans = {
-                id: Utils.uuid(),
-                livestock: this.state.livestock,
-                createdAt: Date.now(),
-                ...data
-            };
-
-            await DB.add('transactions', trans);
+            await DB.add('transactions', { id: Utils.uuid(), livestock: this.state.livestock, createdAt: Date.now(), ...data });
             e.target.reset();
-            alert('Transaction saved');
             this.loadFinance();
         });
 
-        // Records Filter & Actions
-        document.getElementById('record-filter-date').addEventListener('change', () => this.loadRecords());
-        
-        // Reports
-        document.getElementById('generate-pdf-btn').addEventListener('click', () => this.generateReport());
-        document.getElementById('export-csv-btn').addEventListener('click', async () => {
-            const records = await DB.getAll('records', 'livestock', this.state.livestock);
-            Utils.downloadCSV(records, `farmtrack_${this.state.livestock}.csv`);
-        });
-        
-        // Backup/Restore
-        document.getElementById('backup-btn').addEventListener('click', async () => {
-            const data = await DB.dump();
-            const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'farmtrack_backup.json';
-            a.click();
-        });
-
-        document.getElementById('restore-btn').addEventListener('click', () => document.getElementById('restore-file').click());
-        document.getElementById('restore-file').addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            const reader = new FileReader();
-            reader.onload = async (ev) => {
-                try {
-                    const data = JSON.parse(ev.target.result);
-                    await DB.restore(data);
-                    alert('Restore complete. Reloading...');
-                    location.reload();
-                } catch(err) {
-                    alert('Invalid backup file');
-                }
-            };
-            reader.readAsText(file);
-        });
+        document.getElementById('record-filter-date')?.addEventListener('change', () => this.loadRecords());
     },
 
-    applyTheme() {
-        if (this.state.theme === 'dark') document.body.classList.add('dark-mode');
-        else document.body.classList.remove('dark-mode');
-    },
+    async editRecord(id) {
+        const records = await DB.getAll('records', 'livestock', this.state.livestock);
+        const record = records.find(r => String(r.id) === String(id));
+        if (!record) return;
 
-    selectLivestock(type) {
-        this.state.livestock = type;
-        localStorage.setItem('ft_livestock', type);
-        this.loadAppShell();
-    },
+        this.switchTab('view-add', document.querySelector('[data-target="view-add"]'));
 
-    async loadAppShell() {
-        // Load Data First
-        await loadSampleData();
+        setTimeout(() => {
+            const form = document.getElementById('add-record-form');
+            if (!form) return;
+            
+            // Fill fields
+            Object.keys(record).forEach(key => {
+                if (form.elements[key]) form.elements[key].value = record[key];
+            });
 
-        document.getElementById('landing-page').classList.add('hidden');
-        document.getElementById('app-shell').classList.remove('hidden');
-        
-        // Update Title
-        const titles = { dairy: 'Dairy Farm', poultry: 'Poultry Farm', pig: 'Pig Farm', goat: 'Goat Farm' };
-        document.getElementById('header-title').innerText = titles[this.state.livestock];
-
-        // Setup Forms
-        this.renderAddForm();
-
-        // Load Default View
-        this.switchTab('view-dashboard', document.querySelector('[data-target="view-dashboard"]'));
+            // Handle hidden edit ID
+            let editIdInput = document.getElementById('edit-id');
+            if (!editIdInput) {
+                editIdInput = document.createElement('input');
+                editIdInput.type = 'hidden';
+                editIdInput.id = 'edit-id';
+                editIdInput.name = 'editId';
+                form.appendChild(editIdInput);
+            }
+            editIdInput.value = id;
+            form.querySelector('button[type="submit"]').innerText = "Update Record";
+        }, 100);
     },
 
     switchTab(viewId, btnElement) {
-        console.log("Switching view to:", viewId);
-    
-        // Remove 'active' class from all views
         document.querySelectorAll('.tab-view').forEach(view => {
             view.classList.remove('active');
-            view.style.display = 'none'; // Explicitly hide
+            view.style.display = 'none';
         });
-    
-        // Add 'active' class to the target view
+
         const targetView = document.getElementById(viewId);
         if (targetView) {
             targetView.classList.add('active');
-            targetView.style.display = 'block'; // Explicitly show
-        } else {
-            console.error("Could not find view with ID:", viewId);
+            targetView.style.display = 'block';
         }
-    
-        // Update Button Styles
+
         document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-        if (btnElement) {
-            btnElement.classList.add('active');
-        }
-    
-        // Trigger data loading based on view
+        if (btnElement) btnElement.classList.add('active');
+
         if (viewId === 'view-dashboard') this.refreshDashboard();
         if (viewId === 'view-records') this.loadRecords();
         if (viewId === 'view-finance') this.loadFinance();
@@ -549,6 +455,7 @@ async editRecord(id) {
 
 window.app = App; // Expose for HTML onclick handlers
 document.addEventListener('DOMContentLoaded', () => App.init());
+
 
 
 
