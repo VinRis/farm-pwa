@@ -1,15 +1,19 @@
 {
   "name": "Farm Production Tracker Pro",
   "short_name": "FarmTracker",
-  "id": "farm-tracker-pro-unique-id",
-  "description": "Professional offline management for Poultry, Dairy, and Crop farming.",
-  "start_url": "index.html",
+  "id": "com.farmtracker.pro.v2",
+  "description": "Professional offline management for Poultry, Dairy, and Crop farming with automated analytics.",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "minimal-ui"],
   "orientation": "portrait",
-  "background_color": "#f0f2f5",
+  "background_color": "#f4f6f8",
   "theme_color": "#2e7d32",
+  "dir": "ltr",
+  "lang": "en-US",
   "categories": ["business", "productivity", "utilities"],
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "icon-192.png",
@@ -32,10 +36,17 @@
   ],
   "shortcuts": [
     {
-      "name": "Add New Record",
+      "name": "Add Record",
       "short_name": "Add",
-      "description": "Quickly add production data",
-      "url": "index.html#formView",
+      "description": "Quickly add production or expense data",
+      "url": "./index.html#formView",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "View History",
+      "short_name": "History",
+      "description": "View previous farm records",
+      "url": "./index.html#recordsView",
       "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
     }
   ],
@@ -45,14 +56,14 @@
       "sizes": "512x512",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "Mobile Dashboard"
+      "label": "Farm Dashboard showing 7-day analytics"
     },
     {
       "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "Desktop Dashboard"
+      "label": "Full analytics and record management"
     }
   ]
 }
