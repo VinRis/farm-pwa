@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>Farm Tracker Pro</title>
   <link rel="manifest" href="manifest.json">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <meta name="theme-color" content="#2e7d32">
   <link rel="apple-touch-icon" href="icon-192.png"> 
   <link rel="stylesheet" href="style.css">
@@ -13,100 +13,108 @@
 
 <header>
     <h1 id="mainHeader">Farm Production Tracker</h1>
-    <p>
-      Offline Farm Management
-      <span id="statusIndicator" style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#4caf50; margin-left:5px;"></span>
-      <small id="statusText" style="font-size: 0.7rem; opacity: 0.8;">Online</small>
-    </p>
-    <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; padding-top: 15px;">
-      <button id="switchTypeBtn" type="button" style="width: auto; margin: 0; padding: 8px 15px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); font-size: 0.8rem; color: white;">🔄 Switch Type</button>
-      <button id="darkModeBtn" type="button" style="width: auto; margin: 0; padding: 8px 15px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); font-size: 0.8rem; color: white;">🌙 Dark Mode</button>
-      <button id="resetBtn" type="button" style="width: auto; margin: 0; padding: 8px 15px; background: #d32f2f; border: none; font-size: 0.8rem; color: white;">⚠️ Reset App</button>
+    <div class="status-bar">
+      <span id="statusIndicator"></span>
+      <small id="statusText">Checking Connection...</small>
+    </div>
+    
+    <div class="header-controls">
+      <button id="switchTypeBtn" type="button">🔄 Switch Type</button>
+      <button id="darkModeBtn" type="button">🌙 Dark Mode</button>
+      <button id="resetBtn" type="button">⚠️ Reset App</button>
     </div>
 </header>
 
 <main>
   <section id="farmTypeScreen">
     <h2 style="text-align: center; margin-top: 20px;">Select Your Farm Type</h2>
-    <div class="kpi-grid"> <button type="button" data-type="dairy" class="card" style="cursor: pointer; border: 1px solid var(--border-color); width: 100%; padding: 20px;">🐄<br><strong>Dairy Farming</strong></button>
-      <button type="button" data-type="poultry" class="card" style="cursor: pointer; border: 1px solid var(--border-color); width: 100%; padding: 20px;">🐔<br><strong>Poultry Farming</strong></button>
-      <button type="button" data-type="crops" class="card" style="cursor: pointer; border: 1px solid var(--border-color); width: 100%; padding: 20px; grid-column: span 2;">🌽<br><strong>Crop Farming</strong></button>
+    <div class="kpi-grid"> 
+      <button type="button" data-type="dairy" class="card type-btn">🐄<br><strong>Dairy Farming</strong></button>
+      <button type="button" data-type="poultry" class="card type-btn">🐔<br><strong>Poultry Farming</strong></button>
+      <button type="button" data-type="crops" class="card type-btn" style="grid-column: span 2;">🌽<br><strong>Crop Farming</strong></button>
     </div>
   </section>
 
   <section id="appScreen" style="display:none;">
     
-    <section id="analytics" class="card" style="margin-bottom: 20px;">
-      <h2 style="font-size: 1.1rem; margin-bottom: 15px; text-align: left;">📈 Last 7 Days Production</h2>
+    <section id="analytics" class="card">
+      <h2 class="section-title">📈 Last 7 Days Production</h2>
       <div id="productionChart" class="chart-container"></div>
     </section>
 
     <section id="dashboard">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+      <div class="dashboard-header">
         <h2 style="margin: 0; font-size: 1.2rem;">📊 Summary</h2>
-        <select id="poultrySubtypeToggle" class="modern-select" style="width: auto; padding: 5px 10px;">
+        <select id="poultrySubtypeToggle" class="modern-select">
           <option value="layers">Layers</option>
           <option value="broilers">Broilers</option>
         </select>
       </div>
     
-      <div class="filter-section" style="margin-bottom: 15px;">
-        <label for="monthFilter" style="font-size: 0.8rem; color: var(--text-sub);">Filter by Month:</label>
+      <div class="filter-section">
+        <label for="monthFilter">Filter by Month:</label>
         <select id="monthFilter">
           <option value="all">All Time</option>
         </select>
       </div>
 
-      <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-        <div class="card" id="totalExpensesCard" style="flex: 1; margin: 0; border-left: 4px solid #d32f2f; padding: 10px 15px;">
-          <span style="font-size: 0.7rem; color: var(--text-sub); font-weight: bold; text-transform: uppercase; display: block;">Expenses</span>
-          <strong id="totalExpensesDisplay" style="font-size: 1.1rem; color: #d32f2f;">KES 0</strong>
+      <div class="financial-overview">
+        <div class="card mini-card border-red">
+          <span class="label">Expenses</span>
+          <strong id="totalExpensesDisplay">KES 0</strong>
         </div>
       
-        <div class="card" style="flex: 1; margin: 0; border-left: 4px solid #2e7d32; padding: 10px 15px;">
-          <span style="font-size: 0.7rem; color: var(--text-sub); font-weight: bold; text-transform: uppercase; display: block;">Net Profit</span>
-          <strong id="totalProfit" style="font-size: 1.1rem; color: #2e7d32;">KES 0</strong>
+        <div class="card mini-card border-green">
+          <span class="label">Net Profit</span>
+          <strong id="totalProfit">KES 0</strong>
         </div>
       </div>
       
-      <div class="kpi-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
-        <div class="kpi-card" style="padding: 10px;">
-          <span style="font-size: 0.75rem; opacity: 0.8;">Production</span>
-          <strong id="totalQuantity" style="font-size: 1.2rem; display: block;">0.0</strong>
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <span>Production</span>
+          <strong id="totalQuantity">0.0</strong>
         </div>
         
-        <div class="kpi-card" style="padding: 10px;">
-          <span id="kpiLabel3" style="font-size: 0.75rem; opacity: 0.8;">Flock Size</span>
-          <strong id="statFlock" style="font-size: 1.2rem; display: block;">0</strong>
+        <div class="kpi-card">
+          <span id="kpiLabel3">Flock Size</span>
+          <strong id="statFlock">0</strong>
         </div>
       
-        <div class="kpi-card" style="padding: 10px;">
-          <span id="kpiLabel4" style="font-size: 0.75rem; opacity: 0.8;">Mortality</span>
-          <strong id="statMortality" style="font-size: 1.2rem; display: block;">0</strong>
+        <div class="kpi-card">
+          <span id="kpiLabel4">Mortality</span>
+          <strong id="statMortality">0</strong>
         </div>
-      
-        <div class="kpi-card" id="avgWeightCard" style="display: none; padding: 10px;">
-          <span style="font-size: 0.75rem; opacity: 0.8;">Avg Weight</span>
-          <strong id="statWeight" style="font-size: 1.2rem; display: block;">0kg</strong>
+
+        <div class="kpi-card" id="avgWeightCard" style="display: none;">
+          <span>Avg Weight</span>
+          <strong id="statWeight">0kg</strong>
+        </div>
+
+        <div class="kpi-card" id="feedCard" style="display: none;">
+          <span>Feed Used</span>
+          <strong id="statFeed">0kg</strong>
         </div>
       </div>
     
-      <div id="expenseBreakdown" class="card breakdown-container" style="display:none; margin-top: 15px;">
-        <h4 style="margin: 0 0 15px 0; text-align: left;">💰 Expense Breakdown</h4>
+      <div id="expenseBreakdown" class="card breakdown-container" style="display:none;">
+        <h4 style="margin: 0 0 15px 0;">💰 Expense Breakdown</h4>
         <div class="breakdown-content">
           <div id="breakdownList" style="flex: 1;"></div>
           <div class="chart-wrapper">
-             <div id="pieChartCircle" class="pie-chart"></div>
+              <div id="pieChartCircle" class="pie-chart"></div>
           </div>
         </div>
       </div>
     </section>
 
-    <form id="farmForm" style="margin-top: 25px;">
-      <h3 style="margin-top: 0;">Add New Record</h3>
+    <form id="farmForm" class="card main-form">
+      <h3>Add New Record</h3>
       
-      <label for="date">Date</label>
-      <input type="date" id="date" required>
+      <div class="form-group">
+        <label for="date">Date</label>
+        <input type="date" id="date" required>
+      </div>
 
       <div id="dairyFields" class="extra-fields" style="display:none;">
         <label for="cowId">Cow Name/ID</label>
@@ -121,19 +129,19 @@
       <div id="poultryFields" class="extra-fields" style="display:none;">
         <label for="poultrySubtype">Poultry Type</label>
         <select id="poultrySubtype">
-          <option value="layers">Layers (Egg Production)</option>
-          <option value="broilers">Broilers (Meat Production)</option>
+          <option value="layers">Layers (Eggs)</option>
+          <option value="broilers">Broilers (Meat)</option>
         </select>
         
         <label for="batchId">Batch/Flock ID</label>
         <input type="text" id="batchId" placeholder="e.g. Batch B-2024">
         
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-          <div><label for="mortality">Birds Lost</label><input type="number" id="mortality" placeholder="0"></div>
-          <div><label for="flockSize">Flock Size</label><input type="number" id="flockSize" placeholder="Total"></div>
+        <div class="form-row">
+          <div><label for="mortality">Birds Lost</label><input type="number" id="mortality"></div>
+          <div><label for="flockSize">Flock Size</label><input type="number" id="flockSize"></div>
         </div>
         
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div class="form-row">
           <div><label for="feed">Feed (Kg)</label><input type="number" id="feed" step="0.1"></div>
           <div class="broiler-only-field"><label for="avgWeight">Avg Weight (Kg)</label><input type="number" id="avgWeight" step="0.01"></div>
         </div>
@@ -147,8 +155,8 @@
       
       <label>Expenses</label>
       <div id="expenseContainer">
-        <div class="expense-row" style="display: flex; gap: 5px; margin-bottom: 10px;">
-          <select class="exp-cat" style="flex: 2; margin: 0; padding: 8px;">
+        <div class="expense-row">
+          <select class="exp-cat">
             <option value="none">-- Category --</option>
             <option value="Feed">🌾 Feed</option>
             <option value="Medication">💉 Medication</option>
@@ -157,23 +165,23 @@
             <option value="Utilities">💡 Utilities</option>
             <option value="Other">📦 Other</option>
           </select>
-          <input type="number" class="exp-amt" placeholder="Amount" style="flex: 2; margin: 0; padding: 8px;" inputmode="decimal">
-          <button type="button" id="addExpenseRow" style="flex: 0.5; margin: 0; background: var(--accent-green); border:none; border-radius: 4px; color:white; font-weight: bold;">+</button>
+          <input type="number" class="exp-amt" placeholder="Amount" inputmode="decimal">
+          <button type="button" id="addExpenseRow">+</button>
         </div>
       </div>
 
-      <button type="submit" style="margin-top: 15px;">✅ Save Record</button>
+      <button type="submit" class="save-btn">✅ Save Record</button>
     </form>
 
-    <section style="margin-top: 30px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+    <section class="records-section">
+      <div class="dashboard-header">
         <h2 style="font-size: 1.2rem;">Saved Records</h2>
-        <button id="exportBtn" type="button" style="width: auto; margin: 0; padding: 8px 15px; background: #1b5e20; font-size: 0.8rem;">📥 Export CSV</button>
+        <button id="exportBtn" type="button" class="export-btn">📥 Export CSV</button>
       </div>
       <ul id="records"></ul>
     </section>
 
-    <section id="historySection" style="margin-top: 30px; display: none; border-top: 2px solid var(--border-color); padding-top: 20px;">
+    <section id="historySection" class="history-section">
       <h2 style="font-size: 1.2rem;">📜 Batch History</h2>
       <div id="historyList"></div>
     </section>
@@ -186,5 +194,3 @@
 <script src="app.js"></script>
 </body>
 </html>
-
-
