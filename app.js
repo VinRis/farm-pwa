@@ -65,6 +65,17 @@ document.addEventListener("DOMContentLoaded", () => {
   function showApp(type) {
     const titles = { 'dairy': '🐄 Dairy Manager', 'poultry': '🐔 Poultry Tracker', 'crops': '🌽 Crop Manager' };
     if (mainHeader && titles[type]) mainHeader.innerText = titles[type];
+    const poultryToggle = document.getElementById("poultryToggleContainer");
+    if (type === 'poultry') {
+        poultryToggle.style.display = "flex";
+    } else {
+        poultryToggle.style.display = "none";
+    }
+    // ----------------------
+
+    farmTypeScreen.style.display = "none";
+    appScreen.style.display = "block";
+    if (bottomNav) bottomNav.style.display = "flex";
 
     farmTypeScreen.style.display = "none";
     appScreen.style.display = "block";
@@ -315,3 +326,4 @@ document.addEventListener("DOMContentLoaded", () => {
 
   darkModeBtn.onclick = () => document.body.classList.toggle("dark-mode");
 });
+
