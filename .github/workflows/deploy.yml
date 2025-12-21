@@ -1,20 +1,18 @@
+.github/workflows/deploy.yml
 name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: ["main"]
-
-permissions:
-  contents: write
+    branches:
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
+      - uses: actions/checkout@v2
       - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
+        uses: JamesIves/github-pages-deploy-action@4.1.5
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: .
+          branch: gh-pages
+          folder: .
