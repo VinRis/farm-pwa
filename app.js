@@ -220,4 +220,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("poultrySubtypeToggle").onchange = () => loadRecords();
   darkModeBtn.onclick = () => document.body.classList.toggle("dark-mode");
+  // Add this inside your DOMContentLoaded block
+  document.getElementById("switchTypeBtn").onclick = () => {
+    // 1. Hide the app and nav
+    appScreen.style.display = "none";
+    if (bottomNav) bottomNav.style.display = "none"; 
+    
+    // 2. Show the selection screen
+    farmTypeScreen.style.display = "block";
+    
+    // 3. Reset the header title
+    if (mainHeader) mainHeader.innerText = "Farm Production Tracker";
+    
+    // 4. Clear the saved farmType so it doesn't auto-load next time
+    db.transaction("settings", "readwrite").objectStore("settings").delete("farmType");
+  };
 });
+
