@@ -37,7 +37,7 @@
 
   <section id="appScreen" style="display:none; padding-bottom: 80px;">
     
-    <div id="dashboardView" class="view-section">
+    <div id="dashboard" class="view-section">
       <div class="dashboard-header" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px;">
         <h2 style="margin: 0; font-size: 1.2rem;">📊 Summary</h2>
         <div id="poultryToggleContainer" style="display: none;">
@@ -47,17 +47,10 @@
           </select>
         </div>
       </div>
-    
       <section id="analytics" class="card">
         <h2 class="section-title">📈 7-Day Production</h2>
         <div id="productionChart" class="chart-container"></div>
       </section>
-
-      <div id="smartInsights" class="card">
-        <span id="insightIcon">💡</span>
-        <small id="insightText">Loading insights...</small>
-      </div>
-
       <div class="financial-overview">
         <div class="card mini-card border-red">
           <span class="label">Expenses</span>
@@ -68,154 +61,56 @@
           <strong id="totalProfit">KES 0</strong>
         </div>
       </div>
-
-      <div class="kpi-grid metrics-grid">
-        <div class="kpi-card"><span>Production</span><strong id="totalQuantity">0.0</strong></div>
-        <div class="kpi-card"><span>Flock Size</span><strong id="statFlock">0</strong></div>
-        <div class="kpi-card"><span>Mortality</span><strong id="statMortality">0</strong></div>
-        <div class="kpi-card"><span>Feed Used</span><strong id="statFeed">0kg</strong></div>
-      </div>
     </div>
 
     <div id="records-section" class="view-section" style="display:none;">
       <section class="records-section">
         <div class="dashboard-header" style="padding: 15px;">
-          <h2>Saved Records</h2>
+          <h2>History</h2>
           <button id="exportBtn" type="button" class="export-btn">📥 Export CSV</button>
         </div>
         <ul id="records"></ul>
       </section>
     </div>
 
-    <div id="formView" class="view-section" style="display:none;">
+    <div id="main-form" class="view-section" style="display:none;">
       <form id="farmForm" class="card main-form">
         <h3>Add New Record</h3>
         <div class="form-group">
-          <label for="date">Date</label>
+          <label>Date</label>
           <input type="date" id="date" required>
         </div>
-
         <div id="poultryFields" class="extra-fields" style="display:none;">
-          <label for="poultrySubtype">Poultry Type</label>
-          <select id="poultrySubtype" class="modern-select">
-            <option value="layers">🥚 Layers</option>
-            <option value="broilers">🍗 Broilers</option>
-          </select>
-        
-          <div id="layerSpecificFields">
-            <div class="form-row">
-              <div><label>Eggs Collected</label><input type="number" id="eggsCollected" placeholder="0"></div>
-              <div><label>Broken Eggs</label><input type="number" id="eggsBroken" placeholder="0"></div>
-            </div>
-          </div>
-        
-          <div id="broilerSpecificFields" style="display:none;">
-            <div class="form-row">
-              <div><label>Avg. Weight (kg)</label><input type="number" id="avgWeight" step="0.01" placeholder="0.00"></div>
-              <div><label>Flock Size</label><input type="number" id="flockSizePoultry" placeholder="0"></div>
-            </div>
-          </div>
-        
-          <div class="form-group">
-            <label>Mortality</label>
-            <input type="number" id="mortalityPoultry" placeholder="0">
-          </div>
-        
-          <label>Feed Intake</label>
-          <div id="feedContainer">
-            <div class="feed-row">
-              <input type="text" class="feed-type" placeholder="Feed Type">
-              <input type="number" class="feed-qty" placeholder="Qty (kg)">
-              <button type="button" id="addFeedRow" class="add-row-btn">+</button>
-            </div>
-          </div>
+            <label>Type</label>
+            <select id="poultrySubtype" class="modern-select">
+                <option value="layers">Layers</option>
+                <option value="broilers">Broilers</option>
+            </select>
         </div>
-
         <div id="dairyFields" class="extra-fields" style="display:none;">
-          <div class="form-group">
-            <label for="cowId">Cow Name/ID</label>
+            <label>Cow ID</label>
             <input type="text" id="cowId" placeholder="e.g. Daisy">
-          </div>
-          <div class="form-group">
-            <label>Milk Yield (Litres)</label>
-            <input type="number" id="milkYield" step="0.1" placeholder="0.0">
-          </div>
         </div>
-
-        <div id="cropsFields" class="extra-fields" style="display:none;">
-          <div class="form-group">
-            <label>Harvest Qty (kg)</label>
-            <input type="number" id="harvestQty" placeholder="0">
-          </div>
-        </div>
-
         <button type="submit" class="save-btn">✅ Save Record</button>
       </form>
     </div>
 
     <div id="finance-view" class="view-section" style="display:none;">
-      <section class="card">
-        <h3>💰 Sales & Financials</h3>
-        <form id="financeForm">
-          <div class="form-group"><label>Date</label><input type="date" id="finDate" required></div>
-          <div class="form-group">
-            <label>Type</label>
-            <select id="finType" class="modern-select">
-              <option value="sale">📈 Sale (Income)</option>
-              <option value="expense">📉 General Expense</option>
-            </select>
-          </div>
-          <div class="form-group"><label>Description</label><input type="text" id="finDesc" placeholder="e.g. Sold 30 trays"></div>
-          <div class="form-row">
-            <div><label>Amount</label><input type="number" id="finAmount" required></div>
-            <div><label>Category</label>
-              <select id="finCat" class="modern-select">
-                <option value="Produce">Produce</option>
-                <option value="Livestock">Livestock</option>
-                <option value="Feed">Feed/Supplies</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-          </div>
-          <button type="submit" class="save-btn">💾 Save Transaction</button>
-        </form>
-      </section>
+        <section class="card"><h3>💰 Financials</h3></section>
     </div>
 
     <div id="settings-view" class="view-section" style="display:none;">
-      <section class="card">
-        <h3>⚙️ App Settings</h3>
-        <div class="form-group">
-          <label>Farm Name</label>
-          <input type="text" id="settingFarmName" placeholder="My Farm">
-        </div>
-        <div class="form-group">
-          <label>Currency Symbol</label>
-          <input type="text" id="settingCurrency" placeholder="KES">
-        </div>
-        <button id="saveSettingsBtn" class="save-btn">💾 Save Settings</button>
-      </section>
+        <section class="card"><h3>⚙️ Settings</h3></section>
     </div>
-
   </section>
 </main>
 
 <nav class="bottom-nav" id="bottomNav" style="display: none;">
-  <button class="nav-item active" data-screen="dashboard">
-    <span>📊</span><small>Dashboard</small>
-  </button>
-  <button class="nav-item" data-screen="finance-view">
-    <span>💰</span><small>Finance</small>
-  </button>
-  <button class="nav-item" data-screen="main-form">
-    <span>➕</span><small>Log Prod.</small>
-  </button>
-  <button class="nav-item" data-screen="records-section">
-    <span>📝</span><small>History</small>
-  </button>
-  <button class="nav-item" data-screen="settings-view">
-    <span>⚙️</span><small>Settings</small>
-  </button>
+  <button class="nav-item active" data-screen="dashboard"><span>📊</span><small>Dash</small></button>
+  <button class="nav-item" data-screen="finance-view"><span>💰</span><small>Finance</small></button>
+  <button class="nav-item" data-screen="main-form"><span>➕</span><small>Add</small></button>
+  <button class="nav-item" data-screen="records-section"><span>📝</span><small>History</small></button>
+  <button class="nav-item" data-screen="settings-view"><span>⚙️</span><small>Settings</small></button>
 </nav>
 
 <div id="toast" class="toast">Record Saved Successfully! ✅</div>
@@ -235,3 +130,4 @@
 <script src="app.js"></script>
 </body>
 </html>
+
