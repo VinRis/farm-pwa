@@ -22,11 +22,12 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // --- DATABASE SETUP ---
-  const request = indexedDB.open("FarmDB", 1);
+  const request = indexedDB.open("FarmDB", 2);
   request.onupgradeneeded = (e) => {
     db = e.target.result;
     if (!db.objectStoreNames.contains("records")) db.createObjectStore("records", { keyPath: "id", autoIncrement: true });
     if (!db.objectStoreNames.contains("settings")) db.createObjectStore("settings", { keyPath: "key" });
+    if (!db.objectStoreNames.contains("finance")) db.createObjectStore("finance", { keyPath: "id", autoIncrement: true });
   };
 
   request.onsuccess = (e) => {
@@ -40,6 +41,9 @@ document.addEventListener("DOMContentLoaded", () => {
     btn.onclick = () => {
       document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
+    if (target === 'finance-view') {
+    document.getElementById('financeView').style.display = 'block';
+    } else if (target === 'dashboard') {
 
       const target = btn.dataset.screen;
       document.querySelectorAll('.view-section').forEach(section => {
@@ -382,7 +386,26 @@ document.addEventListener("DOMContentLoaded", () => {
   container.appendChild(newRow);
 };
 
+    document.getElementById("financeForm").onsubmit = (e) => {
+    e.preventDefault();
+    const trans = {
+        date: document.getElementById("finDate").value,
+        type: document.getElementById("finType").value,
+        desc: document.getElementById("finDesc").value,
+        amount: parseFloat(document.getElementById("finAmount").value),
+        category: document.getElementById("finCat").value
+    };
+
+    const tx = db.transaction("finance", "readwrite");
+    tx.objectStore("finance").add(trans).onsuccess = () => {
+        showToast("Financial Record Saved! 💰");
+        document.getElementById("financeForm").reset();
+        document.querySelector('[data-screen="dashboard"]').click();
+    };
+};
+
   darkModeBtn.onclick = () => document.body.classList.toggle("dark-mode");
 });
+
 
 
