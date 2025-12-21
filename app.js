@@ -443,4 +443,26 @@ document.addEventListener("DOMContentLoaded", () => {
     toast.className = "toast show";
     setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
   }
+    // --- CONNECTION MONITORING ---
+  function updateOnlineStatus() {
+    const dot = document.getElementById("statusIndicator");
+    const text = document.getElementById("statusText");
+    
+    if (navigator.onLine) {
+      dot.style.background = "#4caf50"; // Green
+      text.innerText = "Online";
+      showToast("Back Online! 📶");
+    } else {
+      dot.style.background = "#f44336"; // Red
+      text.innerText = "Offline (Saving Locally)";
+      showToast("Working Offline 📴");
+    }
+  }
+  
+  window.addEventListener('online', updateOnlineStatus);
+  window.addEventListener('offline', updateOnlineStatus);
+  
+  // Initial check
+  updateOnlineStatus();
 });
+
