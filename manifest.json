@@ -1,69 +1,22 @@
 {
-  "name": "Farm Production Tracker Pro",
-  "short_name": "FarmTracker",
-  "id": "com.farmtracker.pro.v2",
-  "description": "Professional offline management for Poultry, Dairy, and Crop farming with automated analytics.",
+  "name": "FarmTrack — Offline Farm Production Tracker",
+  "short_name": "FarmTrack",
   "start_url": "./index.html",
-  "scope": "./",
   "display": "standalone",
-  "display_override": ["window-controls-overlay", "minimal-ui"],
-  "orientation": "portrait",
-  "background_color": "#f4f6f8",
-  "theme_color": "#2e7d32",
-  "dir": "ltr",
-  "lang": "en-US",
-  "categories": ["business", "productivity", "utilities"],
-  "prefer_related_applications": false,
+  "background_color": "#ffffff",
+  "theme_color": "#0b6e4f",
+  "description": "Offline-first PWA to track dairy, poultry, pig and goat production. Uses IndexedDB.",
+  "lang": "en",
   "icons": [
     {
-      "src": "icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTI4IiBoZWlnaHQ9IjEyOCIgdmlld0JveD0iMCAwIDEyOCAxMjgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEyOCIgIGhlaWdodD0iMTI4IiByeD0iMjQiIGZpbGw9IiMwYjZlNDIiLz48cGF0aCBkPSJNMzIgNzZlLTEyIDAgMCAxIDAgMCAxMiAwIDAgMCAwLTMwIDAgMCAwIDAtMzAgMCIgZmlsbD0iI2ZmZiIvPjwvc3ZnPg==",
+      "sizes": "128x128",
+      "type": "image/svg+xml"
     },
     {
-      "src": "icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "maskable"
-    },
-    {
-      "src": "icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "Add Record",
-      "short_name": "Add",
-      "description": "Quickly add production or expense data",
-      "url": "./index.html#formView",
-      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
-    },
-    {
-      "name": "View History",
-      "short_name": "History",
-      "description": "View previous farm records",
-      "url": "./index.html#recordsView",
-      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Farm Dashboard showing 7-day analytics"
-    },
-    {
-      "src": "icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "Full analytics and record management"
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTIiIGZpbGw9IiMwYjZlNDIiLz48cGF0aCBkPSJNNDAgMzZlLTUgMCAwIDAgMCAtMCA1IDAgMCAwIC0yNSAwIiBmaWxsPSIjZmZmIi8+PC9zdmc+",
+      "sizes": "64x64",
+      "type": "image/svg+xml"
     }
   ]
 }
