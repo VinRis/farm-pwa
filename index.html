@@ -38,19 +38,16 @@
   <section id="appScreen" style="display:none; padding-bottom: 80px;">
         
     <div id="dashboardView" class="view-section">
-      <div class="dashboard-header">
-        <h2 style="margin: 0; font-size: 1.2rem;">📊 Summary</h2>
-        <select id="poultrySubtypeToggle" class="modern-select">
-          <option value="layers">Layers</option>
-          <option value="broilers">Broilers</option>
-        </select>
-        <div id="poultryToggleContainer" class="dashboard-header" style="display:none;">
-            <h2 style="margin: 0; font-size: 1.2rem;">📊 Summary</h2>
-            <select id="poultrySubtypeToggle" class="modern-select">
-                <option value="layers">Layers</option>
-                <option value="broilers">Broilers</option>
-            </select>
-        </div>
+      <div id="poultryToggleContainer" class="dashboard-header" style="display:none;">
+          <h2 style="margin: 0; font-size: 1.2rem;">📊 Summary</h2>
+          <select id="poultrySubtypeToggle" class="modern-select">
+              <option value="layers">Layers</option>
+              <option value="broilers">Broilers</option>
+          </select>
+      </div>
+      
+      <div id="defaultDashboardHeader" class="dashboard-header">
+          <h2 style="margin: 0; font-size: 1.2rem;">📊 Summary</h2>
       </div>
 
       <section id="analytics" class="card">
@@ -180,11 +177,9 @@
 
       <section class="card" style="margin-top: 20px; border-top: 4px solid var(--accent-blue);">
         <h3>📊 Data Management</h3>
-        <p><small>Backup your data to a CSV file for safekeeping.</small></p>
         <button id="settingsExportBtn" class="btn-secondary" style="width:100%">📥 Export All Data (CSV)</button>
       </section>
     </div>
-
   </section>
 </main>
 
@@ -220,4 +215,3 @@
 <script src="app.js"></script>
 </body>
 </html>
-
