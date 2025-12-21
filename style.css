@@ -297,3 +297,33 @@ li {
     margin-bottom: 4px;
     color: var(--text-sub);
 }
+
+.financial-overview {
+  display: flex; 
+  gap: 10px; 
+  margin-bottom: 15px;
+}
+
+.mini-card {
+  flex: 1; 
+  margin: 0; 
+  padding: 10px 15px;
+  display: flex;
+  flex-direction: column;
+}
+
+.mini-card .label {
+  font-size: 0.7rem; 
+  color: var(--text-sub); 
+  font-weight: bold; 
+  text-transform: uppercase;
+}
+
+.border-red { border-left: 4px solid #d32f2f; }
+.border-green { border-left: 4px solid #2e7d32; }
+
+.form-row {
+  display: grid; 
+  grid-template-columns: 1fr 1fr; 
+  gap: 10px;
+}
