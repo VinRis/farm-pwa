@@ -388,4 +388,24 @@ document.addEventListener("DOMContentLoaded", () => {
     toast.className = "toast show";
     setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
   }
+  // --- DARK MODE LOGIC ---
+const darkModeBtn = document.getElementById("darkModeBtn");
+
+// Check for saved preference on load
+if (localStorage.getItem("theme") === "dark") {
+  document.body.classList.add("dark-mode");
+  darkModeBtn.innerText = "☀️ Light Mode";
+}
+
+darkModeBtn.addEventListener("click", () => {
+  document.body.classList.toggle("dark-mode");
+  const isDark = document.body.classList.contains("dark-mode");
+  
+  // Save preference
+  localStorage.setItem("theme", isDark ? "dark" : "light");
+  
+  // Update button text
+  darkModeBtn.innerText = isDark ? "☀️ Light Mode" : "🌙 Dark Mode";
 });
+});
+
