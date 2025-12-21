@@ -164,6 +164,16 @@
                     <button id="export-csv-btn" class="btn-secondary full-width">Export Records (CSV)</button>
                 </div>
             </section>
+            <div id="view-settings" class="tab-view" style="display:none;">
+                <div class="card">
+                    <h3><i class="fa-solid fa-gear"></i> App Settings</h3>
+                    <div class="form-group">
+                        <label>Currency Symbol</label>
+                        <input type="text" id="currency-input" placeholder="e.g. KSh, $, £" onchange="app.updateCurrency(this.value)">
+                    </div>
+                    <p><small>This symbol will be used across all finance records and reports.</small></p>
+                </div>
+            </div>
 
         </main>
 
@@ -188,6 +198,10 @@
                 <i class="fa-solid fa-file-pdf"></i>
                 <span>Reports</span>
             </button>
+            <button class="nav-btn" data-target="view-settings">
+                <i class="fa-solid fa-gear"></i>
+                <span>Settings</span>
+            </button>
         </nav>
     </div>
 
@@ -201,4 +215,5 @@
     </script>
 </body>
 </html>
+
 
