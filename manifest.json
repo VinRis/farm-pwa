@@ -1,10 +1,10 @@
 {
   "name": "Farm Production Tracker Pro",
   "short_name": "FarmTracker",
-  "id": "/farm-tracker-pro/",
+  "id": "farm-tracker-pro-unique-id",
   "description": "Professional offline management for Poultry, Dairy, and Crop farming.",
-  "start_url": "index.html",
-  "scope": ".",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#f4f6f8",
@@ -32,10 +32,10 @@
   ],
   "shortcuts": [
     {
-      "name": "Add Record",
+      "name": "Add New Record",
       "short_name": "Add",
-      "description": "Open the form to add new production data",
-      "url": "index.html#farmForm",
+      "description": "Quickly add production data",
+      "url": "./index.html#farmForm",
       "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
     }
   ],
