@@ -1,27 +1,32 @@
-const CACHE_NAME = "farm-pwa-v5"; // Version bumped for the update
+const CACHE_NAME = "farm-pwa-v6"; // Bumped version to force refresh
 
 const FILES_TO_CACHE = [
-  "./",
-  "./index.html",
-  "./style.css",
-  "./app.js",
-  "./manifest.json",
-  "./icon-192.png",
-  "./icon-512.png"
+  "/",
+  "index.html",
+  "style.css",
+  "app.js",
+  "manifest.json",
+  "icon-192.png",
+  "icon-512.png"
 ];
 
-// --- INSTALL: Cache the core UI (App Shell) ---
+// --- INSTALL: Pre-cache assets ---
 self.addEventListener("install", event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
       console.log("SW: Pre-caching assets");
-      return cache.addAll(FILES_TO_CACHE);
+      // Use array mapping to catch individual file errors during install
+      return Promise.all(
+        FILES_TO_CACHE.map(url => {
+          return cache.add(url).catch(err => console.error(`Fetch failed for: ${url}`, err));
+        })
+      );
     })
   );
   self.skipWaiting();
 });
 
-// --- ACTIVATE: Remove outdated caches ---
+// --- ACTIVATE: Cleanup old caches ---
 self.addEventListener("activate", event => {
   event.waitUntil(
     caches.keys().then(keys => {
@@ -39,30 +44,27 @@ self.addEventListener("activate", event => {
 });
 
 // --- FETCH STRATEGY: Stale-While-Revalidate ---
-// 1. Serves instantly from cache.
-// 2. Updates cache in the background if network is available.
 self.addEventListener("fetch", event => {
+  // Only handle GET requests
   if (event.request.method !== 'GET') return;
 
   event.respondWith(
     caches.open(CACHE_NAME).then(cache => {
       return cache.match(event.request).then(cachedResponse => {
-        
-        // Start the network request to update the cache
         const fetchPromise = fetch(event.request).then(networkResponse => {
-          if (networkResponse && networkResponse.status === 200) {
+          // Only cache valid, successful responses
+          if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
             cache.put(event.request, networkResponse.clone());
           }
           return networkResponse;
         }).catch(() => {
-          // Network failed, we are truly offline
-          return null; 
+          // If network fails and there's no cache, we might return a fallback here
+          return cachedResponse; 
         });
 
-        // Return the cached version if we have it, otherwise wait for the network
+        // Return cached response if available, otherwise wait for network
         return cachedResponse || fetchPromise;
       });
     })
   );
 });
-
