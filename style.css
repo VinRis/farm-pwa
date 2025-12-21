@@ -63,7 +63,26 @@ main { padding: 15px; max-width: 600px; margin: 0 auto; }
 }
 
 .card { padding: 15px; text-align: center; }
-.kpi-card { padding: 20px; text-align: center; }
+.kpi-card { 
+  padding: 20px; 
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.kpi-card span:first-child {
+  font-size: 0.75rem;
+  color: var(--text-sub);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 5px;
+}
+
+.kpi-card strong {
+  font-size: 1.25rem;
+  color: var(--accent-green);
+}
 
 .profit-highlight { 
   background: var(--highlight-bg) !important; 
@@ -98,6 +117,12 @@ input:focus {
   outline: none;
 }
 
+/* EXPENSE ROW SPECIFIC */
+.expense-row select, .expense-row input {
+  margin-top: 0;
+  font-size: 14px;
+}
+
 /* BUTTONS */
 button {
   width: 100%;
@@ -125,6 +150,11 @@ button:active { transform: scale(0.98); }
 #darkModeBtn {
   background: #455a64;
   margin-bottom: 10px;
+}
+
+#exportBtn {
+  background: #0288d1;
+  margin-top: 15px;
 }
 
 /* BAR CHART STYLING */
@@ -184,7 +214,7 @@ button:active { transform: scale(0.98); }
   transition: background 0.5s ease;
 }
 
-/* RECORD LIST */
+/* RECORD LIST & HISTORY */
 ul { list-style: none; padding: 0; }
 
 li {
@@ -197,12 +227,19 @@ li {
   font-size: 0.95rem;
 }
 
+#historyList .card {
+  margin-bottom: 10px;
+  text-align: left;
+  border-left: 4px solid #455a64;
+}
+
 .delete-btn {
   background: #ffcdd2 !important;
   color: #c62828 !important;
   width: auto;
   padding: 5px 10px;
   font-size: 12px;
+  margin-top: 5px;
 }
 
 /* TOAST */
@@ -229,3 +266,6 @@ li {
 
 @keyframes fadein { from { bottom: 0; opacity: 0; } to { bottom: 30px; opacity: 1; } }
 @keyframes fadeout { from { bottom: 30px; opacity: 1; } to { bottom: 0; opacity: 0; } }
+
+/* UTILS */
+.hidden { display: none !important; }
