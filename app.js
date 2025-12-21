@@ -252,18 +252,33 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         // Update Summary UI
+        // Inside loadRecords, after processing data
+        // Update UI
         document.getElementById("totalQuantity").innerText = totalQty.toFixed(1);
         document.getElementById("totalProfit").innerText = (totalRev - totalExp).toLocaleString();
         
-        const breakdownDiv = document.getElementById("expenseBreakdown");
-        if (Object.keys(categoryTotals).length > 0) {
-          breakdownDiv.style.display = "block";
-          for (const [cat, amt] of Object.entries(categoryTotals)) {
-            const percentage = totalExp > 0 ? ((amt / totalExp) * 100).toFixed(0) : 0;
-            breakdownList.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span>${cat}</span><span>KES ${amt.toLocaleString()} (${percentage}%)</span></div>`;
-          }
-        } else {
-          breakdownDiv.style.display = "none";
+        // Poultry-specific Symmetry Logic
+        if (currentType === "poultry") {
+          document.getElementById("kpiLabel3").innerText = "Flock Size";
+          document.getElementById("statFlock").innerText = pStats.size;
+          document.getElementById("kpiLabel4").innerText = "Mortality";
+          document.getElementById("statMortality").innerText = pStats.mortality;
+        } else if (currentType === "dairy") {
+          document.getElementById("kpiLabel3").innerText = "Avg Price";
+          document.getElementById("statFlock").innerText = totalQty > 0 ? (totalRev / totalQty).toFixed(1) : 0;
+          document.getElementById("kpiLabel4").innerText = "Days Active";
+          document.getElementById("statMortality").innerText = months.size;
+        }
+        
+        // Update Expense List Item styling
+        breakdownList.innerHTML = ""; 
+        for (const [cat, amt] of Object.entries(categoryTotals)) {
+          const percentage = totalExp > 0 ? ((amt / totalExp) * 100).toFixed(0) : 0;
+          breakdownList.innerHTML += `
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-family: monospace;">
+              <span>${cat}</span>
+              <span style="font-weight:bold; color:#2e7d32;">${percentage}%</span>
+            </div>`;
         }
 
         // Poultry Specific Stats
@@ -362,3 +377,4 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
   }
 });
+
