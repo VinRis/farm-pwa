@@ -149,3 +149,52 @@ input, select {
 }
 
 .toast.show { transform: translateX(-50%) translateY(0); }
+
+/* --- BOTTOM NAVIGATION --- */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 65px;
+  background: var(--card-bg);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  border-top: 1px solid var(--border-color);
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+  z-index: 2000;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  background: none;
+  border: none;
+  color: var(--text-sub);
+  padding: 5px;
+}
+
+.nav-item.active { color: var(--accent-green); }
+.nav-item span { font-size: 1.4rem; }
+.nav-item small { font-size: 0.7rem; font-weight: 600; }
+
+/* --- CHART RESTORATION --- */
+.pie-chart {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  margin: 10px auto;
+  transition: transform 0.3s ease;
+}
+
+.breakdown-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+/* Hide navigation on the Farm Type Selection screen */
+#farmTypeScreen ~ .bottom-nav { display: none; }
+#appScreen:not([style*="display: none"]) ~ .bottom-nav { display: flex; }
