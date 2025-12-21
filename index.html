@@ -200,41 +200,12 @@
   <div id="financeView" class="view-section" style="display:none;">
     <section class="card">
       <h3>💰 Sales & Financials</h3>
-      <form id="financeForm">
-        <div class="form-group">
-          <label>Transaction Date</label>
-          <input type="date" id="finDate" required>
-        </div>
-        
-        <div class="form-group">
-          <label>Transaction Type</label>
-          <select id="finType" class="modern-select">
-            <option value="sale">📈 Sale (Income)</option>
-            <option value="expense">📉 General Expense</option>
-          </select>
-        </div>
-  
-        <div class="form-group">
-          <label>Description</label>
-          <input type="text" id="finDesc" placeholder="e.g. Sold 10 crates of eggs">
-        </div>
-  
-        <div class="form-row">
-          <div><label>Amount (KES)</label><input type="number" id="finAmount" required></div>
-          <div><label>Category</label>
-            <select id="finCat" class="modern-select">
-              <option value="Produce">Eggs/Milk/Crops</option>
-              <option value="Livestock">Animal Sale</option>
-              <option value="Feed">Feed/Supplies</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-        </div>
-        
-        <button type="submit" class="save-btn">💾 Save Transaction</button>
-      </form>
-    </section>
+      </section>
   </div>
+
+  <div id="settingsView" class="view-section" style="display:none;"> ... </div>
+
+ </section>
 </main>
 
 <nav class="bottom-nav" id="bottomNav" style="display: none;">
@@ -272,6 +243,7 @@
 <script src="app.js"></script>
 </body>
 </html>
+
 
 
 
