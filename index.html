@@ -13,7 +13,11 @@
 
 <header>
     <h1 id="mainHeader">Farm Production Tracker</h1>
-    <p>Offline Farm Management</p>
+    <p>
+      Offline Farm Management
+      <span id="statusIndicator" style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#4caf50; margin-left:5px;"></span>
+      <small id="statusText" style="font-size: 0.7rem; opacity: 0.8;">Online</small>
+    </p>
     <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; padding-top: 15px;">
       <button id="switchTypeBtn" type="button" style="width: auto; margin: 0; padding: 8px 15px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); font-size: 0.8rem; color: white;">🔄 Switch Type</button>
       <button id="darkModeBtn" type="button" style="width: auto; margin: 0; padding: 8px 15px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); font-size: 0.8rem; color: white;">🌙 Dark Mode</button>
@@ -184,3 +188,4 @@
 <script src="app.js"></script>
 </body>
 </html>
+
