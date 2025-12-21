@@ -307,3 +307,20 @@ input, select {
     margin-top: 5px;
     color: var(--text-sub);
 }
+
+.dashboard-header {
+  background: var(--card-bg);
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 10px;
+  min-height: 50px;
+}
+
+.modern-select {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--accent-green);
+  background-color: var(--input-bg);
+  color: var(--text-main);
+  font-weight: bold;
+  outline: none;
+}
