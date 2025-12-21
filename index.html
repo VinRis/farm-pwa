@@ -36,10 +36,10 @@
   </section>
 
   <section id="appScreen" style="display:none; padding-bottom: 80px;">
+    
     <div id="dashboardView" class="view-section">
       <div class="dashboard-header" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px;">
         <h2 style="margin: 0; font-size: 1.2rem;">📊 Summary</h2>
-        
         <div id="poultryToggleContainer" style="display: none;">
           <select id="poultrySubtypeToggle" class="modern-select">
             <option value="layers">🥚 Layers</option>
@@ -58,20 +58,6 @@
         <small id="insightText">Loading insights...</small>
       </div>
 
-      <section id="projectionsCard" class="card">
-        <h3 style="margin: 0 0 10px 0; font-size: 0.9rem; color: var(--accent-blue);">🔮 Monthly Forecast</h3>
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <small style="display: block; color: var(--text-sub);">Estimated Profit</small>
-            <strong id="projectedProfit">KES 0</strong>
-          </div>
-          <div style="text-align: right;">
-            <small style="display: block; color: var(--text-sub);">Est. Production</small>
-            <strong id="projectedQty">0.0</strong>
-          </div>
-        </div>
-      </section>
-
       <div class="financial-overview">
         <div class="card mini-card border-red">
           <span class="label">Expenses</span>
@@ -88,16 +74,6 @@
         <div class="kpi-card"><span>Flock Size</span><strong id="statFlock">0</strong></div>
         <div class="kpi-card"><span>Mortality</span><strong id="statMortality">0</strong></div>
         <div class="kpi-card"><span>Feed Used</span><strong id="statFeed">0kg</strong></div>
-      </div>
-
-      <div id="expenseBreakdown" class="card">
-        <h4>💰 Expense Breakdown</h4>
-        <div class="breakdown-content">
-          <div id="breakdownList"></div>
-          <div class="chart-wrapper">
-            <div id="pieChartCircle" class="pie-chart"></div>
-          </div>
-        </div>
       </div>
     </div>
 
@@ -117,11 +93,6 @@
         <div class="form-group">
           <label for="date">Date</label>
           <input type="date" id="date" required>
-        </div>
-
-        <div id="dairyFields" class="extra-fields" style="display:none;">
-          <label for="cowId">Cow Name/ID</label>
-          <input type="text" id="cowId" placeholder="e.g. Daisy">
         </div>
 
         <div id="poultryFields" class="extra-fields" style="display:none;">
@@ -153,28 +124,49 @@
           <label>Feed Intake</label>
           <div id="feedContainer">
             <div class="feed-row">
-              <input type="text" class="feed-type" placeholder="Feed Type (e.g. Mash)">
+              <input type="text" class="feed-type" placeholder="Feed Type">
               <input type="number" class="feed-qty" placeholder="Qty (kg)">
               <button type="button" id="addFeedRow" class="add-row-btn">+</button>
             </div>
           </div>
         </div>
 
-        <label>Expenses</label>
-        <div id="expenseContainer">
-          <div class="expense-row">
-            <select class="exp-cat">
-              <option value="Feed">🌾 Feed</option>
-              <option value="Medication">💉 Medication</option>
-              <option value="Other">📦 Other</option>
-            </select>
-            <input type="number" class="exp-amt" placeholder="Amount">
-            <button type="button" id="addExpenseRow" class="add-row-btn">+</button>
-          </div>
+        <div id="dairyFields" class="extra-fields" style="display:none;">
+          <label for="cowId">Cow Name/ID</label>
+          <input type="text" id="cowId" placeholder="e.g. Daisy">
         </div>
 
         <button type="submit" class="save-btn">✅ Save Record</button>
       </form>
+    </div>
+
+    <div id="financeView" class="view-section" style="display:none;">
+      <section class="card">
+        <h3>💰 Sales & Financials</h3>
+        <form id="financeForm">
+          <div class="form-group"><label>Date</label><input type="date" id="finDate" required></div>
+          <div class="form-group">
+            <label>Type</label>
+            <select id="finType" class="modern-select">
+              <option value="sale">📈 Sale (Income)</option>
+              <option value="expense">📉 General Expense</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Description</label><input type="text" id="finDesc" placeholder="e.g. Sold 30 trays"></div>
+          <div class="form-row">
+            <div><label>Amount</label><input type="number" id="finAmount" required></div>
+            <div><label>Category</label>
+              <select id="finCat" class="modern-select">
+                <option value="Produce">Produce</option>
+                <option value="Livestock">Livestock</option>
+                <option value="Feed">Feed/Supplies</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="save-btn">💾 Save Transaction</button>
+        </form>
+      </section>
     </div>
 
     <div id="settingsView" class="view-section" style="display:none;">
@@ -182,7 +174,7 @@
         <h3>⚙️ App Settings</h3>
         <div class="form-group">
           <label>Farm Name</label>
-          <input type="text" id="settingFarmName" placeholder="My Awesome Farm">
+          <input type="text" id="settingFarmName" placeholder="My Farm">
         </div>
         <div class="form-group">
           <label>Currency Symbol</label>
@@ -190,22 +182,9 @@
         </div>
         <button id="saveSettingsBtn" class="save-btn">💾 Save Settings</button>
       </section>
-
-      <section class="card" style="margin-top: 20px; border-top: 4px solid var(--accent-blue);">
-        <h3>📊 Data Management</h3>
-        <button id="settingsExportBtn" class="btn-secondary" style="width:100%">📥 Export All Data (CSV)</button>
-      </section>
     </div>
+
   </section>
-  <div id="financeView" class="view-section" style="display:none;">
-    <section class="card">
-      <h3>💰 Sales & Financials</h3>
-      </section>
-  </div>
-
-  <div id="settingsView" class="view-section" style="display:none;"> ... </div>
-
- </section>
 </main>
 
 <nav class="bottom-nav" id="bottomNav" style="display: none;">
@@ -243,6 +222,7 @@
 <script src="app.js"></script>
 </body>
 </html>
+
 
 
 
