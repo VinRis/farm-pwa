@@ -1,33 +1,32 @@
-sample-data.js
-const sampleData = {
-  records: {
-    dairy: [
-      { id: crypto.randomUUID(), livestock: 'dairy', date: '2025-12-01', animalId: 'cow1', session: 'morning', quantity: 20, feedKg: 10, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
-    ],
-    poultry: [
-      { id: crypto.randomUUID(), livestock: 'poultry', date: '2025-12-01', animalId: 'flock1', quantity: 100, mortality: 0, feedKg: 50, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
-    ],
-    pig: [
-      { id: crypto.randomUUID(), livestock: 'pig', date: '2025-12-01', animalId: 'pig1', weightKg: 100, feedKg: 20, mortality: 0, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
-    ],
-    goat: [
-      { id: crypto.randomUUID(), livestock: 'goat', date: '2025-12-01', animalId: 'goat1', quantity: 5, feedKg: 5, mortality: 0, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
-    ]
-  },
-  transactions: {
-    dairy: [
-      { id: crypto.randomUUID(), livestock: 'dairy', date: '2025-12-01', type: 'income', amount: 100, currency: 'USD', category: 'sale', createdAt: new Date().toISOString() }
-    ],
-    poultry: [
-      { id: crypto.randomUUID(), livestock: 'poultry', date: '2025-12-01', type: 'income', amount: 50, currency: 'USD', category: 'sale', createdAt: new Date().toISOString() }
-    ],
-    pig: [
-      { id: crypto.randomUUID(), livestock: 'pig', date: '2025-12-01', type: 'expense', amount: 30, currency: 'USD', category: 'feed', createdAt: new Date().toISOString() }
-    ],
-    goat: [
-      { id: crypto.randomUUID(), livestock: 'goat', date: '2025-12-01', type: 'income', amount: 40, currency: 'USD', category: 'sale', createdAt: new Date().toISOString() }
-    ]
-  }
-};
+import { DB } from './db.js';
+import { Utils } from './utils.js';
 
-export default sampleData;
+export async function loadSampleData() {
+    const records = await DB.getAll('records');
+    if (records.length > 0) return; // Only load if empty
+
+    const today = new Date().toISOString().split('T')[0];
+    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+
+    const sampleRecords = [
+        // Dairy
+        { id: Utils.uuid(), livestock: 'dairy', date: today, cowId: 'C001', session: 'morning', quantity: 15, unit: 'L', feedKg: 5, createdAt: Date.now() },
+        { id: Utils.uuid(), livestock: 'dairy', date: yesterday, cowId: 'C001', session: 'evening', quantity: 12, unit: 'L', feedKg: 5, createdAt: Date.now() },
+        // Poultry
+        { id: Utils.uuid(), livestock: 'poultry', date: today, flockId: 'F1', quantity: 200, unit: 'eggs', birdsCount: 500, mortality: 2, feedKg: 50, createdAt: Date.now() },
+        // Pig
+        { id: Utils.uuid(), livestock: 'pig', date: today, pigId: 'P10', weightKg: 80, feedKg: 3, notes: 'Healthy', createdAt: Date.now() },
+        // Goat
+        { id: Utils.uuid(), livestock: 'goat', date: today, goatId: 'G5', quantity: 2, unit: 'L', feedKg: 2, createdAt: Date.now() }
+    ];
+
+    const sampleTrans = [
+        { id: Utils.uuid(), livestock: 'dairy', date: today, type: 'expense', amount: 50, category: 'Feed', description: 'Bought Hay', createdAt: Date.now() },
+        { id: Utils.uuid(), livestock: 'poultry', date: yesterday, type: 'income', amount: 100, category: 'Sales', description: 'Sold Eggs', createdAt: Date.now() }
+    ];
+
+    for (const r of sampleRecords) await DB.add('records', r);
+    for (const t of sampleTrans) await DB.add('transactions', t);
+    
+    console.log("Sample data loaded");
+}
