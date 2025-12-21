@@ -210,9 +210,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const isLayers = e.target.value === 'layers';
     document.getElementById("layerSpecificFields").style.display = isLayers ? "block" : "none";
     document.getElementById("broilerSpecificFields").style.display = isLayers ? "none" : "block";
+  if (target === 'finance-view') {
+    document.getElementById('financeView').style.display = 'block';
+  }
   };
 
   document.getElementById("poultrySubtypeToggle").onchange = () => loadRecords();
 
   darkModeBtn.onclick = () => document.body.classList.toggle("dark-mode");
 });
+
