@@ -207,4 +207,45 @@
 
 <script src="app.js"></script>
 </body>
+<nav class="bottom-nav">
+  <button class="nav-item active" data-screen="dashboard">
+    <span>📊</span>
+    <small>Dashboard</small>
+  </button>
+  <button class="nav-item" data-screen="records-section">
+    <span>📝</span>
+    <small>Records</small>
+  </button>
+  <button class="nav-item" data-screen="main-form">
+    <span>➕</span>
+    <small>Add New</small>
+  </button>
+</nav>
+
+<section id="appScreen" style="display:none;">
+    <div id="dashboardView" class="view-section">
+        <section id="analytics" class="card">
+            <h2 class="section-title">📈 7-Day Production</h2>
+            <div id="productionChart" class="chart-container"></div>
+        </section>
+        
+        <div id="expenseBreakdown" class="card">
+            <h4>💰 Expense Breakdown</h4>
+            <div class="breakdown-content">
+                <div id="breakdownList"></div>
+                <div class="chart-wrapper">
+                    <div id="pieChartCircle" class="pie-chart"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="recordsView" class="view-section" style="display:none;">
+        <ul id="records"></ul>
+    </div>
+
+    <div id="formView" class="view-section" style="display:none;">
+        </div>
+</section>
 </html>
+
