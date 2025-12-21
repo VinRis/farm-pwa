@@ -281,6 +281,8 @@ const App = {
         records.sort((a,b) => new Date(b.date) - new Date(a.date));
     
         const tbody = document.querySelector('#records-table tbody');
+        if (!tbody) return;
+    
         tbody.innerHTML = records.map(r => `
             <tr>
                 <td><input type="checkbox" class="record-checkbox" value="${r.id}"></td>
@@ -295,7 +297,7 @@ const App = {
         `).join('');
     
         this.initRecordListeners();
-    },
+    }
     
     initRecordListeners() {
         const selectAll = document.getElementById('select-all-records');
@@ -455,6 +457,7 @@ async editRecord(id) {
 
 window.app = App; // Expose for HTML onclick handlers
 document.addEventListener('DOMContentLoaded', () => App.init());
+
 
 
 
