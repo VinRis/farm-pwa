@@ -79,6 +79,11 @@ const App = {
             e.target.reset();
             const submitBtn = e.target.querySelector('button[type="submit"]');
             if (submitBtn) submitBtn.innerText = "Save Record";
+            
+            // Clear hidden ID after save
+            const hiddenInput = document.getElementById('edit-id');
+            if (hiddenInput) hiddenInput.value = "";
+
             this.refreshDashboard();
         });
 
@@ -96,34 +101,26 @@ const App = {
         document.getElementById('record-filter-date')?.addEventListener('change', () => this.loadRecords());
     },
 
-    async editRecord(id) {
-        const records = await DB.getAll('records', 'livestock', this.state.livestock);
-        const record = records.find(r => String(r.id) === String(id));
-        if (!record) return;
+    applyTheme() {
+        if (this.state.theme === 'dark') document.body.classList.add('dark-mode');
+        else document.body.classList.remove('dark-mode');
+    },
 
-        this.switchTab('view-add', document.querySelector('[data-target="view-add"]'));
+    selectLivestock(type) {
+        this.state.livestock = type;
+        localStorage.setItem('ft_livestock', type);
+        this.loadAppShell();
+    },
 
-        setTimeout(() => {
-            const form = document.getElementById('add-record-form');
-            if (!form) return;
-            
-            // Fill fields
-            Object.keys(record).forEach(key => {
-                if (form.elements[key]) form.elements[key].value = record[key];
-            });
+    async loadAppShell() {
+        document.getElementById('landing-page').classList.add('hidden');
+        document.getElementById('app-shell').classList.remove('hidden');
+        
+        const titles = { dairy: 'Dairy Farm', poultry: 'Poultry Farm', pig: 'Pig Farm', goat: 'Goat Farm' };
+        document.getElementById('header-title').innerText = titles[this.state.livestock] || 'My Farm';
 
-            // Handle hidden edit ID
-            let editIdInput = document.getElementById('edit-id');
-            if (!editIdInput) {
-                editIdInput = document.createElement('input');
-                editIdInput.type = 'hidden';
-                editIdInput.id = 'edit-id';
-                editIdInput.name = 'editId';
-                form.appendChild(editIdInput);
-            }
-            editIdInput.value = id;
-            form.querySelector('button[type="submit"]').innerText = "Update Record";
-        }, 100);
+        this.renderAddForm();
+        this.switchTab('view-dashboard', document.querySelector('[data-target="view-dashboard"]'));
     },
 
     switchTab(viewId, btnElement) {
@@ -187,9 +184,6 @@ const App = {
 
     async refreshDashboard() {
         const records = await DB.getAll('records', 'livestock', this.state.livestock);
-        const trans = await DB.getAll('transactions', 'livestock', this.state.livestock);
-        
-        // Filter Current Month
         const now = new Date();
         const currentMonth = now.getMonth();
         const currentYear = now.getFullYear();
@@ -199,10 +193,7 @@ const App = {
             return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
         });
 
-        // Calculate KPIs
-        let totalProd = 0;
-        let totalFeed = 0;
-        let mortality = 0;
+        let totalProd = 0, totalFeed = 0, mortality = 0;
         let unit = this.state.livestock === 'dairy' ? 'L' : (this.state.livestock === 'poultry' ? 'Eggs' : 'Kg');
 
         thisMonthRecs.forEach(r => {
@@ -211,7 +202,6 @@ const App = {
             mortality += (r.mortality || 0);
         });
 
-        // Render KPIs
         document.getElementById('kpi-container').innerHTML = `
             <div class="kpi-card"><h4>Production (${unit})</h4><div class="value">${totalProd.toFixed(1)}</div></div>
             <div class="kpi-card"><h4>Feed (Kg)</h4><div class="value">${totalFeed.toFixed(1)}</div></div>
@@ -219,36 +209,21 @@ const App = {
             <div class="kpi-card"><h4>Records</h4><div class="value">${thisMonthRecs.length}</div></div>
         `;
 
-        // Render Chart (Last 30 records by date)
         this.renderChart(records);
-        
-        // Recent Activity
-        const recent = records.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 3);
-        document.getElementById('recent-records-list').innerHTML = recent.map(r => `
-            <li>
-                <span>${r.date}</span>
-                <span>${r.quantity ? r.quantity + unit : 'Checkup'}</span>
-            </li>
-        `).join('');
     },
 
     renderChart(records) {
-        // Group by Date for last 15 days
         const days = {};
-        const sorted = records.sort((a,b) => new Date(a.date) - new Date(b.date));
-        
-        sorted.forEach(r => {
-            if(r.quantity) {
-                days[r.date] = (days[r.date] || 0) + r.quantity;
-            }
+        records.sort((a,b) => new Date(a.date) - new Date(b.date)).forEach(r => {
+            if(r.quantity) days[r.date] = (days[r.date] || 0) + r.quantity;
         });
 
-        const labels = Object.keys(days).slice(-15); // Last 15 data points
+        const labels = Object.keys(days).slice(-15);
         const data = Object.values(days).slice(-15);
+        const ctx = document.getElementById('productionChart')?.getContext('2d');
+        if (!ctx) return;
 
-        const ctx = document.getElementById('productionChart').getContext('2d');
         if (this.state.chartInstance) this.state.chartInstance.destroy();
-
         this.state.chartInstance = new Chart(ctx, {
             type: 'line',
             data: {
@@ -262,24 +237,16 @@ const App = {
                     tension: 0.3
                 }]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } }
-            }
+            options: { responsive: true, maintainAspectRatio: false }
         });
     },
 
     async loadRecords() {
         const filterDate = document.getElementById('record-filter-date').value;
         let records = await DB.getAll('records', 'livestock', this.state.livestock);
-    
-        if (filterDate) {
-            records = records.filter(r => r.date.startsWith(filterDate));
-        }
+        if (filterDate) records = records.filter(r => r.date.startsWith(filterDate));
         
         records.sort((a,b) => new Date(b.date) - new Date(a.date));
-    
         const tbody = document.querySelector('#records-table tbody');
         if (!tbody) return;
     
@@ -297,95 +264,74 @@ const App = {
         `).join('');
     
         this.initRecordListeners();
-    }
-    
+    },
+
     initRecordListeners() {
         const selectAll = document.getElementById('select-all-records');
         const checkboxes = document.querySelectorAll('.record-checkbox');
         const bulkBtn = document.getElementById('bulk-delete-btn');
         const countSpan = document.getElementById('selected-count');
-    
-        // Handle "Select All"
-        selectAll.onchange = () => {
-            checkboxes.forEach(cb => cb.checked = selectAll.checked);
-            updateBulkUI();
-        };
-    
-        // Handle individual checkboxes
-        checkboxes.forEach(cb => {
-            cb.onchange = () => updateBulkUI();
-        });
-    
+
         const updateBulkUI = () => {
             const checkedCount = document.querySelectorAll('.record-checkbox:checked').length;
             if (checkedCount > 0) {
-                bulkBtn.classList.remove('hidden');
-                countSpan.innerText = checkedCount;
+                bulkBtn?.classList.remove('hidden');
+                if (countSpan) countSpan.innerText = checkedCount;
             } else {
-                bulkBtn.classList.add('hidden');
+                bulkBtn?.classList.add('hidden');
             }
         };
 
-    // Bulk Delete Click
-    bulkBtn.onclick = async () => {
-        const ids = Array.from(document.querySelectorAll('.record-checkbox:checked')).map(cb => cb.value);
-        if (confirm(`Are you sure you want to delete ${ids.length} records?`)) {
-            for (const id of ids) {
-                await DB.delete('records', id);
-            }
-            this.loadRecords();
-            this.refreshDashboard();
-            selectAll.checked = false;
+        if (selectAll) {
+            selectAll.onchange = () => {
+                checkboxes.forEach(cb => cb.checked = selectAll.checked);
+                updateBulkUI();
+            };
         }
-    };
-},
-async editRecord(id) {
-    // 1. Get the specific record using the ID
-    const records = await DB.getAll('records', 'livestock', this.state.livestock);
-    const record = records.find(r => String(r.id) === String(id));
-    
-    if (!record) {
-        console.error("Record not found for ID:", id);
-        return;
-    }
 
-    // 2. Switch to the Add view first
-    const navBtn = document.querySelector('[data-target="view-add"]');
-    this.switchTab('view-add', navBtn);
+        checkboxes.forEach(cb => { cb.onchange = () => updateBulkUI(); });
 
-    // 3. Small delay to ensure the form is rendered by renderAddForm()
-    setTimeout(() => {
-        const form = document.getElementById('add-record-form');
-        if (!form) return;
-
-        // 4. Populate standard fields
-        // Note: Using form.elements is safer than querySelector for inputs
-        Object.keys(record).forEach(key => {
-            const input = form.elements[key];
-            if (input) {
-                input.value = record[key];
-            }
-        });
-
-        // 5. Ensure the Hidden Edit ID exists so we don't create a duplicate
-        let editIdInput = document.getElementById('edit-id');
-        if (!editIdInput) {
-            editIdInput = document.createElement('input');
-            editIdInput.type = 'hidden';
-            editIdInput.id = 'edit-id';
-            editIdInput.name = 'editId';
-            form.appendChild(editIdInput);
+        if (bulkBtn) {
+            bulkBtn.onclick = async () => {
+                const ids = Array.from(document.querySelectorAll('.record-checkbox:checked')).map(cb => cb.value);
+                if (confirm(`Delete ${ids.length} records?`)) {
+                    for (const id of ids) await DB.delete('records', id);
+                    this.loadRecords();
+                    this.refreshDashboard();
+                    if (selectAll) selectAll.checked = false;
+                }
+            };
         }
-        editIdInput.value = id;
+    },
 
-        // 6. Visual feedback
-        const submitBtn = form.querySelector('button[type="submit"]');
-        if (submitBtn) submitBtn.innerText = "Update Record";
-        
-        // Scroll to top so user sees the filled form
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, 100); 
-}
+    async editRecord(id) {
+        const records = await DB.getAll('records', 'livestock', this.state.livestock);
+        const record = records.find(r => String(r.id) === String(id));
+        if (!record) return;
+
+        this.switchTab('view-add', document.querySelector('[data-target="view-add"]'));
+
+        setTimeout(() => {
+            const form = document.getElementById('add-record-form');
+            if (!form) return;
+
+            Object.keys(record).forEach(key => {
+                if (form.elements[key]) form.elements[key].value = record[key];
+            });
+
+            let editIdInput = document.getElementById('edit-id');
+            if (!editIdInput) {
+                editIdInput = document.createElement('input');
+                editIdInput.type = 'hidden';
+                editIdInput.id = 'edit-id';
+                editIdInput.name = 'editId';
+                form.appendChild(editIdInput);
+            }
+            editIdInput.value = id;
+            form.querySelector('button[type="submit"]').innerText = "Update Record";
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 100); 
+    },
 
     async deleteRecord(id) {
         if(confirm('Delete this record?')) {
@@ -398,28 +344,17 @@ async editRecord(id) {
     async loadFinance() {
         const trans = await DB.getAll('transactions', 'livestock', this.state.livestock);
         const list = document.getElementById('transaction-list');
-        
-        let income = 0; 
-        let expense = 0;
+        let income = 0, expense = 0;
 
-        // Sort DESC
         trans.sort((a,b) => new Date(b.date) - new Date(a.date));
-
         list.innerHTML = trans.map(t => {
-            if(t.type === 'income') income += t.amount;
-            else expense += t.amount;
-
+            t.type === 'income' ? income += t.amount : expense += t.amount;
             return `
-            <li>
-                <div>
-                    <strong>${t.category}</strong><br>
-                    <small>${t.date}</small>
-                </div>
-                <span class="amount ${t.type}">
-                    ${t.type === 'income' ? '+' : '-'}${Utils.formatCurrency(t.amount)}
-                </span>
-                <i class="fa-solid fa-trash" style="color:#aaa; cursor:pointer; margin-left:10px" onclick="app.deleteTransaction('${t.id}')"></i>
-            </li>
+                <li>
+                    <div><strong>${t.category}</strong><br><small>${t.date}</small></div>
+                    <span class="amount ${t.type}">${t.type === 'income' ? '+' : '-'}${Utils.formatCurrency(t.amount)}</span>
+                    <i class="fa-solid fa-trash" style="color:#aaa; cursor:pointer; margin-left:10px" onclick="app.deleteTransaction('${t.id}')"></i>
+                </li>
             `;
         }).join('');
 
@@ -437,29 +372,19 @@ async editRecord(id) {
     async generateReport() {
         const start = document.getElementById('report-start').value;
         const end = document.getElementById('report-end').value;
-        
         if(!start || !end) return alert('Please select date range');
 
         const records = await DB.getAll('records', 'livestock', this.state.livestock);
         const trans = await DB.getAll('transactions', 'livestock', this.state.livestock);
 
-        const filteredRecs = records.filter(r => r.date >= start && r.date <= end);
-        const filteredTrans = trans.filter(t => t.date >= start && t.date <= end);
-
-        Utils.generatePDF('Farm Report', filteredRecs, filteredTrans, this.state.livestock, start, end);
+        Utils.generatePDF('Farm Report', 
+            records.filter(r => r.date >= start && r.date <= end), 
+            trans.filter(t => t.date >= start && t.date <= end), 
+            this.state.livestock, start, end);
     },
 
-    syncToCloud() {
-        // Stub: This would iterate IndexedDB 'syncQueue' and POST to an API
-        console.log('Online: Checking sync queue...');
-    }
+    syncToCloud() { console.log('Online: Checking sync...'); }
 };
 
-window.app = App; // Expose for HTML onclick handlers
+window.app = App;
 document.addEventListener('DOMContentLoaded', () => App.init());
-
-
-
-
-
-
