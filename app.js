@@ -125,10 +125,6 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("historySection").style.display = isPoultry ? "block" : "none";
     archiveBtn.style.display = isPoultry ? "block" : "none";
 
-    // Reset extra grid cards visibility initially
-    document.getElementById("avgWeightCard").style.display = "none";
-    document.getElementById("feedCard").style.display = "none";
-
     if (type === "dairy") {
       qtyLabel.innerText = "Milk Collected (Litres)";
       document.getElementById("dairyFields").style.display = "block";
@@ -288,10 +284,9 @@ document.addEventListener("DOMContentLoaded", () => {
           document.getElementById("kpiLabel4").innerText = "Mortality";
           document.getElementById("statMortality").innerText = pStats.mortality;
 
-          // Handle Symmetrical Grid cards for Broilers vs Layers
           const isBroiler = (activePoultrySub === "broilers");
           document.getElementById("avgWeightCard").style.display = isBroiler ? "flex" : "none";
-          document.getElementById("feedCard").style.display = "flex"; // Show Feed for both
+          document.getElementById("feedCard").style.display = "flex"; 
 
           document.getElementById("statWeight").innerText = pStats.count > 0 ? (pStats.weight / pStats.count).toFixed(2) + "kg" : "0kg";
           document.getElementById("statFeed").innerText = pStats.feed.toFixed(1) + "kg";
@@ -380,6 +375,31 @@ document.addEventListener("DOMContentLoaded", () => {
       };
       tx.oncomplete = () => { loadRecords(); showToast("Batch Archived! 📂"); };
     }
+  });
+
+  // --- EXPORT CSV LOGIC ---
+  document.getElementById("exportBtn").addEventListener("click", () => {
+    const tx = db.transaction("records", "readonly");
+    tx.objectStore("records").getAll().onsuccess = (e) => {
+      const data = e.target.result;
+      if (data.length === 0) return showToast("No records to export!");
+
+      const headers = ["Date", "Type", "Subtype", "Label/Batch", "Quantity", "Price", "Revenue", "Expenses", "Profit", "Mortality", "Feed(Kg)", "AvgWeight(Kg)", "Status"];
+      const csvRows = data.map(r => {
+        const revenue = r.quantity * r.price;
+        const profit = revenue - r.expenses;
+        return [r.date, r.type, r.subtype || "-", `"${r.extra || ''}"`, r.quantity, r.price, revenue, r.expenses, profit, r.mortality || 0, r.feed || 0, r.weight || 0, r.archived ? "Archived" : "Active"].join(",");
+      });
+
+      const csvContent = [headers.join(","), ...csvRows].join("\n");
+      const blob = new Blob([csvContent], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `Farm_Report_${new Date().toISOString().split('T')[0]}.csv`;
+      link.click();
+      showToast("CSV Exported! 📥");
+    };
   });
 
   monthFilter.addEventListener("change", loadRecords);
