@@ -12,16 +12,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("farmForm");
   const recordsList = document.getElementById("records");
   const darkModeBtn = document.getElementById("darkModeBtn");
-  const expenseContainer = document.getElementById("expenseContainer");
   const mainHeader = document.getElementById("mainHeader");
-
-  const catColors = {
-    "Feed": "#2e7d32", "Medication": "#d32f2f", "Chicks": "#fbc02d",
-    "Labor": "#0288d1", "Utilities": "#7b1fa2", "Other": "#757575"
-  };
 
   // --- DATABASE SETUP ---
   const request = indexedDB.open("FarmDB", 2);
+  
   request.onupgradeneeded = (e) => {
     db = e.target.result;
     if (!db.objectStoreNames.contains("records")) db.createObjectStore("records", { keyPath: "id", autoIncrement: true });
@@ -31,10 +26,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
   request.onsuccess = (e) => {
     db = e.target.result;
+    // Set default dates
     if (document.getElementById("date")) document.getElementById("date").valueAsDate = new Date();
     if (document.getElementById("finDate")) document.getElementById("finDate").valueAsDate = new Date();
+    
+    // Check for dark mode preference
+    db.transaction("settings").objectStore("settings").get("darkMode").onsuccess = (ev) => {
+      if (ev.target.result?.value) document.body.classList.add("dark-mode");
+    };
+
     getFarmType();
   };
+
+  // --- FARM TYPE SELECTION ---
+  document.querySelectorAll(".type-btn").forEach(btn => {
+    btn.onclick = () => {
+      const type = btn.dataset.type;
+      db.transaction("settings", "readwrite").objectStore("settings").put({ key: "farmType", value: type });
+      showApp(type);
+    };
+  });
 
   // --- NAVIGATION LOGIC ---
   document.querySelectorAll('.nav-item').forEach(btn => {
@@ -63,16 +74,20 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- SHOW/HIDE APP LAYOUT ---
   function showApp(type) {
     const titles = { 'dairy': '🐄 Dairy Manager', 'poultry': '🐔 Poultry Tracker', 'crops': '🌽 Crop Manager' };
-    if (mainHeader && titles[type]) mainHeader.innerText = titles[type];
+    if (mainHeader) mainHeader.innerText = titles[type] || "Farm Tracker";
+    
     const poultryToggle = document.getElementById("poultryToggleContainer");
     if (poultryToggle) poultryToggle.style.display = (type === 'poultry') ? "block" : "none";
 
     farmTypeScreen.style.display = "none";
     appScreen.style.display = "block";
     if (bottomNav) bottomNav.style.display = "flex"; 
+    
+    // Reset to dashboard
     const dashTab = document.querySelector('[data-screen="dashboard"]');
     if (dashTab) dashTab.click();
     
+    // Toggle form fields
     document.querySelectorAll(".extra-fields").forEach(f => f.style.display = "none");
     const fieldId = type + "Fields";
     if (document.getElementById(fieldId)) document.getElementById(fieldId).style.display = "block";
@@ -82,8 +97,10 @@ document.addEventListener("DOMContentLoaded", () => {
   function loadRecords() {
     if (!db) return;
     const tx = db.transaction(["records", "settings", "finance"], "readonly");
+    
     tx.objectStore("settings").get("currency").onsuccess = (curEvent) => {
       const symbol = curEvent.target.result ? curEvent.target.result.value : "KES";
+      
       tx.objectStore("settings").get("farmType").onsuccess = (typeEvent) => {
         const type = typeEvent.target.result?.value;
         if (!type) return;
@@ -96,9 +113,10 @@ document.addEventListener("DOMContentLoaded", () => {
           tx.objectStore("records").getAll().onsuccess = (ev) => {
             const all = ev.target.result;
             let filtered = all.filter(r => r.type === type);
+            
             if (type === 'poultry') {
-              const subtype = document.getElementById("poultrySubtypeToggle").value;
-              filtered = filtered.filter(r => r.subtype === subtype);
+              const sub = document.getElementById("poultrySubtypeToggle").value;
+              filtered = filtered.filter(r => r.subtype === sub);
             }
             
             let totalQty = filtered.reduce((s, r) => s + (r.eggsCollected || r.avgWeight || 0), 0);
@@ -108,7 +126,7 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById("totalQuantity").innerText = totalQty.toFixed(1);
             
             updateChart(filtered.slice(-7));
-            updateInsights(filtered, type);
+            updateInsights(filtered);
 
             recordsList.innerHTML = "";
             filtered.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(r => {
@@ -129,21 +147,13 @@ document.addEventListener("DOMContentLoaded", () => {
     e.preventDefault();
     db.transaction("settings").objectStore("settings").get("farmType").onsuccess = (ev) => {
       const type = ev.target.result.value;
-      const feedItems = Array.from(document.querySelectorAll(".feed-row")).map(row => ({
-        type: row.querySelector(".feed-type").value,
-        qty: parseFloat(row.querySelector(".feed-qty").value) || 0
-      })).filter(f => f.qty > 0);
-
       const record = {
         date: document.getElementById("date").value,
         type: type,
         subtype: document.getElementById("poultrySubtype")?.value || null,
         eggsCollected: parseFloat(document.getElementById("eggsCollected")?.value) || 0,
-        eggsBroken: parseFloat(document.getElementById("eggsBroken")?.value) || 0,
         avgWeight: parseFloat(document.getElementById("avgWeight")?.value) || 0,
-        flockSize: parseFloat(document.getElementById("flockSizePoultry")?.value) || 0,
         mortality: parseFloat(document.getElementById("mortalityPoultry")?.value) || 0,
-        feedData: feedItems
       };
 
       db.transaction("records", "readwrite").objectStore("records").add(record).onsuccess = () => {
@@ -159,9 +169,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const trans = {
         date: document.getElementById("finDate").value,
         type: document.getElementById("finType").value,
-        desc: document.getElementById("finDesc").value,
         amount: parseFloat(document.getElementById("finAmount").value),
-        category: document.getElementById("finCat").value
+        desc: document.getElementById("finDesc").value
     };
     db.transaction("finance", "readwrite").objectStore("finance").add(trans).onsuccess = () => {
         showToast("Finance Recorded! 💰");
@@ -170,10 +179,36 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   };
 
+  // --- HEADER CONTROL LISTENERS ---
+  document.getElementById("switchTypeBtn").onclick = () => {
+    appScreen.style.display = "none";
+    if (bottomNav) bottomNav.style.display = "none"; 
+    farmTypeScreen.style.display = "block";
+    if (mainHeader) mainHeader.innerText = "Farm Production Tracker";
+    db.transaction("settings", "readwrite").objectStore("settings").delete("farmType");
+  };
+
+  document.getElementById("resetBtn").onclick = () => {
+    if (confirm("⚠️ Delete ALL records? This cannot be undone.")) {
+      indexedDB.deleteDatabase("FarmDB");
+      location.reload();
+    }
+  };
+
+  darkModeBtn.onclick = () => {
+    document.body.classList.toggle("dark-mode");
+    const isDark = document.body.classList.contains("dark-mode");
+    db.transaction("settings", "readwrite").objectStore("settings").put({ key: "darkMode", value: isDark });
+  };
+
   // --- HELPERS ---
   function getFarmType() {
     db.transaction("settings").objectStore("settings").get("farmType").onsuccess = (e) => {
-      if (e.target.result) showApp(e.target.result.value);
+      if (e.target.result) {
+        showApp(e.target.result.value);
+      } else {
+        farmTypeScreen.style.display = "block";
+      }
     };
   }
 
@@ -187,73 +222,32 @@ document.addEventListener("DOMContentLoaded", () => {
   function updateChart(data) {
     const container = document.getElementById("productionChart");
     if (!container) return;
-    container.innerHTML = data.length ? "" : "<p style='text-align:center; padding:20px; color:var(--text-sub)'>No data for this type yet</p>";
+    container.innerHTML = data.length ? "" : "<p style='text-align:center; padding:20px;'>No data yet</p>";
     const maxQty = Math.max(...data.map(r => r.eggsCollected || r.avgWeight || 0), 5);
     data.forEach(r => {
       const val = (r.eggsCollected || r.avgWeight || 0);
       const height = (val / maxQty) * 100;
-      const barWrapper = document.createElement("div");
-      barWrapper.className = "chart-bar-wrapper";
-      barWrapper.innerHTML = `<div class="bar" style="height: ${height}%"></div><span class="bar-label">${r.date.slice(-5)}</span>`;
-      container.appendChild(barWrapper);
+      const bar = document.createElement("div");
+      bar.className = "chart-bar-wrapper";
+      bar.innerHTML = `<div class="bar" style="height: ${height}%"></div><span class="bar-label">${r.date.slice(-5)}</span>`;
+      container.appendChild(bar);
     });
   }
 
-  function updateInsights(data, type) {
-      const insightText = document.getElementById("insightText");
-      if (!insightText) return;
-      if (data.length < 2) {
-          insightText.innerText = "Log more days to see production trends!";
-          return;
-      }
-      const last = (data[data.length-1].eggsCollected || data[data.length-1].avgWeight);
-      const prev = (data[data.length-2].eggsCollected || data[data.length-2].avgWeight);
-      insightText.innerText = last >= prev ? "Production is improving or steady! 🚀" : "Production dip detected. Check feed/health. ⚠️";
+  function updateInsights(data) {
+    const txt = document.getElementById("insightText");
+    if (!txt) return;
+    if (data.length < 2) { txt.innerText = "Log more data for insights!"; return; }
+    const last = (data[data.length-1].eggsCollected || data[data.length-1].avgWeight);
+    const prev = (data[data.length-2].eggsCollected || data[data.length-2].avgWeight);
+    txt.innerText = last >= prev ? "Production is steady! 🚀" : "Production dip detected. ⚠️";
   }
 
-  // UI EVENT LISTENERS
   document.getElementById("poultrySubtype").onchange = (e) => {
     const isLayers = e.target.value === 'layers';
     document.getElementById("layerSpecificFields").style.display = isLayers ? "block" : "none";
     document.getElementById("broilerSpecificFields").style.display = isLayers ? "none" : "block";
   };
-
+  
   document.getElementById("poultrySubtypeToggle").onchange = () => loadRecords();
-  
-  // Add this inside your DOMContentLoaded block
-  document.getElementById("switchTypeBtn").onclick = () => {
-    // 1. Hide the app and nav
-    appScreen.style.display = "none";
-    if (bottomNav) bottomNav.style.display = "none"; 
-    
-    // 2. Show the selection screen
-    farmTypeScreen.style.display = "block";
-    
-    // 3. Reset the header title
-    if (mainHeader) mainHeader.innerText = "Farm Production Tracker";
-    
-    // 4. Clear the saved farmType so it doesn't auto-load next time
-    db.transaction("settings", "readwrite").objectStore("settings").delete("farmType");
-  };
-
-  document.getElementById("resetBtn").onclick = () => {
-    if (confirm("⚠️ This will delete ALL your farm records. Are you sure?")) {
-      const deleteRequest = indexedDB.deleteDatabase("FarmDB");
-      deleteRequest.onsuccess = () => {
-        alert("App Reset Successfully.");
-        location.reload();
-      };
-    }
-  };
-  
-  // Ensure this is at the bottom of your DOMContentLoaded
-  darkModeBtn.onclick = () => {
-    document.body.classList.toggle("dark-mode");
-    // Optional: Save preference to IDB
-    const isDark = document.body.classList.contains("dark-mode");
-    db.transaction("settings", "readwrite").objectStore("settings").put({key: "darkMode", value: isDark});
-  };
 });
-
-
-
