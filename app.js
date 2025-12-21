@@ -41,7 +41,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   request.onsuccess = (e) => {
     db = e.target.result;
-    document.getElementById("date").valueAsDate = new Date();
+    const dateInput = document.getElementById("date");
+    if (dateInput) dateInput.valueAsDate = new Date();
     getFarmType();
   };
 
@@ -115,26 +116,39 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-    function showApp(type) {
-        // --- NEW HEADER LOGIC ---
-        const headerElement = document.getElementById("mainHeader");
-        if (type === "poultry") {
-            headerElement.innerText = "Poultry Production";
-        } else if (type === "dairy") {
-            headerElement.innerText = "Dairy Production";
-        } else if (type === "crops") {
-            headerElement.innerText = "Crops Production";
-        } else {
-            headerElement.innerText = "Farm Production Tracker";
-        }
-        // ------------------------
+  function showApp(type) {
+    // Dynamic Header Logic
+    const headerElement = document.getElementById("mainHeader");
+    if (type === "poultry") {
+      headerElement.innerText = "Poultry Production";
+    } else if (type === "dairy") {
+      headerElement.innerText = "Dairy Production";
+    } else if (type === "crops") {
+      headerElement.innerText = "Crops Production";
+    } else {
+      headerElement.innerText = "Farm Production Tracker";
+    }
+
+    farmTypeScreen.style.display = "none";
+    appScreen.style.display = "block";
+
+    // Setup UI visibility based on type
+    document.querySelectorAll('.extra-fields').forEach(div => div.style.display = 'none');
     
-        farmTypeScreen.style.display = "none";
-        appScreen.style.display = "block";
-        
-        // ... rest of your existing showApp code ...
-        document.querySelectorAll('.extra-fields').forEach(div => div.style.display = 'none');
-        // ...
+    const isPoultry = (type === "poultry");
+    document.getElementById("poultrySubtypeToggle").style.display = isPoultry ? "block" : "none";
+    document.getElementById("historySection").style.display = isPoultry ? "block" : "none";
+    archiveBtn.style.display = isPoultry ? "block" : "none";
+
+    if (type === "dairy") {
+      qtyLabel.innerText = "Milk Collected (Litres)";
+      document.getElementById("dairyFields").style.display = "block";
+    } else if (type === "poultry") {
+      document.getElementById("poultryFields").style.display = "block";
+      updatePoultryUI();
+    } else if (type === "crops") {
+      qtyLabel.innerText = "Harvest Quantity (Kg)";
+      document.getElementById("cropFields").style.display = "block";
     }
   }
 
@@ -278,8 +292,9 @@ document.addEventListener("DOMContentLoaded", () => {
         // UPDATE UI SUMMARY
         document.getElementById("totalQuantity").innerText = totalQty.toFixed(1);
         document.getElementById("totalProfit").innerText = (totalRev - totalExp).toLocaleString();
-        // Add this line inside loadRecords() under the summary section
-        document.getElementById("totalExpensesDisplay").innerText = `KES ${totalExp.toLocaleString()}`;
+        
+        const expenseDisplay = document.getElementById("totalExpensesDisplay");
+        if (expenseDisplay) expenseDisplay.innerText = `KES ${totalExp.toLocaleString()}`;
         
         if (currentType === "poultry") {
           document.getElementById("kpiLabel3").innerText = "Flock Size";
@@ -326,7 +341,6 @@ document.addEventListener("DOMContentLoaded", () => {
           breakdownDiv.style.display = "none";
         }
 
-        // HISTORY SECTION
         if (currentType === "poultry") {
           Object.keys(archivedGroups).forEach(batch => {
             const data = archivedGroups[batch];
@@ -340,7 +354,6 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  // --- ANALYTICS ---
   function updateChart(data, currentType) {
     const chartContainer = document.getElementById("productionChart");
     if (!chartContainer) return;
@@ -362,7 +375,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // --- ACTIONS & LISTENERS ---
   archiveBtn.addEventListener("click", () => {
     const sub = document.getElementById("poultrySubtypeToggle").value;
     if (confirm(`Archive the current ${sub} batch? Dashboard will reset.`)) {
@@ -380,20 +392,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // --- EXPORT CSV LOGIC ---
   document.getElementById("exportBtn").addEventListener("click", () => {
     const tx = db.transaction("records", "readonly");
     tx.objectStore("records").getAll().onsuccess = (e) => {
       const data = e.target.result;
       if (data.length === 0) return showToast("No records to export!");
-
       const headers = ["Date", "Type", "Subtype", "Label/Batch", "Quantity", "Price", "Revenue", "Expenses", "Profit", "Mortality", "Feed(Kg)", "AvgWeight(Kg)", "Status"];
       const csvRows = data.map(r => {
         const revenue = r.quantity * r.price;
         const profit = revenue - r.expenses;
         return [r.date, r.type, r.subtype || "-", `"${r.extra || ''}"`, r.quantity, r.price, revenue, r.expenses, profit, r.mortality || 0, r.feed || 0, r.weight || 0, r.archived ? "Archived" : "Active"].join(",");
       });
-
       const csvContent = [headers.join(","), ...csvRows].join("\n");
       const blob = new Blob([csvContent], { type: "text/csv" });
       const url = URL.createObjectURL(blob);
@@ -416,10 +425,9 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   document.getElementById("switchTypeBtn").addEventListener("click", () => { 
-      farmTypeScreen.style.display = "block"; 
-      appScreen.style.display = "none"; 
-      // Reset header when choosing a new farm type
-      document.getElementById("mainHeader").innerText = "Farm Production Tracker";
+    farmTypeScreen.style.display = "block"; 
+    appScreen.style.display = "none"; 
+    document.getElementById("mainHeader").innerText = "Farm Production Tracker";
   });
 
   document.getElementById("resetBtn").addEventListener("click", () => { 
@@ -436,5 +444,3 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
   }
 });
-
-
