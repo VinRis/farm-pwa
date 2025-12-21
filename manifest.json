@@ -1,12 +1,15 @@
 {
-  "name": "Farm Production Tracker",
+  "name": "Farm Production Tracker Pro",
   "short_name": "FarmTracker",
-  "description": "Keep track of daily farm production, expenses, and profits offline.",
+  "id": "/farm-tracker-pro/",
+  "description": "Professional offline management for Poultry, Dairy, and Crop farming.",
   "start_url": "index.html",
+  "scope": ".",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#ffffff",
+  "background_color": "#f4f6f8",
   "theme_color": "#2e7d32",
+  "categories": ["business", "productivity", "utilities"],
   "icons": [
     {
       "src": "icon-192.png",
@@ -27,13 +30,29 @@
       "purpose": "any"
     }
   ],
+  "shortcuts": [
+    {
+      "name": "Add Record",
+      "short_name": "Add",
+      "description": "Open the form to add new production data",
+      "url": "index.html#farmForm",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    }
+  ],
   "screenshots": [
     {
       "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "Farm Dashboard"
+      "label": "Farm Dashboard and Analytics"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Desktop View Support"
     }
   ]
 }
