@@ -9,10 +9,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // UI Elements
   const farmTypeScreen = document.getElementById("farmTypeScreen");
   const appScreen = document.getElementById("appScreen");
+  const bottomNav = document.getElementById("bottomNav"); // Added reference
   const form = document.getElementById("farmForm");
   const recordsList = document.getElementById("records");
-  const monthFilter = document.getElementById("monthFilter");
-  const qtyLabel = document.getElementById("qtyLabel");
   const darkModeBtn = document.getElementById("darkModeBtn");
   const expenseContainer = document.getElementById("expenseContainer");
 
@@ -20,25 +19,6 @@ document.addEventListener("DOMContentLoaded", () => {
     "Feed": "#2e7d32", "Medication": "#d32f2f", "Chicks": "#fbc02d",
     "Labor": "#0288d1", "Utilities": "#7b1fa2", "Other": "#757575"
   };
-
-  // --- FEATURE: DAILY REMINDERS ---
-  function requestNotificationPermission() {
-    if ("Notification" in window && Notification.permission === "default") {
-      Notification.requestPermission();
-    }
-  }
-
-  function scheduleDailyReminder() {
-    setInterval(() => {
-      const now = new Date();
-      if (now.getHours() === 18 && now.getMinutes() === 0) {
-        new Notification("Farm Tracker Pro", {
-          body: "Time to record today's production!",
-          icon: "icon-192.png"
-        });
-      }
-    }, 60000);
-  }
 
   // --- DATABASE SETUP ---
   const request = indexedDB.open("FarmDB", 1);
@@ -52,64 +32,136 @@ document.addEventListener("DOMContentLoaded", () => {
     db = e.target.result;
     if (document.getElementById("date")) document.getElementById("date").valueAsDate = new Date();
     getFarmType();
-    requestNotificationPermission();
-    scheduleDailyReminder();
+  };
+
+  // --- NAVIGATION LOGIC ---
+  document.querySelectorAll('.nav-item').forEach(btn => {
+    btn.onclick = () => {
+      // 1. Update active button UI
+      document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      // 2. Identify the target view
+      const target = btn.dataset.screen;
+
+      // 3. Hide all view sections
+      document.querySelectorAll('.view-section').forEach(section => {
+        section.style.display = 'none';
+      });
+
+      // 4. Show the correct view based on the target
+      if (target === 'dashboard') {
+        document.getElementById('dashboardView').style.display = 'block';
+        loadRecords(); // Refresh charts and KPIs
+      } else if (target === 'records-section') {
+        document.getElementById('recordsView').style.display = 'block';
+        loadRecords(); // Ensure list is up to date
+      } else if (target === 'main-form') {
+        document.getElementById('formView').style.display = 'block';
+      }
+    };
+  });
+
+  // --- FEATURE: SHOW/HIDE APP LAYOUT ---
+  function showApp(type) {
+    farmTypeScreen.style.display = "none";
+    appScreen.style.display = "block";
+    bottomNav.style.display = "flex"; // Show Nav Bar when app starts
+    
+    // Set default view to dashboard
+    document.querySelector('[data-screen="dashboard"]').click();
+    
+    // Configure form fields based on type
+    document.querySelectorAll(".extra-fields").forEach(f => f.style.display = "none");
+    if (type === "poultry") document.getElementById("poultryFields").style.display = "block";
+    if (type === "dairy") document.getElementById("dairyFields").style.display = "block";
+    if (type === "crops") document.getElementById("cropFields").style.display = "block";
+  }
+
+  function getFarmType() {
+    db.transaction("settings").objectStore("settings").get("farmType").onsuccess = (e) => {
+      if (e.target.result) showApp(e.target.result.value);
+    };
+  }
+
+  document.querySelectorAll(".type-btn").forEach(btn => {
+    btn.onclick = () => {
+      const type = btn.dataset.type;
+      db.transaction("settings", "readwrite").objectStore("settings").put({key: "farmType", value: type});
+      showApp(type);
+    };
+  });
+
+  document.getElementById("switchTypeBtn").onclick = () => {
+    appScreen.style.display = "none";
+    bottomNav.style.display = "none"; // Hide Nav when choosing type
+    farmTypeScreen.style.display = "block";
   };
 
   // --- DYNAMIC EXPENSE ROWS ---
-  document.getElementById("addExpenseRow").addEventListener("click", () => {
+  document.getElementById("addExpenseRow").onclick = () => {
     const newRow = document.querySelector(".expense-row").cloneNode(true);
     newRow.querySelector(".exp-amt").value = "";
     const btn = newRow.querySelector("button");
     btn.innerText = "✕";
-    btn.style.background = "#d32f2f";
+    btn.classList.replace("add-row-btn", "btn-danger");
     btn.onclick = () => newRow.remove();
     expenseContainer.appendChild(newRow);
-  });
+  };
 
-  // --- NEW FEATURE: CALCULATE PROJECTIONS ---
-  function updateProjections(filteredRecords) {
-    const now = new Date();
-    const currentMonth = now.toISOString().substring(0, 7);
-    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-    const dayOfMonth = now.getDate();
+  // --- DATA LOADING & VISUALS ---
+  function loadRecords() {
+    if (!db) return;
+    const tx = db.transaction(["records", "settings"], "readonly");
+    tx.objectStore("settings").get("farmType").onsuccess = (e) => {
+      const type = e.target.result?.value;
+      if (!type) return;
 
-    // Filter only records from the current month
-    const thisMonthData = filteredRecords.filter(r => r.date.startsWith(currentMonth));
+      tx.objectStore("records").getAll().onsuccess = (ev) => {
+        const all = ev.target.result;
+        const subToggle = document.getElementById("poultrySubtypeToggle");
+        const sub = subToggle ? subToggle.value : "layers";
+        const filtered = all.filter(r => r.type === type && (!r.subtype || r.subtype === sub));
+        
+        let [rev, exp, qty] = [0, 0, 0];
+        let cats = {};
+        recordsList.innerHTML = "";
 
-    if (thisMonthData.length === 0) {
-      document.getElementById("projectedProfit").innerText = "Awaiting data...";
-      document.getElementById("projectedQty").innerText = "0.0";
-      return;
-    }
+        const sorted = [...filtered].sort((a, b) => new Date(b.date) - new Date(a.date));
 
-    let totalMonthProfit = 0;
-    let totalMonthQty = 0;
+        sorted.forEach(r => {
+          rev += (r.quantity * r.price);
+          exp += r.expenses;
+          qty += r.quantity;
+          r.expenseItems?.forEach(i => cats[i.category] = (cats[i.category] || 0) + i.amount);
 
-    thisMonthData.forEach(r => {
-      totalMonthProfit += (r.quantity * r.price) - r.expenses;
-      totalMonthQty += r.quantity;
-    });
+          recordsList.innerHTML += `<li>
+            <span><strong>${r.date}</strong><br>${r.quantity} units</span>
+            <span style="text-align:right">KES ${(r.quantity * r.price).toLocaleString()}<br>
+            <small>Exp: ${r.expenses}</small></span>
+          </li>`;
+        });
 
-    // Calculate daily averages
-    const avgDailyProfit = totalMonthProfit / dayOfMonth;
-    const avgDailyQty = totalMonthQty / dayOfMonth;
-
-    // Project for the full month
-    const projectedProfit = avgDailyProfit * daysInMonth;
-    const projectedQty = avgDailyQty * daysInMonth;
-
-    document.getElementById("projectedProfit").innerText = `KES ${Math.round(projectedProfit).toLocaleString()}`;
-    document.getElementById("projectedQty").innerText = projectedQty.toFixed(1);
+        // Update Dashboard Elements
+        if (document.getElementById("totalProfit")) {
+            document.getElementById("totalProfit").innerText = `KES ${(rev - exp).toLocaleString()}`;
+            document.getElementById("totalExpensesDisplay").innerText = `KES ${exp.toLocaleString()}`;
+            document.getElementById("totalQuantity").innerText = qty.toFixed(1);
+            renderPie(cats, exp);
+            updateChart(filtered.slice(-7));
+            updateProjections(filtered);
+        }
+      };
+    };
   }
 
-  // --- CHARTING & VISUALS ---
+  // --- CHARTING FUNCTIONS ---
   function updateChart(data) {
     const container = document.getElementById("productionChart");
     if (!container) return;
     container.innerHTML = "";
     const recent = data.slice(-7);
-    const maxQty = Math.max(...recent.map(r => r.quantity), 10);
+    const maxQty = Math.max(...recent.map(r => r.quantity), 5);
 
     recent.forEach(r => {
       const height = (r.quantity / maxQty) * 100;
@@ -128,11 +180,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const list = document.getElementById("breakdownList");
     const pie = document.getElementById("pieChartCircle");
     if (!list || !pie || total <= 0) return;
-
     list.innerHTML = "";
     let currentPercent = 0;
     let gradient = [];
-
     Object.entries(categories).forEach(([cat, val]) => {
       const percent = (val / total) * 100;
       const color = catColors[cat] || "#757575";
@@ -143,99 +193,7 @@ document.addEventListener("DOMContentLoaded", () => {
     pie.style.background = `conic-gradient(${gradient.join(", ")})`;
   }
 
-  // --- DATA LOGIC ---
-  function loadRecords() {
-    if (!db) return;
-    const tx = db.transaction(["records", "settings"], "readonly");
-    tx.objectStore("settings").get("farmType").onsuccess = (e) => {
-      const type = e.target.result?.value;
-      if (!type) return;
-
-      tx.objectStore("records").getAll().onsuccess = (ev) => {
-        const all = ev.target.result;
-        const sub = document.getElementById("poultrySubtypeToggle").value;
-        const filtered = all.filter(r => r.type === type && (!r.subtype || r.subtype === sub));
-        
-        let [rev, exp, qty] = [0, 0, 0];
-        let cats = {};
-        recordsList.innerHTML = "";
-
-        // Sort by date descending for the list
-        const sorted = [...filtered].sort((a, b) => new Date(b.date) - new Date(a.date));
-
-        sorted.forEach(r => {
-          rev += (r.quantity * r.price);
-          exp += r.expenses;
-          qty += r.quantity;
-          r.expenseItems?.forEach(i => cats[i.category] = (cats[i.category] || 0) + i.amount);
-
-          recordsList.innerHTML += `<li>
-            <span><strong>${r.date}</strong><br>${r.quantity} units</span>
-            <span style="text-align:right">KES ${(r.quantity * r.price).toLocaleString()}<br>
-            <small>Exp: ${r.expenses}</small></span>
-          </li>`;
-        });
-
-        document.getElementById("totalProfit").innerText = `KES ${(rev - exp).toLocaleString()}`;
-        document.getElementById("totalExpensesDisplay").innerText = `KES ${exp.toLocaleString()}`;
-        document.getElementById("totalQuantity").innerText = qty.toFixed(1);
-        
-        renderPie(cats, exp);
-        updateChart(filtered.slice(-7)); // Show last 7 for trend
-        updateProjections(filtered);     // Calculate projections
-      };
-    };
-  }
-
-  // --- NAVIGATION LOGIC ---
-document.querySelectorAll('.nav-item').forEach(btn => {
-    btn.onclick = () => {
-        // Update active button UI
-        document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-
-        // Toggle Views
-        const target = btn.dataset.screen;
-        document.querySelectorAll('.view-section').forEach(section => {
-            section.style.display = 'none';
-        });
-
-        if (target === 'dashboard') {
-            document.getElementById('dashboardView').style.display = 'block';
-            loadRecords(); // Reload to refresh charts
-        } else if (target === 'records-section') {
-            document.getElementById('recordsView').style.display = 'block';
-        } else {
-            document.getElementById('formView').style.display = 'block';
-        }
-    };
-});
-
-  // --- NAVIGATION & FORM ---
-  function showApp(type) {
-    farmTypeScreen.style.display = "none";
-    appScreen.style.display = "block";
-    document.querySelectorAll(".extra-fields").forEach(f => f.style.display = "none");
-    if (type === "poultry") document.getElementById("poultryFields").style.display = "block";
-    if (type === "dairy") document.getElementById("dairyFields").style.display = "block";
-    if (type === "crops") document.getElementById("cropFields").style.display = "block";
-    loadRecords();
-  }
-
-  function getFarmType() {
-    db.transaction("settings").objectStore("settings").get("farmType").onsuccess = (e) => {
-      if (e.target.result) showApp(e.target.result.value);
-    };
-  }
-
-  document.querySelectorAll(".type-btn").forEach(btn => {
-    btn.onclick = () => {
-      const type = btn.dataset.type;
-      db.transaction("settings", "readwrite").objectStore("settings").put({key: "farmType", value: type});
-      showApp(type);
-    };
-  });
-
+  // --- FORM SUBMISSION ---
   form.onsubmit = (e) => {
     e.preventDefault();
     db.transaction("settings").objectStore("settings").get("farmType").onsuccess = (ev) => {
@@ -258,7 +216,8 @@ document.querySelectorAll('.nav-item').forEach(btn => {
       db.transaction("records", "readwrite").objectStore("records").add(record).onsuccess = () => {
         form.reset();
         document.getElementById("date").valueAsDate = new Date();
-        loadRecords();
+        // Redirect to Dashboard after saving
+        document.querySelector('[data-screen="dashboard"]').click();
         const toast = document.getElementById("toast");
         toast.classList.add("show");
         setTimeout(() => toast.classList.remove("show"), 3000);
@@ -267,12 +226,21 @@ document.querySelectorAll('.nav-item').forEach(btn => {
   };
 
   darkModeBtn.onclick = () => document.body.classList.toggle("dark-mode");
-  document.getElementById("switchTypeBtn").onclick = () => {
-    appScreen.style.display = "none";
-    farmTypeScreen.style.display = "block";
-  };
   
-  // Re-load data when sub-type toggle changes
-  document.getElementById("poultrySubtypeToggle").onchange = loadRecords;
+  // Projection logic helper
+  function updateProjections(filteredRecords) {
+    const now = new Date();
+    const currentMonth = now.toISOString().substring(0, 7);
+    const thisMonthData = filteredRecords.filter(r => r.date.startsWith(currentMonth));
+    if (thisMonthData.length === 0) return;
+    
+    let totalMonthProfit = 0;
+    let totalMonthQty = 0;
+    thisMonthData.forEach(r => {
+      totalMonthProfit += (r.quantity * r.price) - r.expenses;
+      totalMonthQty += r.quantity;
+    });
+    document.getElementById("projectedProfit").innerText = `KES ${Math.round(totalMonthProfit / now.getDate() * 30).toLocaleString()}`;
+    document.getElementById("projectedQty").innerText = (totalMonthQty / now.getDate() * 30).toFixed(1);
+  }
 });
-
