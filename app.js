@@ -65,17 +65,12 @@ document.addEventListener("DOMContentLoaded", () => {
   function showApp(type) {
     const titles = { 'dairy': '🐄 Dairy Manager', 'poultry': '🐔 Poultry Tracker', 'crops': '🌽 Crop Manager' };
     if (mainHeader && titles[type]) mainHeader.innerText = titles[type];
+    
+    // Logic to show Poultry Filter ONLY for poultry
     const poultryToggle = document.getElementById("poultryToggleContainer");
-    if (type === 'poultry') {
-        poultryToggle.style.display = "flex";
-    } else {
-        poultryToggle.style.display = "none";
+    if (poultryToggle) {
+        poultryToggle.style.display = (type === 'poultry') ? "flex" : "none";
     }
-    // ----------------------
-
-    farmTypeScreen.style.display = "none";
-    appScreen.style.display = "block";
-    if (bottomNav) bottomNav.style.display = "flex";
 
     farmTypeScreen.style.display = "none";
     appScreen.style.display = "block";
@@ -166,7 +161,7 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById("totalProfit").innerText = `${symbol} ${(rev - exp).toLocaleString()}`;
             document.getElementById("totalExpensesDisplay").innerText = `${symbol} ${exp.toLocaleString()}`;
             document.getElementById("totalQuantity").innerText = qty.toFixed(1);
-            // Inside loadRecords, after calculating rev, exp, qty...
+            
             updateInsights(filtered, type);
             renderPie(cats, exp);
             updateChart(filtered.slice(-7));
@@ -175,6 +170,34 @@ document.addEventListener("DOMContentLoaded", () => {
         };
       };
     };
+  }
+
+  function updateInsights(data, type) {
+    const insightText = document.getElementById("insightText");
+    if (!insightText || data.length < 2) {
+        insightText.innerText = "Keep recording data to see trends!";
+        return;
+    }
+
+    const sorted = [...data].sort((a, b) => new Date(a.date) - new Date(b.date));
+    const latest = sorted[sorted.length - 1];
+    const previous = sorted[sorted.length - 2];
+
+    let message = "";
+
+    if (latest.quantity > previous.quantity) {
+        message = `Production is up by ${(latest.quantity - previous.quantity).toFixed(1)} units since last record! 📈`;
+    } else if (latest.quantity < previous.quantity) {
+        message = `Production dropped. Check ${type === 'dairy' ? 'fodder quality' : 'feed intake'}. 🧐`;
+    } else {
+        message = "Production is stable. Consistent monitoring pays off! ✅";
+    }
+
+    if (latest.expenses > (latest.quantity * latest.price) * 0.5) {
+        message += " Warning: Expenses are taking up over 50% of revenue today.";
+    }
+
+    insightText.innerText = message;
   }
 
   function updateChart(data) {
@@ -328,33 +351,3 @@ document.addEventListener("DOMContentLoaded", () => {
 
   darkModeBtn.onclick = () => document.body.classList.toggle("dark-mode");
 });
-
-    function updateInsights(data, type) {
-        const insightText = document.getElementById("insightText");
-        if (!insightText || data.length < 2) {
-            insightText.innerText = "Keep recording data to see trends!";
-            return;
-        }
-    
-        // Sort by date to compare last two entries
-        const sorted = [...data].sort((a, b) => new Date(a.date) - new Date(b.date));
-        const latest = sorted[sorted.length - 1];
-        const previous = sorted[sorted.length - 2];
-    
-        let message = "";
-    
-        if (latest.quantity > previous.quantity) {
-            message = `Production is up by ${(latest.quantity - previous.quantity).toFixed(1)} units since last record! 📈`;
-        } else if (latest.quantity < previous.quantity) {
-            message = `Production dropped slightly. Check ${type === 'dairy' ? 'fodder quality' : 'feed intake'}. 🧐`;
-        } else {
-            message = "Production is stable. Consistent monitoring pays off! ✅";
-        }
-    
-        // Add financial insight if expenses are high
-        if (latest.expenses > (latest.quantity * latest.price) * 0.5) {
-            message += " Warning: Expenses are taking up over 50% of revenue today.";
-        }
-    
-        insightText.innerText = message;
-    }
