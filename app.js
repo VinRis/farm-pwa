@@ -254,42 +254,68 @@ const App = {
     },
 
     async refreshDashboard() {
+        // 1. Fetch both records and transactions
         const records = await DB.getAll('records', 'livestock', this.state.livestock);
         const trans = await DB.getAll('transactions', 'livestock', this.state.livestock);
         
-        // Filter Current Month
         const now = new Date();
         const currentMonth = now.getMonth();
         const currentYear = now.getFullYear();
         
+        // 2. Filter data for the current month
         const thisMonthRecs = records.filter(r => {
             const d = new Date(r.date);
             return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
         });
 
-        // Calculate KPIs
-        let totalProd = 0;
-        let totalFeed = 0;
-        let mortality = 0;
+        const thisMonthTrans = trans.filter(t => {
+            const d = new Date(t.date);
+            return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+        });
+
+        // 3. Calculate Production and Feed totals
+        let totalProd = 0, totalFeed = 0;
         let unit = this.state.livestock === 'dairy' ? 'L' : (this.state.livestock === 'poultry' ? 'Eggs' : 'Kg');
 
         thisMonthRecs.forEach(r => {
             totalProd += (r.quantity || 0);
             totalFeed += (r.feedKg || 0);
-            mortality += (r.mortality || 0);
         });
 
-        // Render KPIs
+        // 4. Calculate Financial totals
+        let totalIncome = 0, totalExpense = 0;
+        thisMonthTrans.forEach(t => {
+            if (t.type === 'income') totalIncome += t.amount;
+            else totalExpense += t.amount;
+        });
+
+        // 5. Render the new KPI Cards
         document.getElementById('kpi-container').innerHTML = `
-            <div class="kpi-card"><h4>Production (${unit})</h4><div class="value">${totalProd.toFixed(1)}</div></div>
-            <div class="kpi-card"><h4>Feed (Kg)</h4><div class="value">${totalFeed.toFixed(1)}</div></div>
-            <div class="kpi-card"><h4>Mortality</h4><div class="value" style="color:red">${mortality}</div></div>
-            <div class="kpi-card"><h4>Records</h4><div class="value">${thisMonthRecs.length}</div></div>
+            <div class="kpi-card">
+                <h4>Production (${unit})</h4>
+                <div class="value">${totalProd.toFixed(1)}</div>
+            </div>
+            <div class="kpi-card">
+                <h4>Feed (Kg)</h4>
+                <div class="value">${totalFeed.toFixed(1)}</div>
+            </div>
+            <div class="kpi-card">
+                <h4>Income</h4>
+                <div class="value" style="color:var(--primary-color)">
+                    ${this.state.currency} ${totalIncome.toLocaleString()}
+                </div>
+            </div>
+            <div class="kpi-card">
+                <h4>Expense</h4>
+                <div class="value" style="color:#e53935">
+                    ${this.state.currency} ${totalExpense.toLocaleString()}
+                </div>
+            </div>
         `;
 
-        // Render Chart (Last 30 records by date)
+        // 6. Refresh the chart
         this.renderChart(records);
-        
+    
         // Recent Activity
         const recent = records.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 3);
         document.getElementById('recent-records-list').innerHTML = recent.map(r => `
@@ -453,5 +479,6 @@ const App = {
 
 window.app = App; // Expose for HTML onclick handlers
 document.addEventListener('DOMContentLoaded', () => App.init());
+
 
 
