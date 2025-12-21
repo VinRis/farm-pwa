@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const recordsList = document.getElementById("records");
   const darkModeBtn = document.getElementById("darkModeBtn");
   const expenseContainer = document.getElementById("expenseContainer");
-  const mainHeader = document.getElementById("mainHeader"); // Reference to header h1
+  const mainHeader = document.getElementById("mainHeader");
 
   const catColors = {
     "Feed": "#2e7d32", "Medication": "#d32f2f", "Chicks": "#fbc02d",
@@ -45,13 +45,11 @@ document.addEventListener("DOMContentLoaded", () => {
       document.querySelectorAll('.view-section').forEach(section => {
         section.style.display = 'none';
       });
-      // Inside the nav-item click listener
-    } else if (target === 'settings-view') {
-        document.getElementById('settingsView').style.display = 'block';
-        loadSettings(); // Load the saved name/currency into inputs
-    }
 
-      if (target === 'dashboard') {
+      if (target === 'settings-view') {
+        document.getElementById('settingsView').style.display = 'block';
+        loadSettings();
+      } else if (target === 'dashboard') {
         document.getElementById('dashboardView').style.display = 'block';
         loadRecords(); 
       } else if (target === 'records-section') {
@@ -65,32 +63,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- FEATURE: SHOW/HIDE APP LAYOUT ---
   function showApp(type) {
-    // Define titles for each farm type
-    const titles = {
-      'dairy': '🐄 Dairy Manager',
-      'poultry': '🐔 Poultry Tracker',
-      'crops': '🌽 Crop Manager'
-    };
-
-    // Update Header Text
-    if (mainHeader && titles[type]) {
-      mainHeader.innerText = titles[type];
-    }
+    const titles = { 'dairy': '🐄 Dairy Manager', 'poultry': '🐔 Poultry Tracker', 'crops': '🌽 Crop Manager' };
+    if (mainHeader && titles[type]) mainHeader.innerText = titles[type];
 
     farmTypeScreen.style.display = "none";
     appScreen.style.display = "block";
     if (bottomNav) bottomNav.style.display = "flex"; 
     
-    // Set default view to dashboard
     const dashTab = document.querySelector('[data-screen="dashboard"]');
     if (dashTab) dashTab.click();
     
-    // Configure specific form fields
     document.querySelectorAll(".extra-fields").forEach(f => f.style.display = "none");
     const fieldId = type + "Fields";
-    if (document.getElementById(fieldId)) {
-        document.getElementById(fieldId).style.display = "block";
-    }
+    if (document.getElementById(fieldId)) document.getElementById(fieldId).style.display = "block";
   }
 
   function getFarmType() {
@@ -114,7 +99,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (mainHeader) mainHeader.innerText = "Farm Production Tracker";
   };
 
-  // --- DYNAMIC EXPENSE ROWS ---
   document.getElementById("addExpenseRow").onclick = () => {
     const newRow = document.querySelector(".expense-row").cloneNode(true);
     newRow.querySelector(".exp-amt").value = "";
@@ -125,63 +109,57 @@ document.addEventListener("DOMContentLoaded", () => {
     expenseContainer.appendChild(newRow);
   };
 
-  // --- DATA LOADING, VISUALS & PROJECTIONS ---
+  // --- DATA LOADING & VISUALS ---
   function loadRecords() {
     if (!db) return;
-    const tx = db.transaction("settings").objectStore("settings").get("currency").onsuccess = (e) => {
-        const symbol = e.target.result ? e.target.result.value : "KES";
-        
-        // When rendering profit:
-        document.getElementById("totalProfit").innerText = `${symbol} ${(rev - exp).toLocaleString()}`;
-      };
+    const tx = db.transaction(["records", "settings"], "readonly");
+    
+    tx.objectStore("settings").get("currency").onsuccess = (curEvent) => {
+      const symbol = curEvent.target.result ? curEvent.target.result.value : "KES";
+      
+      tx.objectStore("settings").get("farmType").onsuccess = (typeEvent) => {
+        const type = typeEvent.target.result?.value;
+        if (!type) return;
 
-      tx.objectStore("records").getAll().onsuccess = (ev) => {
-        const all = ev.target.result;
-        const subToggle = document.getElementById("poultrySubtypeToggle");
-        const sub = subToggle ? subToggle.value : "layers";
-        const filtered = all.filter(r => r.type === type && (!r.subtype || r.subtype === sub));
-        
-        let [rev, exp, qty] = [0, 0, 0];
-        let cats = {};
-        recordsList.innerHTML = "";
-        const sorted = [...filtered].sort((a, b) => new Date(b.date) - new Date(a.date));
+        tx.objectStore("records").getAll().onsuccess = (ev) => {
+          const all = ev.target.result;
+          const filtered = all.filter(r => r.type === type);
+          
+          let [rev, exp, qty] = [0, 0, 0];
+          let cats = {};
+          recordsList.innerHTML = "";
+          const sorted = [...filtered].sort((a, b) => new Date(b.date) - new Date(a.date));
 
-        sorted.forEach(r => {
-          rev += (r.quantity * r.price);
-          exp += r.expenses;
-          qty += r.quantity;
-          r.expenseItems?.forEach(i => cats[i.category] = (cats[i.category] || 0) + i.amount);
-        
-          // Create the list item
-          const li = document.createElement("li");
-          li.className = "record-item";
-          li.innerHTML = `
-            <div class="record-info">
-              <strong>${r.date}</strong><br>
-              <small>${r.quantity} units @ ${r.price}</small>
-            </div>
-            <div class="record-actions">
-              <div class="record-finance">
-                KES ${(r.quantity * r.price).toLocaleString()}<br>
-                <small>Exp: ${r.expenses}</small>
-              </div>
-              <div class="action-btns">
-                <button onclick="editRecord(${r.id})" class="edit-btn">✏️</button>
-                <button onclick="deleteRecord(${r.id})" class="delete-btn">🗑️</button>
-              </div>
-            </div>
-          `;
-          recordsList.appendChild(li);
-        });
+          sorted.forEach(r => {
+            const income = (r.quantity * r.price);
+            rev += income;
+            exp += r.expenses;
+            qty += r.quantity;
+            r.expenseItems?.forEach(i => cats[i.category] = (cats[i.category] || 0) + i.amount);
+          
+            const li = document.createElement("li");
+            li.className = "record-item";
+            li.innerHTML = `
+              <div class="record-info"><strong>${r.date}</strong><br><small>${r.quantity} units</small></div>
+              <div class="record-actions">
+                <div class="record-finance">${symbol} ${income.toLocaleString()}<br><small>Exp: ${r.expenses}</small></div>
+                <div class="action-btns">
+                  <button onclick="editRecord(${r.id})" class="edit-btn">✏️</button>
+                  <button onclick="deleteRecord(${r.id})" class="delete-btn">🗑️</button>
+                </div>
+              </div>`;
+            recordsList.appendChild(li);
+          });
 
-        if (document.getElementById("totalProfit")) {
-            document.getElementById("totalProfit").innerText = `KES ${(rev - exp).toLocaleString()}`;
-            document.getElementById("totalExpensesDisplay").innerText = `KES ${exp.toLocaleString()}`;
+          if (document.getElementById("totalProfit")) {
+            document.getElementById("totalProfit").innerText = `${symbol} ${(rev - exp).toLocaleString()}`;
+            document.getElementById("totalExpensesDisplay").innerText = `${symbol} ${exp.toLocaleString()}`;
             document.getElementById("totalQuantity").innerText = qty.toFixed(1);
             renderPie(cats, exp);
             updateChart(filtered.slice(-7));
-            updateProjections(filtered);
-        }
+            updateProjections(filtered, symbol);
+          }
+        };
       };
     };
   }
@@ -190,17 +168,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const container = document.getElementById("productionChart");
     if (!container) return;
     container.innerHTML = "";
-    const recent = data.slice(-7);
-    const maxQty = Math.max(...recent.map(r => r.quantity), 5);
+    const maxQty = Math.max(...data.map(r => r.quantity), 5);
 
-    recent.forEach(r => {
-      // Inside updateChart recent.forEach loop:
-      const dateParts = r.date.split('-'); // [YYYY, MM, DD]
-      const label = `${dateParts[1]}/${dateParts[2]}`; // Shows MM/DD
-      barWrapper.innerHTML = `
-        <div class="bar" style="height: ${height}%"></div>
-        <span class="bar-label">${label}</span>
-      `;
+    data.forEach(r => {
+      const height = (r.quantity / maxQty) * 100;
+      const dateParts = r.date.split('-'); 
+      const label = `${dateParts[1]}/${dateParts[2]}`;
+      const barWrapper = document.createElement("div");
+      barWrapper.className = "chart-bar-wrapper";
+      barWrapper.innerHTML = `<div class="bar" style="height: ${height}%"></div><span class="bar-label">${label}</span>`;
+      container.appendChild(barWrapper);
     });
   }
 
@@ -223,14 +200,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   form.onsubmit = (e) => {
     e.preventDefault();
-    db.transaction("records", "readwrite").add(record).onsuccess = () => {
-      form.reset();
-      document.getElementById("date").valueAsDate = new Date();
-      document.querySelector('[data-screen="dashboard"]').click();
-      
-      // Use your helper function here
-      showToast("Record Saved Successfully! ✅"); 
-    };
+    db.transaction("settings").objectStore("settings").get("farmType").onsuccess = (ev) => {
+      const type = ev.target.result.value;
+      const expItems = Array.from(document.querySelectorAll(".expense-row")).map(row => ({
+        category: row.querySelector(".exp-cat").value,
+        amount: parseFloat(row.querySelector(".exp-amt").value) || 0
+      })).filter(i => i.amount > 0);
 
       const record = {
         date: document.getElementById("date").value,
@@ -246,14 +221,12 @@ document.addEventListener("DOMContentLoaded", () => {
         form.reset();
         document.getElementById("date").valueAsDate = new Date();
         document.querySelector('[data-screen="dashboard"]').click();
-        const toast = document.getElementById("toast");
-        toast.classList.add("show");
-        setTimeout(() => toast.classList.remove("show"), 3000);
+        showToast("Record Saved Successfully! ✅");
       };
     };
   };
 
-  function updateProjections(filteredRecords) {
+  function updateProjections(filteredRecords, symbol) {
     const now = new Date();
     const currentMonth = now.toISOString().substring(0, 7);
     const thisMonthData = filteredRecords.filter(r => r.date.startsWith(currentMonth));
@@ -266,31 +239,25 @@ document.addEventListener("DOMContentLoaded", () => {
       totalMonthQty += r.quantity;
     });
     const prog = now.getDate() / 30;
-    document.getElementById("projectedProfit").innerText = `KES ${Math.round(totalMonthProfit / prog).toLocaleString()}`;
+    document.getElementById("projectedProfit").innerText = `${symbol} ${Math.round(totalMonthProfit / prog).toLocaleString()}`;
     document.getElementById("projectedQty").innerText = (totalMonthQty / prog).toFixed(1);
   }
 
-  darkModeBtn.onclick = () => document.body.classList.toggle("dark-mode");
-
-  // Global variables for the modal
+  // --- MODAL & ACTIONS ---
   const confirmModal = document.getElementById("confirmModal");
   const modalConfirmBtn = document.getElementById("modalConfirm");
   const modalCancelBtn = document.getElementById("modalCancel");
   let deleteId = null;
-  
- // --- DELETE LOGIC ---
+
   window.deleteRecord = (id) => {
     deleteId = id;
     document.getElementById("modalMessage").innerText = "Do you really want to remove this record?";
     confirmModal.style.display = "flex";
   };
-  
-  // Handle Modal Buttons
+
   modalConfirmBtn.onclick = () => {
     if (deleteId) {
-      const tx = db.transaction("records", "readwrite");
-      tx.objectStore("records").delete(deleteId);
-      tx.oncomplete = () => {
+      db.transaction("records", "readwrite").objectStore("records").delete(deleteId).onsuccess = () => {
         loadRecords();
         confirmModal.style.display = "none";
         showToast("Record Deleted 🗑️");
@@ -298,86 +265,53 @@ document.addEventListener("DOMContentLoaded", () => {
       };
     }
   };
-  
-  modalCancelBtn.onclick = () => {
-    confirmModal.style.display = "none";
-    deleteId = null;
-  };
-  
-  // --- EDIT LOGIC ---
+
+  modalCancelBtn.onclick = () => confirmModal.style.display = "none";
+
   window.editRecord = (id) => {
-    const tx = db.transaction("records", "readonly");
-    tx.objectStore("records").get(id).onsuccess = (e) => {
+    db.transaction("records", "readonly").objectStore("records").get(id).onsuccess = (e) => {
       const r = e.target.result;
-      // Inside window.editRecord .onsuccess block:
-    // Clear existing expense rows first
-    expenseContainer.innerHTML = ''; 
-    // If record had expenses, recreate rows (simplified for now)
-    if (r.expenseItems && r.expenseItems.length > 0) {
-        r.expenseItems.forEach(item => {
-            // You can trigger your addExpenseRow logic here to refill the form
-        });
-}
-      
-      // Switch to form view
       document.querySelector('[data-screen="main-form"]').click();
-      
-      // Fill basic fields
       document.getElementById("date").value = r.date;
       document.getElementById("quantity").value = r.quantity;
       document.getElementById("price").value = r.price;
-  
-      // Fill poultry fields if they exist
-      if (r.type === 'poultry') {
-          document.getElementById("mortality").value = r.mortality || 0;
-          document.getElementById("flockSize").value = r.flockSize || 0;
+      if (r.type === 'poultry' && document.getElementById("poultrySubtype")) {
           document.getElementById("poultrySubtype").value = r.subtype;
       }
-  
-      // Since "Save" creates a new ID, we delete the old one to avoid duplicates
-      const deleteTx = db.transaction("records", "readwrite");
-      deleteTx.objectStore("records").delete(id);
-      showToast("Edit mode active: old record replaced on save.");
+      db.transaction("records", "readwrite").objectStore("records").delete(id).onsuccess = () => {
+        showToast("Editing: Old record will be replaced on save.");
+      };
     };
   };
-  
-  // Helper for toast messages
-  function showToast(msg) {
-      const toast = document.getElementById("toast");
-      toast.innerText = msg;
-      toast.classList.add("show");
-      setTimeout(() => toast.classList.remove("show"), 3000);
-  }
+
   function loadSettings() {
     const tx = db.transaction("settings", "readonly");
-    const store = tx.objectStore("settings");
-  
-    store.get("farmName").onsuccess = (e) => {
+    tx.objectStore("settings").get("farmName").onsuccess = (e) => {
       if (e.target.result) document.getElementById("settingFarmName").value = e.target.result.value;
     };
-    store.get("currency").onsuccess = (e) => {
+    tx.objectStore("settings").get("currency").onsuccess = (e) => {
       if (e.target.result) document.getElementById("settingCurrency").value = e.target.result.value;
     };
   }
-  
+
   document.getElementById("saveSettingsBtn").onclick = () => {
     const name = document.getElementById("settingFarmName").value;
     const curr = document.getElementById("settingCurrency").value;
-  
     const tx = db.transaction("settings", "readwrite");
-    const store = tx.objectStore("settings");
-    
-    store.put({key: "farmName", value: name});
-    store.put({key: "currency", value: curr});
-  
+    tx.objectStore("settings").put({key: "farmName", value: name});
+    tx.objectStore("settings").put({key: "currency", value: curr});
     tx.oncomplete = () => {
       showToast("Settings Saved! 💾");
-      // Update the UI immediately (optional: refresh page or trigger update)
-      location.reload(); 
+      setTimeout(() => location.reload(), 1000);
     };
   };
+
+  function showToast(msg) {
+    const toast = document.getElementById("toast");
+    toast.innerText = msg;
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 3000);
+  }
+
+  darkModeBtn.onclick = () => document.body.classList.toggle("dark-mode");
 });
-
-
-
-
