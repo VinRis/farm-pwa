@@ -277,3 +277,118 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
   }
 });
+
+// ... existing setup code ...
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const txS = db.transaction("settings", "readonly");
+    txS.objectStore("settings").get("farmType").onsuccess = (ev) => {
+      const currentType = ev.target.result.value;
+      const record = {
+        type: currentType,
+        date: document.getElementById("date").value,
+        quantity: Number(document.getElementById("quantity").value),
+        price: Number(document.getElementById("price").value),
+        expenses: Number(document.getElementById("expenses").value) || 0,
+        expenseCategory: document.getElementById("expenseCategory").value, // NEW FIELD
+        subtype: currentType === "poultry" ? document.getElementById("poultrySubtype").value : null,
+        mortality: currentType === "poultry" ? Number(document.getElementById("mortality").value) || 0 : 0,
+        flockSize: currentType === "poultry" ? Number(document.getElementById("flockSize").value) || 0 : 0,
+        feed: currentType === "poultry" ? Number(document.getElementById("feed").value) || 0 : 0,
+        weight: currentType === "poultry" ? Number(document.getElementById("avgWeight").value) || 0 : 0,
+        archived: false,
+        extra: currentType === "dairy" ? document.getElementById("cowId").value :
+               currentType === "poultry" ? document.getElementById("batchId").value :
+               document.getElementById("fieldName").value
+      };
+      
+      const tx = db.transaction("records", "readwrite");
+      tx.objectStore("records").add(record);
+      tx.oncomplete = () => {
+        loadRecords();
+        form.reset();
+        document.getElementById("date").valueAsDate = new Date();
+        showApp(currentType);
+        showToast("Record & Category Saved! ✅");
+      };
+    };
+  });
+
+  function loadRecords() {
+    if (!db) return;
+    const tx = db.transaction(["records", "settings"], "readonly");
+    tx.objectStore("settings").get("farmType").onsuccess = (e) => {
+      const currentType = e.target.result.value;
+      tx.objectStore("records").getAll().onsuccess = (ev) => {
+        const allRecords = ev.target.result;
+        const selectedMonth = monthFilter.value;
+        const activePoultrySub = document.getElementById("poultrySubtypeToggle").value;
+        
+        recordsList.innerHTML = "";
+        const historyList = document.getElementById("historyList");
+        const breakdownList = document.getElementById("breakdownList");
+        if(historyList) historyList.innerHTML = "";
+        if(breakdownList) breakdownList.innerHTML = "";
+
+        let [totalQty, totalExp, totalRev] = [0, 0, 0];
+        let pStats = { mortality: 0, feed: 0, eggs: 0, size: 0, weightSum: 0, weightCount: 0 };
+        let categoryTotals = {}; // NEW: To track expense breakdown
+        let archivedGroups = {};
+        const months = new Set();
+
+        const activeRecords = allRecords.filter(r => !r.archived);
+        updateChart(activeRecords, currentType);
+
+        allRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        allRecords.forEach(r => {
+          if (r.type !== currentType) return;
+          if (currentType === "poultry" && r.subtype !== activePoultrySub) return;
+          if (r.archived) {
+             // ... archived grouping logic ...
+             return;
+          }
+
+          const mKey = r.date.substring(0, 7);
+          months.add(mKey);
+          if (selectedMonth !== "all" && mKey !== selectedMonth) return;
+
+          totalQty += r.quantity; totalExp += r.expenses; totalRev += (r.quantity * r.price);
+          
+          // Calculate Category Breakdown
+          if (r.expenses > 0) {
+            const cat = r.expenseCategory || "Other";
+            categoryTotals[cat] = (categoryTotals[cat] || 0) + r.expenses;
+          }
+
+          // ... poultry stats logic ...
+
+          const catBadge = r.expenses > 0 ? `<br><small style="color:#d32f2f;">💸 ${r.expenseCategory}</small>` : "";
+          recordsList.innerHTML += `<li><div><strong>📅 ${r.date}</strong> ${catBadge}<br><small>Qty: ${r.quantity} | Exp: ${r.expenses}</small></div><div style="text-align:right"><strong>KES ${(r.quantity * r.price).toLocaleString()}</strong><br><button class="delete-btn" data-id="${r.id}">✕</button></div></li>`;
+        });
+
+        // Update Dashboard
+        document.getElementById("totalQuantity").innerText = totalQty.toFixed(1);
+        document.getElementById("totalProfit").innerText = (totalRev - totalExp).toLocaleString();
+        
+        // Show Expense Breakdown
+        const breakdownDiv = document.getElementById("expenseBreakdown");
+        if (Object.keys(categoryTotals).length > 0) {
+          breakdownDiv.style.display = "block";
+          for (const [cat, amt] of Object.entries(categoryTotals)) {
+            const percentage = ((amt / totalExp) * 100).toFixed(0);
+            breakdownList.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+              <span>${cat}</span>
+              <span>KES ${amt.toLocaleString()} (${percentage}%)</span>
+            </div>`;
+          }
+        } else {
+          breakdownDiv.style.display = "none";
+        }
+
+        // ... rest of the poultry stats and history rendering ...
+      };
+    };
+  }
+// ... rest of app.js ...
