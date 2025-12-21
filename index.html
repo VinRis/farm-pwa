@@ -1,52 +1,64 @@
-<!DOCTYPE html>
+<!-- index.html -->
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FarmTrack PWA</title>
-    <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="style.css">
-    <meta name="theme-color" content="#2e7d32">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FarmTrack PWA</title>
+  <meta name="theme-color" content="#2f855a" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="icon-192.png" />
+  <!-- CDN libs -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
 <body>
-    <header id="main-header">
-        <h1 id="app-title">FarmTrack</h1>
-        <div id="sync-status"><i class="fas fa-cloud"></i></div>
-    </header>
+  <header id="app-header">
+    <h1 id="headerTitle">FarmTrack</h1>
+  </header>
 
-    <main id="app-content">
-        <section id="view-dashboard" class="view active"></section>
-        <section id="view-add-record" class="view"></section>
-        <section id="view-records" class="view"></section>
-        <section id="view-finance" class="view"></section>
-        <section id="view-reports" class="view"></section>
-    </main>
-
-    <div id="livestock-modal" class="modal">
-        <div class="modal-content">
-            <h2>Select Livestock</h2>
-            <p>Which production are you tracking today?</p>
-            <div class="selection-grid">
-                <button class="select-btn" data-type="dairy"><i class="fas fa-cow"></i> Dairy</button>
-                <button class="select-btn" data-type="poultry"><i class="fas fa-egg"></i> Poultry</button>
-                <button class="select-btn" data-type="pig"><i class="fas fa-piggy-bank"></i> Pig</button>
-                <button class="select-btn" data-type="goat"><i class="fas fa-cheese"></i> Goat</button>
-            </div>
+  <main id="app" role="main">
+    <!-- Livestock selector -->
+    <section id="selector" class="modal active" role="dialog" aria-modal="true">
+      <div class="modal-content">
+        <h2>Select livestock to monitor</h2>
+        <div class="grid">
+          <button data-livestock="dairy">Dairy production</button>
+          <button data-livestock="poultry">Poultry production</button>
+          <button data-livestock="pig">Pig production</button>
+          <button data-livestock="goat">Goat production</button>
         </div>
-    </div>
+      </div>
+    </section>
 
-    <nav id="bottom-nav">
-        <button class="nav-btn active" data-view="dashboard"><i class="fas fa-chart-line"></i><span>Home</span></button>
-        <button class="nav-btn" data-view="add-record"><i class="fas fa-plus-circle"></i><span>Add</span></button>
-        <button class="nav-btn" data-view="records"><i class="fas fa-list"></i><span>Logs</span></button>
-        <button class="nav-btn" data-view="finance"><i class="fas fa-wallet"></i><span>Finance</span></button>
-        <button class="nav-btn" data-view="reports"><i class="fas fa-file-alt"></i><span>Report</span></button>
-    </nav>
+    <!-- Views -->
+    <section id="view-dashboard" class="view active"></section>
+    <section id="view-add" class="view"></section>
+    <section id="view-records" class="view"></section>
+    <section id="view-finance" class="view"></section>
+    <section id="view-reports" class="view"></section>
+  </main>
 
-    <script type="module" src="app.js"></script>
+  <nav id="bottom-nav" role="navigation">
+    <button data-view="dashboard">Dashboard</button>
+    <button data-view="add">Add record</button>
+    <button data-view="records">Records</button>
+    <button data-view="finance">Finance</button>
+    <button data-view="reports">Reports</button>
+  </nav>
+
+  <script type="module" src="sample-data.js"></script>
+  <script type="module" src="db.js"></script>
+  <script type="module" src="utils.js"></script>
+  <script type="module" src="app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js');
+      });
+    }
+  </script>
 </body>
 </html>
