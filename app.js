@@ -24,29 +24,40 @@ const App = {
         window.addEventListener('online', this.syncToCloud);
     },
 
-    bindEvents() {
-        // Theme Toggle
-        document.getElementById('theme-toggle').addEventListener('click', () => {
-            this.state.theme = this.state.theme === 'light' ? 'dark' : 'light';
-            localStorage.setItem('ft_theme', this.state.theme);
-            this.applyTheme();
-        });
+bindEvents() {
+    // 1. IMPROVED NAVIGATION HANDLER
+    const navButtons = document.querySelectorAll('.nav-btn');
+    
+    navButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            // Prevent default behavior and stop event bubbling
+            e.preventDefault();
+            e.stopPropagation();
 
-        // Home Button
-        document.getElementById('home-btn').addEventListener('click', () => {
-            this.state.livestock = null;
-            localStorage.removeItem('ft_livestock');
-            document.getElementById('app-shell').classList.add('hidden');
-            document.getElementById('landing-page').classList.remove('hidden');
-        });
+            // Get the target ID from the clicked button's data-target attribute
+            const targetId = btn.getAttribute('data-target');
+            console.log("Navigating to:", targetId); // Debug Log
 
-        // Bottom Nav
-        document.querySelectorAll('.nav-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const target = e.currentTarget.dataset.target;
-                this.switchTab(target, e.currentTarget);
-            });
+            if (targetId) {
+                this.switchTab(targetId, btn);
+            }
         });
+    });
+
+    // 2. THEME TOGGLE
+    document.getElementById('theme-toggle')?.addEventListener('click', () => {
+        this.state.theme = this.state.theme === 'light' ? 'dark' : 'light';
+        localStorage.setItem('ft_theme', this.state.theme);
+        this.applyTheme();
+    });
+
+    // 3. HOME BUTTON
+    document.getElementById('home-btn')?.addEventListener('click', () => {
+        this.state.livestock = null;
+        localStorage.removeItem('ft_livestock');
+        document.getElementById('app-shell').classList.add('hidden');
+        document.getElementById('landing-page').classList.remove('hidden');
+    });
 
         // Add Record Form
         document.getElementById('add-record-form').addEventListener('submit', async (e) => {
@@ -161,12 +172,30 @@ const App = {
     },
 
     switchTab(viewId, btnElement) {
-        document.querySelectorAll('.view-section .tab-view').forEach(el => el.classList.remove('active'));
-        document.getElementById(viewId).classList.add('active');
-        
-        document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
-        if(btnElement) btnElement.classList.add('active');
-
+        console.log("Switching view to:", viewId);
+    
+        // Remove 'active' class from all views
+        document.querySelectorAll('.tab-view').forEach(view => {
+            view.classList.remove('active');
+            view.style.display = 'none'; // Explicitly hide
+        });
+    
+        // Add 'active' class to the target view
+        const targetView = document.getElementById(viewId);
+        if (targetView) {
+            targetView.classList.add('active');
+            targetView.style.display = 'block'; // Explicitly show
+        } else {
+            console.error("Could not find view with ID:", viewId);
+        }
+    
+        // Update Button Styles
+        document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+        if (btnElement) {
+            btnElement.classList.add('active');
+        }
+    
+        // Trigger data loading based on view
         if (viewId === 'view-dashboard') this.refreshDashboard();
         if (viewId === 'view-records') this.loadRecords();
         if (viewId === 'view-finance') this.loadFinance();
@@ -389,3 +418,4 @@ const App = {
 
 window.app = App; // Expose for HTML onclick handlers
 document.addEventListener('DOMContentLoaded', () => App.init());
+
