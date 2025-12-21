@@ -159,13 +159,19 @@ button:active { transform: scale(0.98); }
 
 /* BAR CHART STYLING */
 .chart-container {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-around;
-  height: 150px;
-  padding: 10px 5px;
-  border-bottom: 2px solid var(--border-color);
-  gap: 2px;
+    height: 150px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    padding: 10px 0;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.bar {
+    width: 25px;
+    background: var(--accent-green);
+    border-radius: 4px 4px 0 0;
+    transition: height 0.5s ease-in-out;
 }
 
 .chart-bar-wrapper {
@@ -327,3 +333,4 @@ li {
   grid-template-columns: 1fr 1fr; 
   gap: 10px;
 }
+
