@@ -1,220 +1,151 @@
-/* --- THEME VARIABLES --- */
+/* --- MODERN UI REFRESH --- */
 :root {
-  --bg-color: #f4f6f8;
+  --bg-color: #f0f2f5;
   --card-bg: #ffffff;
-  --text-main: #333;
-  --text-sub: #666;
-  --border-color: #eeeeee;
+  --text-main: #1a1a1b;
+  --text-sub: #65676b;
+  --border-color: #dddfe2;
   --header-bg: #2e7d32;
   --accent-green: #2e7d32;
-  --accent-blue: #0288d1; /* For Projections */
-  --highlight-bg: #e8f5e9;
-  --highlight-border: #c8e6c9;
-  --insight-bg: rgba(46, 125, 50, 0.1);
-  --insight-border: #2e7d32;
-  --danger: #d32f2f;
+  --accent-blue: #007bff;
+  --danger: #dc3545;
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 body.dark-mode {
-  --bg-color: #121212;
-  --card-bg: #1e1e1e;
-  --text-main: #e0e0e0;
-  --text-sub: #b0b0b0;
-  --border-color: #333333;
+  --bg-color: #18191a;
+  --card-bg: #242526;
+  --text-main: #e4e6eb;
+  --text-sub: #b0b3b8;
+  --border-color: #3e4042;
   --header-bg: #1b5e20;
-  --highlight-bg: #1b2e1b;
-  --highlight-border: #2e4d2e;
-  --insight-bg: rgba(76, 175, 80, 0.15);
-  --insight-border: #4caf50;
-  --accent-blue: #29b6f6;
 }
 
-/* GLOBAL RESET */
+/* --- BASE STYLES --- */
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   margin: 0;
-  background: var(--bg-color);
+  background-color: var(--bg-color);
   color: var(--text-main);
-  transition: background 0.3s, color 0.3s;
-  line-height: 1.5;
-  padding-bottom: 40px; /* Space for mobile scrolling */
+  transition: all 0.3s ease;
 }
 
-/* --- LAYOUT COMPONENTS --- */
+/* --- HEADER & NAVIGATION --- */
 header {
   background: var(--header-bg);
   color: white;
-  padding: 20px 15px;
+  padding: 15px;
   text-align: center;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: var(--shadow);
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 1000;
 }
 
+.header-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.header-controls button {
+  padding: 8px 4px;
+  font-size: 0.7rem;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* --- DASHBOARD CARDS --- */
 .card {
   background: var(--card-bg);
-  margin: 15px;
-  padding: 15px;
+  margin: 12px;
+  padding: 16px;
   border-radius: 12px;
   border: 1px solid var(--border-color);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  box-shadow: var(--shadow);
 }
 
-/* --- BUTTONS & CONTROLS --- */
-button {
-  cursor: pointer;
-  border-radius: 8px;
-  font-weight: 600;
-  transition: all 0.2s;
-  border: none;
-  font-family: inherit;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-button:active { transform: scale(0.96); }
-
-.btn-secondary { background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); }
-.btn-danger { background: var(--danger); color: white; }
-
-.type-btn {
-  width: 100%;
-  padding: 25px 10px;
-  font-size: 1rem;
-  background: var(--card-bg);
-  border: 2px solid var(--border-color);
-  color: var(--text-main);
-}
-
-.type-btn:hover { border-color: var(--accent-green); background: var(--highlight-bg); }
-
-/* --- FINANCIAL PROJECTIONS --- */
-#projectionsCard {
-  border-left: 5px solid var(--accent-blue) !important;
-}
-
-#projectionsCard strong {
-  color: var(--accent-blue);
-}
-
-/* --- DYNAMIC EXPENSE ROWS --- */
-#expenseContainer { margin-top: 10px; }
-
-.expense-row {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 10px;
-  align-items: center;
-}
-
-.expense-row select, .expense-row input {
-  flex: 1;
-  padding: 10px;
-  border-radius: 6px;
-  font-size: 0.9rem;
-}
-
-.add-row-btn {
-  width: 40px;
-  height: 40px;
-  background: var(--accent-green);
-  color: white;
-  font-size: 1.5rem;
-  flex-shrink: 0;
-}
-
-/* --- KPI GRID --- */
-.kpi-grid { 
-  display: grid; 
-  grid-template-columns: 1fr 1fr; 
-  gap: 12px; 
-  margin-top: 10px;
+.kpi-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
 }
 
 .kpi-card {
   background: var(--card-bg);
-  padding: 12px;
+  padding: 15px;
   border-radius: 10px;
-  border: 1px solid var(--border-color);
+  border-left: 4px solid var(--accent-green);
   text-align: center;
 }
 
-.kpi-card span { font-size: 0.7rem; color: var(--text-sub); display: block; margin-bottom: 4px; }
-.kpi-card strong { font-size: 1.1rem; color: var(--accent-green); }
+.kpi-card span { font-size: 0.75rem; color: var(--text-sub); display: block; }
+.kpi-card strong { font-size: 1.2rem; margin-top: 4px; display: block; }
 
-/* --- FORMS --- */
-.main-form label {
+/* --- FORM STYLING (The "Broken" Part) --- */
+.main-form h3 { margin: 0 0 15px 0; font-size: 1.1rem; border-bottom: 2px solid var(--accent-green); display: inline-block; }
+
+.form-group { margin-bottom: 12px; }
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+label {
   display: block;
-  font-size: 0.85rem;
-  margin-bottom: 5px;
-  margin-top: 15px;
-  font-weight: 500;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--text-sub);
 }
 
 input, select {
   width: 100%;
   padding: 12px;
   border-radius: 8px;
-  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  background: var(--bg-color);
   color: var(--text-main);
-  border: 1px solid var(--border-color);
+  font-size: 1rem;
 }
 
-/* --- CHARTS --- */
-.chart-container {
-  height: 180px;
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-around;
-  padding: 10px 0 30px 0;
-  border-bottom: 1px solid var(--border-color);
+/* Fix for the Expense Row layout */
+.expense-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 45px;
+  gap: 8px;
+  align-items: end;
 }
 
-.chart-bar-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  flex: 1;
-  height: 100%;
-}
-
-.bar {
-  width: 20px;
+.save-btn {
+  width: 100%;
+  padding: 14px;
   background: var(--accent-green);
-  border-radius: 4px 4px 0 0;
-  transition: height 0.5s ease-out;
+  color: white;
+  font-size: 1rem;
+  margin-top: 10px;
 }
 
-/* --- RECORDS LIST --- */
-#records { padding: 0; list-style: none; }
-#records li {
-  background: var(--card-bg);
-  padding: 12px;
-  border-radius: 8px;
-  margin-bottom: 8px;
-  border: 1px solid var(--border-color);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-/* --- TOAST NOTIFICATION --- */
+/* --- TOAST REPAIR --- */
 .toast {
   position: fixed;
-  bottom: -100px;
+  top: 20px;
   left: 50%;
-  transform: translateX(-50%);
-  background: #333;
+  transform: translateX(-50%) translateY(-100px);
+  background: #323232;
   color: white;
-  padding: 12px 25px;
+  padding: 12px 24px;
   border-radius: 50px;
-  z-index: 1000;
-  transition: bottom 0.5s ease;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 2000;
 }
 
-.toast.show { bottom: 30px; }
+.toast.show { transform: translateX(-50%) translateY(0); }
