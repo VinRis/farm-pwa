@@ -235,6 +235,17 @@ document.addEventListener("DOMContentLoaded", () => {
     // 4. Clear the saved farmType so it doesn't auto-load next time
     db.transaction("settings", "readwrite").objectStore("settings").delete("farmType");
   };
+
+  document.getElementById("resetBtn").onclick = () => {
+    if (confirm("⚠️ This will delete ALL your farm records. Are you sure?")) {
+      const deleteRequest = indexedDB.deleteDatabase("FarmDB");
+      deleteRequest.onsuccess = () => {
+        alert("App Reset Successfully.");
+        location.reload();
+      };
+    }
+  };
+  
   // Ensure this is at the bottom of your DOMContentLoaded
   darkModeBtn.onclick = () => {
     document.body.classList.toggle("dark-mode");
@@ -243,5 +254,6 @@ document.addEventListener("DOMContentLoaded", () => {
     db.transaction("settings", "readwrite").objectStore("settings").put({key: "darkMode", value: isDark});
   };
 });
+
 
 
