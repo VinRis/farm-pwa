@@ -324,3 +324,17 @@ input, select {
   font-weight: bold;
   outline: none;
 }
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.feed-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr auto;
+  gap: 5px;
+  margin-bottom: 8px;
+}
