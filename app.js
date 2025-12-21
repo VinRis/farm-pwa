@@ -60,20 +60,30 @@ bindEvents() {
     });
 
         // Add Record Form
+// --- CORRECTED ADD RECORD FORM HANDLER ---
         document.getElementById('add-record-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData.entries());
             const editId = data.editId; // Get the hidden ID if it exists
-
+        
+            // 1. Normalize numbers (Do this BEFORE creating the record object)
+            ['quantity', 'feedKg', 'weightKg', 'mortality', 'births', 'birdsCount', 'pigletsBorn'].forEach(k => {
+                if (data[k]) data[k] = parseFloat(data[k]);
+            });
+        
+            // 2. Build the record object
             const record = {
                 id: editId || Utils.uuid(), // Use old ID if editing, else new UUID
                 livestock: this.state.livestock,
                 updatedAt: Date.now(),
                 ...data
             };
-            delete record.editId; // Remove helper field before saving
             
+            // Clean up helper field
+            delete record.editId;
+        
+            // 3. Save or Update logic
             if (editId) {
                 await DB.update('records', record);
                 alert('Record updated!');
@@ -82,11 +92,17 @@ bindEvents() {
                 await DB.add('records', record);
                 alert('Record saved!');
             }
-            
+        
+            // 4. UI Cleanup
             e.target.reset();
-            e.target.querySelector('button[type="submit"]').innerText = "Save Record";
-            if (e.target.querySelector('#edit-id')) e.target.querySelector('#edit-id').value = "";
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            if (submitBtn) submitBtn.innerText = "Save Record";
+            
+            const hiddenInput = e.target.querySelector('#edit-id');
+            if (hiddenInput) hiddenInput.value = "";
+        
             this.refreshDashboard();
+        });
             
             // Normalize numbers
             ['quantity', 'feedKg', 'weightKg', 'mortality', 'births', 'birdsCount'].forEach(k => {
@@ -520,5 +536,6 @@ bindEvents() {
 
 window.app = App; // Expose for HTML onclick handlers
 document.addEventListener('DOMContentLoaded', () => App.init());
+
 
 
