@@ -1,3 +1,6 @@
+let editingRecordId = null;
+let activeFilter = 'month';
+
 import { openDB, getAll, put, del } from './db.js';
 import { uuid } from './utils.js';
 
@@ -98,87 +101,123 @@ async function renderDashboard() {
     },
     options: { plugins:{legend:{display:false}} }
   });
+  <div class="filters">
+    <button onclick="setFilter('today')">Today</button>
+    <button onclick="setFilter('week')">7 Days</button>
+    <button onclick="setFilter('month')">Month</button>
+    <button onclick="setFilter('all')">All</button>
+  </div>
+  window.setFilter = f => {
+    activeFilter = f;
+    renderDashboard();
+  };
 }
 
 /* ================= ADD RECORD ================= */
 
-function renderAddForm() {
+function renderAddForm(record = null) {
+  const isEdit = !!record;
+  editingRecordId = record?.id || null;
+
   const view = document.getElementById('view-add');
+
+  let fields = '';
+
+  if (currentLivestock === 'dairy') {
+    fields = `
+      <input id="quantity" type="number" placeholder="Milk (litres)" value="${record?.quantity || ''}">
+      <input id="cows" type="number" placeholder="Cows milked" value="${record?.cows || ''}">
+      <input id="feedKg" type="number" placeholder="Feed (kg)" value="${record?.feedKg || ''}">
+    `;
+  }
+
+  if (currentLivestock === 'poultry') {
+    fields = `
+      <input id="quantity" type="number" placeholder="Eggs collected" value="${record?.quantity || ''}">
+      <input id="mortality" type="number" placeholder="Mortality" value="${record?.mortality || ''}">
+      <input id="feedKg" type="number" placeholder="Feed (kg)" value="${record?.feedKg || ''}">
+    `;
+  }
+
+  if (currentLivestock === 'pig') {
+    fields = `
+      <input id="quantity" type="number" placeholder="Weight gain (kg)" value="${record?.quantity || ''}">
+      <input id="feedKg" type="number" placeholder="Feed (kg)" value="${record?.feedKg || ''}">
+      <input id="mortality" type="number" placeholder="Mortality" value="${record?.mortality || ''}">
+    `;
+  }
+
+  if (currentLivestock === 'goat') {
+    fields = `
+      <input id="quantity" type="number" placeholder="Milk / Weight" value="${record?.quantity || ''}">
+      <input id="feedKg" type="number" placeholder="Feed (kg)" value="${record?.feedKg || ''}">
+    `;
+  }
 
   view.innerHTML = `
     <div class="card">
-      <h3>Add ${currentLivestock.toUpperCase()} Record</h3>
-
-      <input type="date" id="date" required />
-      <input placeholder="Animal / Flock ID" id="animalId" />
-
-      <input type="number" placeholder="Quantity" id="quantity" />
-      <input type="number" placeholder="Feed (kg)" id="feedKg" />
-      <input type="number" placeholder="Mortality" id="mortality" />
-
-      <label>
-        <input type="checkbox" id="isSale" /> Mark as sale
-      </label>
-      <input type="number" placeholder="Sale Amount (KES)" id="saleAmount" />
-
-      <button id="saveRecord">Save Record</button>
+      <h3>${isEdit ? 'Edit' : 'Add'} ${currentLivestock.toUpperCase()} Record</h3>
+      <input id="date" type="date" value="${record?.date || ''}">
+      ${fields}
+      <textarea id="notes" placeholder="Notes">${record?.notes || ''}</textarea>
+      <button id="saveRecord">${isEdit ? 'Update' : 'Save'}</button>
     </div>
   `;
 
   document.getElementById('saveRecord').onclick = async () => {
-    const record = {
-      id: uuid(),
+    const data = {
+      id: editingRecordId || crypto.randomUUID(),
       livestock: currentLivestock,
-      date: document.getElementById('date').value,
-      animalId: document.getElementById('animalId').value,
-      quantity: Number(document.getElementById('quantity').value || 0),
-      feedKg: Number(document.getElementById('feedKg').value || 0),
-      mortality: Number(document.getElementById('mortality').value || 0),
+      date: date.value,
+      quantity: Number(quantity?.value || 0),
+      cows: Number(cows?.value || 0),
+      feedKg: Number(feedKg?.value || 0),
+      mortality: Number(mortality?.value || 0),
+      notes: notes.value,
       createdAt: Date.now()
     };
 
-    await put('records', record);
-
-    if (document.getElementById('isSale').checked) {
-      await put('transactions', {
-        id: uuid(),
-        livestock: currentLivestock,
-        type: 'income',
-        amount: Number(document.getElementById('saleAmount').value || 0),
-        date: record.date,
-        description: 'Sale from production',
-        createdAt: Date.now()
-      });
-    }
-
+    await put('records', data);
+    editingRecordId = null;
     navigate('dashboard');
   };
 }
 
+
 /* ================= RECORDS ================= */
 
 async function renderRecords() {
-  const records = (await getAll('records')).filter(r=>r.livestock===currentLivestock);
+  const records = filterByDate(
+    (await getAll('records')).filter(r => r.livestock === currentLivestock)
+  );
+
   const view = document.getElementById('view-records');
 
-  view.innerHTML = records.map(r=>`
+  view.innerHTML = records.map(r => `
     <div class="card">
-      <strong>${r.date}</strong><br/>
-      Qty: ${r.quantity} | Feed: ${r.feedKg}kg | Mortality: ${r.mortality}
-      <br/>
-      <button data-id="${r.id}" class="delete">Delete</button>
+      <strong>${r.date}</strong><br>
+      Qty: ${r.quantity} | Feed: ${r.feedKg || 0}kg | Mortality: ${r.mortality || 0}
+      <div class="actions">
+        <button class="edit" data-id="${r.id}">Edit</button>
+        <button class="delete" data-id="${r.id}">Delete</button>
+      </div>
     </div>
   `).join('');
 
-  view.querySelectorAll('.delete').forEach(btn=>{
-    btn.onclick = async () => {
-      if(confirm('Delete record?')) {
-        await del('records', btn.dataset.id);
+  view.querySelectorAll('.edit').forEach(b => {
+    b.onclick = () => renderAddForm(records.find(r => r.id === b.dataset.id));
+  });
+
+  view.querySelectorAll('.delete').forEach(b => {
+    b.onclick = async () => {
+      if (confirm('Delete record?')) {
+        await del('records', b.dataset.id);
         renderRecords();
       }
     };
   });
 }
+
 
 /* ================= FINANCE ================= */
 
@@ -228,3 +267,20 @@ function renderSimple(title, text) {
     </div>
   `;
 }
+
+function filterByDate(records) {
+  const now = new Date();
+
+  if (activeFilter === 'today')
+    return records.filter(r => r.date === now.toISOString().slice(0,10));
+
+  if (activeFilter === 'week')
+    return records.filter(r => new Date(r.date) >= new Date(now - 7*864e5));
+
+  if (activeFilter === 'month')
+    return records.filter(r => new Date(r.date).getMonth() === now.getMonth());
+
+  return records;
+}
+
+
