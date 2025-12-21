@@ -1,4 +1,4 @@
-const CACHE_NAME = "farm-pwa-v4"; // Version bumped for the update
+const CACHE_NAME = "farm-pwa-v5"; // Version bumped for the update
 
 const FILES_TO_CACHE = [
   "./",
@@ -65,3 +65,4 @@ self.addEventListener("fetch", event => {
     })
   );
 });
+
