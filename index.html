@@ -1,222 +1,52 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>FarmTrack PWA — Offline Farm Production Tracker</title>
-  <meta name="theme-color" content="#0b6e4f"/>
-  <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css">
-  <!-- CDN libs -->
-  <script src="https://cdn.jsdelivr.net/npm/idb@7/build/iife/index-min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <!-- App modules -->
-  <script type="module" src="db.js"></script>
-  <script type="module" src="utils.js"></script>
-  <script type="module" src="sample-data.js"></script>
-  <script type="module" src="app.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FarmTrack PWA</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="style.css">
+    <meta name="theme-color" content="#2e7d32">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
-  <header class="app-header" role="banner">
-    <div class="app-title">
-      <img alt="" aria-hidden="true" class="logo" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTIiIGZpbGw9IiMwYjZlNDIiLz48cGF0aCBkPSJNMjAgNDBjNSAwIDEwLTUgMTAtMTBzLTUtMTAtMTAtMTBTMTAuMDEgMjAgMjAgNDB6IiBmaWxsPSIjZmZmIi8+PC9zdmc+" />
-      <div>
-        <h1 id="appName">FarmTrack</h1>
-        <small id="farmMeta">Offline Farm Production Tracker</small>
-      </div>
-    </div>
-    <button id="installBtn" class="btn small" hidden aria-hidden="true">Install</button>
-  </header>
+    <header id="main-header">
+        <h1 id="app-title">FarmTrack</h1>
+        <div id="sync-status"><i class="fas fa-cloud"></i></div>
+    </header>
 
-  <main id="main" role="main">
-    <!-- Landing modal / livestock selector -->
-    <div id="landing" class="overlay" role="dialog" aria-modal="true" aria-labelledby="landingTitle">
-      <div class="card">
-        <h2 id="landingTitle">Which livestock do you want to track?</h2>
-        <div class="livestock-grid" id="livestockOptions">
-          <button class="livestock" data-type="dairy">Dairy production</button>
-          <button class="livestock" data-type="poultry">Poultry production</button>
-          <button class="livestock" data-type="pig">Pig production</button>
-          <button class="livestock" data-type="goat">Goat production</button>
+    <main id="app-content">
+        <section id="view-dashboard" class="view active"></section>
+        <section id="view-add-record" class="view"></section>
+        <section id="view-records" class="view"></section>
+        <section id="view-finance" class="view"></section>
+        <section id="view-reports" class="view"></section>
+    </main>
+
+    <div id="livestock-modal" class="modal">
+        <div class="modal-content">
+            <h2>Select Livestock</h2>
+            <p>Which production are you tracking today?</p>
+            <div class="selection-grid">
+                <button class="select-btn" data-type="dairy"><i class="fas fa-cow"></i> Dairy</button>
+                <button class="select-btn" data-type="poultry"><i class="fas fa-egg"></i> Poultry</button>
+                <button class="select-btn" data-type="pig"><i class="fas fa-piggy-bank"></i> Pig</button>
+                <button class="select-btn" data-type="goat"><i class="fas fa-cheese"></i> Goat</button>
+            </div>
         </div>
-        <div class="row">
-          <button id="landingContinue" class="btn primary" hidden>Continue</button>
-          <button id="landingSkip" class="btn ghost">Use sample data</button>
-        </div>
-      </div>
     </div>
 
-    <!-- App shell -->
-    <section id="dashboardView" class="view">
-      <div class="dashboard-header">
-        <h2 id="dashTitle">Dashboard — <span id="selectedLivestockLabel">—</span></h2>
-        <div class="dash-actions">
-          <button id="refreshBtn" class="btn">Refresh</button>
-          <button id="exportJsonBtn" class="btn">Backup JSON</button>
-          <button id="importJsonBtn" class="btn">Restore JSON</button>
-        </div>
-      </div>
+    <nav id="bottom-nav">
+        <button class="nav-btn active" data-view="dashboard"><i class="fas fa-chart-line"></i><span>Home</span></button>
+        <button class="nav-btn" data-view="add-record"><i class="fas fa-plus-circle"></i><span>Add</span></button>
+        <button class="nav-btn" data-view="records"><i class="fas fa-list"></i><span>Logs</span></button>
+        <button class="nav-btn" data-view="finance"><i class="fas fa-wallet"></i><span>Finance</span></button>
+        <button class="nav-btn" data-view="reports"><i class="fas fa-file-alt"></i><span>Report</span></button>
+    </nav>
 
-      <div class="kpi-grid" id="kpiGrid" aria-live="polite">
-        <!-- KPIs filled by JS -->
-      </div>
-
-      <div class="card">
-        <canvas id="trendChart" height="120" aria-label="Production trend chart" role="img"></canvas>
-      </div>
-
-      <div class="card">
-        <h3>Recent records</h3>
-        <ul id="recentList" class="list"></ul>
-      </div>
-    </section>
-
-    <section id="addView" class="view" hidden>
-      <div class="card">
-        <h2>Add Record</h2>
-        <form id="recordForm">
-          <div class="form-row">
-            <label for="recDate">Date</label>
-            <input id="recDate" name="date" type="date" required>
-          </div>
-          <div id="dynamicFields"></div>
-          <div class="form-row">
-            <label for="recNotes">Notes</label>
-            <textarea id="recNotes" name="notes" rows="2"></textarea>
-          </div>
-          <div class="row">
-            <button type="submit" class="btn primary">Save Record</button>
-            <button type="button" id="cancelRecord" class="btn ghost">Cancel</button>
-          </div>
-        </form>
-      </div>
-    </section>
-
-    <section id="recordsView" class="view" hidden>
-      <div class="card">
-        <h2>Records</h2>
-        <div class="filters">
-          <input id="searchRecords" placeholder="Search by animal/flock id or notes" />
-          <select id="filterMonth">
-            <option value="all">All months</option>
-          </select>
-          <select id="sortRecords">
-            <option value="desc">Latest first</option>
-            <option value="asc">Oldest first</option>
-          </select>
-          <button id="bulkDeleteBtn" class="btn danger">Delete selected</button>
-        </div>
-        <ul id="recordsList" class="records-list"></ul>
-        <div id="recordsPager" class="pager"></div>
-      </div>
-    </section>
-
-    <section id="financeView" class="view" hidden>
-      <div class="card">
-        <h2>Finance</h2>
-        <form id="txnForm" class="txn-form">
-          <div class="form-row">
-            <label for="txnDate">Date</label>
-            <input id="txnDate" name="date" type="date" required>
-          </div>
-          <div class="form-row">
-            <label>Type</label>
-            <select id="txnType" required><option value="income">Income</option><option value="expense">Expense</option></select>
-          </div>
-          <div class="form-row">
-            <label for="txnAmount">Amount</label>
-            <input id="txnAmount" name="amount" type="number" step="0.01" required>
-          </div>
-          <div class="form-row">
-            <label for="txnCategory">Category</label>
-            <input id="txnCategory" name="category" placeholder="e.g., Sales, Feed" />
-          </div>
-          <div class="form-row">
-            <label for="txnDesc">Description</label>
-            <input id="txnDesc" name="description" />
-          </div>
-          <div class="row">
-            <button type="submit" class="btn primary">Add Transaction</button>
-            <button id="exportTxnsCsv" type="button" class="btn">Export CSV</button>
-          </div>
-        </form>
-
-        <div class="filters">
-          <select id="txnRange">
-            <option value="month">This month</option>
-            <option value="week">This week</option>
-            <option value="day">Today</option>
-            <option value="all">All</option>
-          </select>
-        </div>
-
-        <ul id="txnList" class="records-list"></ul>
-      </div>
-    </section>
-
-    <section id="reportsView" class="view" hidden>
-      <div class="card">
-        <h2>Reports</h2>
-        <div class="form-row">
-          <label for="reportFrom">From</label>
-          <input id="reportFrom" type="date">
-          <label for="reportTo">To</label>
-          <input id="reportTo" type="date">
-        </div>
-        <div class="row">
-          <button id="downloadPdf" class="btn primary">Download PDF report</button>
-          <button id="downloadStatement" class="btn">Download Sales Statement (PDF)</button>
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <nav class="bottom-nav" role="navigation" aria-label="Main navigation">
-    <button class="nav-btn active" data-view="dashboardView">Dashboard</button>
-    <button class="nav-btn" data-view="addView">Add record</button>
-    <button class="nav-btn" data-view="recordsView">Records</button>
-    <button class="nav-btn" data-view="financeView">Finance</button>
-    <button class="nav-btn" data-view="reportsView">Reports</button>
-  </nav>
-
-  <template id="recordItemTemplate">
-    <li class="record-item">
-      <label><input type="checkbox" class="select-record" /></label>
-      <div class="record-main">
-        <div class="record-meta"></div>
-        <div class="record-notes"></div>
-      </div>
-      <div class="record-actions">
-        <button class="btn small edit-record">Edit</button>
-        <button class="btn small danger delete-record">Delete</button>
-      </div>
-    </li>
-  </template>
-
-  <script>
-    // Register service worker
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('service-worker.js').catch(e => console.warn('SW register failed', e));
-      });
-    }
-    // Install prompt handler
-    let deferredPrompt;
-    const installBtn = document.getElementById('installBtn');
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      installBtn.hidden = false;
-      installBtn.onclick = () => {
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then(choice => {
-          installBtn.hidden = true;
-        });
-      };
-    });
-  </script>
+    <script type="module" src="app.js"></script>
 </body>
 </html>
