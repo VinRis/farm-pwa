@@ -36,20 +36,18 @@
   </section>
 
   <section id="appScreen" style="display:none; padding-bottom: 80px;">
-        
     <div id="dashboardView" class="view-section">
-      <div id="poultryToggleContainer" class="dashboard-header" style="display:none;">
-          <h2 style="margin: 0; font-size: 1.2rem;">📊 Summary</h2>
+      <div class="dashboard-header" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px;">
+        <h2 style="margin: 0; font-size: 1.2rem;">📊 Summary</h2>
+        
+        <div id="poultryToggleContainer" style="display: none;">
           <select id="poultrySubtypeToggle" class="modern-select">
-              <option value="layers">Layers</option>
-              <option value="broilers">Broilers</option>
+            <option value="layers">🥚 Layers</option>
+            <option value="broilers">🍗 Broilers</option>
           </select>
+        </div>
       </div>
-      
-      <div id="defaultDashboardHeader" class="dashboard-header">
-          <h2 style="margin: 0; font-size: 1.2rem;">📊 Summary</h2>
-      </div>
-
+    
       <section id="analytics" class="card">
         <h2 class="section-title">📈 7-Day Production</h2>
         <div id="productionChart" class="chart-container"></div>
@@ -215,3 +213,4 @@
 <script src="app.js"></script>
 </body>
 </html>
+
