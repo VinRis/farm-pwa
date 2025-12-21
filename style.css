@@ -266,3 +266,14 @@ input, select {
 .modal-icon { font-size: 2rem; margin-bottom: 10px; }
 .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
 .modal-actions button { flex: 1; padding: 12px; border-radius: 8px; border: none; font-weight: bold; }
+
+.form-group {
+  margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+}
+.form-group label {
+  font-size: 0.85rem;
+  margin-bottom: 5px;
+  color: var(--text-sub);
+}
