@@ -105,16 +105,22 @@
       <input type="number" id="quantity" step="0.01" inputmode="decimal" required>
       <label for="price">Price per Unit (KES)</label>
       <input type="number" id="price" step="0.01" inputmode="decimal" required>
-      <label for="expenseCategory">Expense Category</label>
-      <select id="expenseCategory">
-        <option value="none">-- No Expense --</option>
-        <option value="Feed">🌾 Feed</option>
-        <option value="Medication">💉 Medication/Vaccines</option>
-        <option value="Chicks">🐣 Chick Purchase</option>
-        <option value="Labor">👷 Labor</option>
-        <option value="Utilities">💡 Utilities (Water/Heat)</option>
-        <option value="Other">📦 Other</option>
-      </select>
+      <label>Expenses</label>
+      <div id="expenseContainer">
+        <div class="expense-row" style="display: flex; gap: 5px; margin-bottom: 5px;">
+         <select class="exp-cat" style="flex: 2; margin: 0;">
+            <option value="none">-- Category --</option>
+            <option value="Feed">🌾 Feed</option>
+            <option value="Medication">💉 Medication</option>
+            <option value="Chicks">🐣 Chicks</option>
+            <option value="Labor">👷 Labor</option>
+            <option value="Utilities">💡 Utilities</option>
+            <option value="Other">📦 Other</option>
+        </select>
+        <input type="number" class="exp-amt" placeholder="Amount" style="flex: 2; margin: 0;" inputmode="decimal">
+        <button type="button" id="addExpenseRow" style="flex: 0.5; margin: 0; background: #2e7d32;">+</button>
+      </div>
+    </div>
       <label for="expenses">Expenses (KES)</label>
       <input type="number" id="expenses" step="0.01" inputmode="decimal" placeholder="0.00">
       <button type="submit">✅ Save Record</button>
@@ -138,5 +144,6 @@
 <script src="app.js"></script>
 </body>
 </html>
+
 
 
