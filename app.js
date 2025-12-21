@@ -243,20 +243,27 @@ document.addEventListener("DOMContentLoaded", () => {
   form.onsubmit = (e) => {
     e.preventDefault();
     db.transaction("settings").objectStore("settings").get("farmType").onsuccess = (ev) => {
-      const type = ev.target.result.value;
-      const expItems = Array.from(document.querySelectorAll(".expense-row")).map(row => ({
-        category: row.querySelector(".exp-cat").value,
-        amount: parseFloat(row.querySelector(".exp-amt").value) || 0
-      })).filter(i => i.amount > 0);
-
+      // Inside form.onsubmit update the record object:
+      const feedItems = Array.from(document.querySelectorAll(".feed-row")).map(row => ({
+        type: row.querySelector(".feed-type").value,
+        qty: parseFloat(row.querySelector(".feed-qty").value) || 0
+      })).filter(f => f.qty > 0);
+      
       const record = {
         date: document.getElementById("date").value,
         type: type,
-        quantity: parseFloat(document.getElementById("quantity").value),
-        price: parseFloat(document.getElementById("price").value),
+        subtype: document.getElementById("poultrySubtype").value,
+        // Layer data
+        eggsCollected: parseFloat(document.getElementById("eggsCollected")?.value) || 0,
+        eggsBroken: parseFloat(document.getElementById("eggsBroken")?.value) || 0,
+        // Broiler data
+        avgWeight: parseFloat(document.getElementById("avgWeight")?.value) || 0,
+        flockSize: parseFloat(document.getElementById("flockSizePoultry")?.value) || 0,
+        // General poultry
+        mortality: parseFloat(document.getElementById("mortalityPoultry")?.value) || 0,
+        feedData: feedItems,
         expenses: expItems.reduce((sum, i) => sum + i.amount, 0),
-        expenseItems: expItems,
-        subtype: document.getElementById("poultrySubtype") ? document.getElementById("poultrySubtype").value : ""
+        expenseItems: expItems
       };
 
       db.transaction("records", "readwrite").objectStore("records").add(record).onsuccess = () => {
@@ -357,7 +364,25 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("poultrySubtypeToggle").onchange = () => {
   loadRecords(); // Refresh the dashboard with filtered data
 };
+  document.getElementById("poultrySubtype").onchange = (e) => {
+  const isLayers = e.target.value === 'layers';
+  document.getElementById("layerSpecificFields").style.display = isLayers ? "block" : "none";
+  document.getElementById("broilerSpecificFields").style.display = isLayers ? "none" : "block";
+};
+
+  document.getElementById("addFeedRow").onclick = () => {
+  const container = document.getElementById("feedContainer");
+  const newRow = document.querySelector(".feed-row").cloneNode(true);
+  newRow.querySelector(".feed-type").value = "";
+  newRow.querySelector(".feed-qty").value = "";
+  const btn = newRow.querySelector("button");
+  btn.innerText = "✕";
+  btn.classList.replace("add-row-btn", "btn-danger");
+  btn.onclick = () => newRow.remove();
+  container.appendChild(newRow);
+};
 
   darkModeBtn.onclick = () => document.body.classList.toggle("dark-mode");
 });
+
 
