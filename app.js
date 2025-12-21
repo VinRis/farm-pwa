@@ -6,13 +6,17 @@ const App = {
     state: {
         livestock: localStorage.getItem('ft_livestock') || null,
         theme: localStorage.getItem('ft_theme') || 'light',
-        currency: 'KSh', // <--- Change your currency symbol here
+        currency: localStorage.getItem('ft_currency') || 'KSh', // Load saved currency
         chartInstance: null
     },
 
     init() {
         this.applyTheme();
         this.bindEvents();
+
+        // Set the currency input value in settings
+        const curInput = document.getElementById('currency-input');
+        if(curInput) curInput.value = this.state.currency;
         
         if (this.state.livestock) {
             this.loadAppShell();
@@ -25,7 +29,7 @@ const App = {
         window.addEventListener('online', this.syncToCloud);
     },
 
-bindEvents() {
+    bindEvents() {
     // 1. IMPROVED NAVIGATION HANDLER
     const navButtons = document.querySelectorAll('.nav-btn');
     
@@ -371,6 +375,7 @@ bindEvents() {
         let income = 0, expense = 0;
 
         trans.sort((a,b) => new Date(b.date) - new Date(a.date));
+        
         list.innerHTML = trans.map(t => {
             t.type === 'income' ? income += t.amount : expense += t.amount;
             return `
@@ -388,34 +393,34 @@ bindEvents() {
         document.getElementById('fin-expense').innerText = `${this.state.currency} ${expense.toLocaleString()}`;
     },
 
+    updateCurrency(val) {
+        this.state.currency = val || 'KSh';
+        localStorage.setItem('ft_currency', this.state.currency);
+        alert('Currency updated!');
+    },
+
     async exportTransactionsCSV() {
         const trans = await DB.getAll('transactions', 'livestock', this.state.livestock);
         if (trans.length === 0) return alert("No transactions to export.");
 
-        // Define CSV Headers
-        const headers = ["Date", "Category", "Type", "Amount", "Notes"];
+        // Create CSV Header
+        let csv = "Date,Category,Type,Amount,Notes\n";
         
-        // Map data to rows
-        const rows = trans.sort((a,b) => new Date(b.date) - new Date(a.date)).map(t => [
-            t.date,
-            `"${t.category}"`, // Quotes handle commas in text
-            t.type.toUpperCase(),
-            t.amount,
-            `"${t.notes || ''}"`
-        ]);
+        // Add Rows
+        trans.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(t => {
+            csv += `${t.date},"${t.category}",${t.type.toUpperCase()},${t.amount},"${t.notes || ''}"\n`;
+        });
 
-        // Combine into string
-        const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
-        
-        // Create download link
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.setAttribute("href", url);
-        link.setAttribute("download", `finance_report_${this.state.livestock}_${new Date().toISOString().split('T')[0]}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        // Download logic
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.setAttribute('hidden', '');
+        a.setAttribute('href', url);
+        a.setAttribute('download', `transactions_${this.state.livestock}.csv`);
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
     },
 
     async deleteTransaction(id) {
@@ -448,4 +453,5 @@ bindEvents() {
 
 window.app = App; // Expose for HTML onclick handlers
 document.addEventListener('DOMContentLoaded', () => App.init());
+
 
