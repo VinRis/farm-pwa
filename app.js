@@ -45,6 +45,11 @@ document.addEventListener("DOMContentLoaded", () => {
       document.querySelectorAll('.view-section').forEach(section => {
         section.style.display = 'none';
       });
+      // Inside the nav-item click listener
+    } else if (target === 'settings-view') {
+        document.getElementById('settingsView').style.display = 'block';
+        loadSettings(); // Load the saved name/currency into inputs
+    }
 
       if (target === 'dashboard') {
         document.getElementById('dashboardView').style.display = 'block';
@@ -123,10 +128,12 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- DATA LOADING, VISUALS & PROJECTIONS ---
   function loadRecords() {
     if (!db) return;
-    const tx = db.transaction(["records", "settings"], "readonly");
-    tx.objectStore("settings").get("farmType").onsuccess = (e) => {
-      const type = e.target.result?.value;
-      if (!type) return;
+    const tx = db.transaction("settings").objectStore("settings").get("currency").onsuccess = (e) => {
+        const symbol = e.target.result ? e.target.result.value : "KES";
+        
+        // When rendering profit:
+        document.getElementById("totalProfit").innerText = `${symbol} ${(rev - exp).toLocaleString()}`;
+      };
 
       tx.objectStore("records").getAll().onsuccess = (ev) => {
         const all = ev.target.result;
@@ -341,7 +348,36 @@ document.addEventListener("DOMContentLoaded", () => {
       toast.classList.add("show");
       setTimeout(() => toast.classList.remove("show"), 3000);
   }
+  function loadSettings() {
+    const tx = db.transaction("settings", "readonly");
+    const store = tx.objectStore("settings");
+  
+    store.get("farmName").onsuccess = (e) => {
+      if (e.target.result) document.getElementById("settingFarmName").value = e.target.result.value;
+    };
+    store.get("currency").onsuccess = (e) => {
+      if (e.target.result) document.getElementById("settingCurrency").value = e.target.result.value;
+    };
+  }
+  
+  document.getElementById("saveSettingsBtn").onclick = () => {
+    const name = document.getElementById("settingFarmName").value;
+    const curr = document.getElementById("settingCurrency").value;
+  
+    const tx = db.transaction("settings", "readwrite");
+    const store = tx.objectStore("settings");
+    
+    store.put({key: "farmName", value: name});
+    store.put({key: "currency", value: curr});
+  
+    tx.oncomplete = () => {
+      showToast("Settings Saved! 💾");
+      // Update the UI immediately (optional: refresh page or trigger update)
+      location.reload(); 
+    };
+  };
 });
+
 
 
 
