@@ -748,7 +748,24 @@ const App = {
 
     },
 
-
+    renderDashboard() {
+      const main = document.getElementById("main-content");
+      main.innerHTML = `
+        <div class="card">
+          <h3>Production Overview</h3>
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <h4>Total Output</h4>
+              <div class="value">0</div>
+            </div>
+            <div class="kpi-card">
+              <h4>Last Entry</h4>
+              <div class="value">—</div>
+            </div>
+          </div>
+        </div>
+      `;
+    },
 
     renderAddForm() {
 
@@ -795,6 +812,7 @@ const App = {
 window.app = App;
 
 document.addEventListener('DOMContentLoaded', () => App.init());
+
 
 
 
