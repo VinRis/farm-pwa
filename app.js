@@ -373,32 +373,32 @@ const App = {
 
         if (this.state.chartInstance) this.state.chartInstance.destroy();
         
-        const sorted = records.sort((a,b) => new Date(a.date) - new Date(b.date)).slice(-7); // Last 7 entries
+        const sorted = records.sort((a,b) => new Date(a.date) - new Date(b.date)).slice(-10); // Last 10 entries
         
         this.state.chartInstance = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: sorted.map(r => r.date.substring(5)), // Show MM-DD
+                labels: sorted.map(r => Utils.formatDate(r.date)), // Show MM-DD
                 datasets: [{ 
-                    label: 'Yield', 
+                    label: 'Yield Trend', 
                     data: sorted.map(r => r.quantity || r.weightKg), 
                     borderColor: '#10B981', 
-                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                    borderWidth: 3,
+                    backgroundColor: 'rgba(16, 185, 129, 0.2)',
                     tension: 0.4,
                     fill: true,
-                    pointRadius: 4,
-                    pointBackgroundColor: '#FFFFFF',
-                    pointBorderColor: '#10B981'
+                    pointRadius: 5,
+                    pointHoverRadius: 8
                 }]
             },
             options: { 
                 responsive: true, 
                 maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
+                plugins: { 
+                    legend: { display: false } 
+                },
                 scales: {
                     x: { grid: { display: false } },
-                    y: { border: { display: false }, grid: { color: '#f3f4f6' } }
+                    y: { beginAtZero: true, grid: { color: 'rgba(200, 200, 200, 0.1)' } }
                 }
             }
         });
@@ -482,3 +482,4 @@ const App = {
 
 window.app = App;
 document.addEventListener('DOMContentLoaded', () => App.init());
+
