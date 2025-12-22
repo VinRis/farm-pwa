@@ -305,6 +305,18 @@ button:active { opacity: 0.7; transform: scale(0.98); }
 
 }
 
+.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(20px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.visible {
+    opacity: 1;
+    pointer-events: all;
+    transform: translateY(0);
+}
 
 
 /* DASHBOARD & CARDS */
@@ -336,7 +348,6 @@ button:active { opacity: 0.7; transform: scale(0.98); }
 
 
 .chart-card { height: 300px; }
-
 
 
 /* FORMS */
@@ -486,5 +497,6 @@ input, select, textarea {
     }
 
 }
+
 
 
