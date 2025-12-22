@@ -703,38 +703,40 @@ const App = {
     selectLivestock(type) {
         const landing = document.getElementById('landing-page');
         const dashboard = document.getElementById('dashboard');
+        const appShell = document.getElementById('app-shell');
         const selectedCard = document.querySelector(`.card.${type}`);
-
+    
+        // Highlight selected card briefly
         if (selectedCard) {
             selectedCard.style.transform = 'scale(1.05)';
             selectedCard.style.transition = 'transform 0.2s ease';
             setTimeout(() => {
                 selectedCard.style.transform = 'scale(1)';
             }, 200);
-        }  
+        }
     
-        // Hide landing page smoothly
-        landing.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+        // Animate landing page fade-out
+        landing.classList.add('fade-out');
         landing.style.opacity = 0;
-        landing.style.transform = 'translateY(-20px)';
+        landing.style.transform = 'scale(0.98) translateY(-10px)';
     
-        // After animation, hide landing completely and show dashboard
+        // After landing fade-out, hide landing and show app shell
         setTimeout(() => {
             landing.classList.add('hidden');
-            dashboard.classList.remove('hidden');
+            landing.classList.remove('fade-out');
     
-            // Show dashboard smoothly
-            setTimeout(() => {
-                dashboard.classList.add('visible');
-            }, 50);
+            // Show dashboard inside app shell with fade-in
+            appShell.classList.remove('hidden');
+            appShell.classList.add('fade-in');
+            setTimeout(() => appShell.classList.remove('fade-in'), 500);
+    
+            // Store selected livestock type
+            this.state.livestock = type;
+            localStorage.setItem('ft_livestock', type);
+    
+            // Load dashboard content
+            this.loadAppShell();
         }, 400);
-    
-        // Store selected livestock type
-        this.state.livestock = type;
-        localStorage.setItem('ft_livestock', type);
-    
-        // Load the app shell
-        this.loadAppShell();
     }
 
 
@@ -805,5 +807,6 @@ const App = {
 window.app = App;
 
 document.addEventListener('DOMContentLoaded', () => App.init());
+
 
 
