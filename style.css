@@ -154,6 +154,17 @@ button:active { opacity: 0.8; transform: scale(0.97); }
 
 .chart-card { height: 300px; transition: all 0.3s ease; }
 
+.kpi-card, #insight-card, .chart-card {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.kpi-card.visible, #insight-card.visible, .chart-card.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
 /* FORMS */
 .form-group { margin-bottom: 15px; text-align: left; }
 label { display: block; margin-bottom: 5px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); }
@@ -192,3 +203,4 @@ input, select, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; bo
         box-shadow: 0 0 50px rgba(0,0,0,0.1);
     }
 }
+
