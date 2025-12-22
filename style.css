@@ -190,3 +190,76 @@ body.dark-mode .data-table th { background: #2c2c2c; }
 .dark-mode .recent-list {
     background: #1e1e1e;
 }
+
+/* --- Modal Background --- */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7); /* Darken background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000; /* Ensure it stays above bottom-nav */
+    padding: 20px;
+    backdrop-filter: blur(4px); /* Modern blur effect */
+}
+
+/* --- Modal Content Box --- */
+.modal-content {
+    width: 100%;
+    max-width: 400px;
+    background: var(--card-bg, #ffffff);
+    padding: 2rem;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    animation: slideUp 0.3s ease-out;
+}
+
+/* --- Animation for smooth entry --- */
+@keyframes slideUp {
+    from { transform: translateY(30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* --- Helper Classes --- */
+.hidden {
+    display: none !important;
+}
+
+.full-width {
+    width: 100%;
+    margin-top: 10px;
+}
+
+/* --- Typography & Buttons inside Modal --- */
+#auth-title {
+    color: var(--primary-color, #2E7D32);
+    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+}
+
+.btn-text {
+    background: none;
+    border: none;
+    color: var(--primary-color, #2E7D32);
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin-top: 15px;
+}
+
+/* --- Dark Mode Support --- */
+body.dark-mode .modal-content {
+    background: #1e1e1e;
+    color: #f0f0f0;
+}
+
+body.dark-mode .modal-content input {
+    background: #2d2d2d;
+    border-color: #444;
+    color: white;
+}
