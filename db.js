@@ -30,9 +30,16 @@ export const DB = {
         return new Promise((resolve) => {
             const tx = db.transaction(storeName, 'readonly');
             const store = tx.objectStore(storeName);
+    
+            if (!store.indexNames.contains(indexName)) {
+                resolve([]);
+                return;
+            }
+    
             const index = store.index(indexName);
             const request = index.getAll(val);
             request.onsuccess = () => resolve(request.result || []);
+            request.onerror = () => resolve([]);
         });
     }
 };
