@@ -1,5 +1,5 @@
 const DB_NAME = 'FarmTrackDB';
-const DB_VERSION = 7; // Increment to ensure all stores & indexes are created
+const DB_VERSION = 10; // Forced high version to reset everything
 
 export const DB = {
     open() {
@@ -25,16 +25,14 @@ export const DB = {
         tx.objectStore(store).add(data);
         return new Promise(r => tx.oncomplete = () => r(true));
     },
-    async getAll(store, indexName, val) {
+    async getAll(storeName, indexName, val) {
         const db = await this.open();
-        const tx = db.transaction(store, 'readonly');
-        const idx = tx.objectStore(store).index(indexName);
-        return new Promise(r => idx.getAll(val).onsuccess = (e) => r(e.target.result));
-    },
-    async delete(store, id) {
-        const db = await this.open();
-        const tx = db.transaction(store, 'readwrite');
-        tx.objectStore(store).delete(id);
-        return new Promise(r => tx.oncomplete = () => r(true));
+        return new Promise((resolve) => {
+            const tx = db.transaction(storeName, 'readonly');
+            const store = tx.objectStore(storeName);
+            const index = store.index(indexName);
+            const request = index.getAll(val);
+            request.onsuccess = () => resolve(request.result || []);
+        });
     }
 };
