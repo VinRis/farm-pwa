@@ -81,6 +81,15 @@
 
         <main id="main-content">
 
+            <section id="view-vax" class="tab-view" style="display:none;">
+                <div class="card">
+                    <h3><i class="fa-solid fa-syringe"></i> Vaccination Schedule</h3>
+                    <p><small>Upcoming health tasks for your ${this.state.livestock || 'farm'}.</small></p>
+                    <ul id="vax-list" class="list-group">
+                        </ul>
+                </div>
+            </section>
+            
             <section id="view-dashboard" class="tab-view active">
                 <div id="kpi-container" class="kpi-grid"></div>
                 
@@ -248,6 +257,10 @@
                 <i class="fa-solid fa-file-invoice"></i>
                 <span>Docs</span>
             </button>
+            <button class="nav-btn" data-target="view-vax">
+                <i class="fa-solid fa-shield-virus"></i>
+                <span>Health</span>
+            </button>
             <button class="nav-btn" data-target="view-settings">
                 <i class="fa-solid fa-gear"></i>
                 <span>Set</span>
@@ -293,6 +306,7 @@
     <script type="module" src="app.js"></script>
 </body>
 </html>
+
 
 
 
