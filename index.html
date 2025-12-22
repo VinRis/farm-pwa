@@ -1,269 +1,204 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FarmTrack - Farm Management</title>
-    <meta name="description" content="Offline-first farm management for Dairy, Poultry, Pig, and Goat.">
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#2E7D32">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>FarmTrack - Farm Management</title>
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+  <meta name="description" content="Offline-first farm management for Dairy, Poultry, Pig, and Goat." />
+  <meta name="theme-color" content="#2E7D32" />
+  <link rel="manifest" href="manifest.json" />
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="style.css" />
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
 </head>
+
 <body>
 
-    <!-- Authentication Modal -->
-    <div id="auth-modal" class="modal hidden">
-        <div class="modal-content card">
-            <h3 id="auth-title">Sign In to FarmTrack</h3>
-            <p><small>Sync your data across devices and unlock Pro features.</small></p>
-            <form id="auth-form">
-                <div class="form-group">
-                    <input type="email" id="auth-email" placeholder="Email Address" required>
-                </div>
-                <div class="form-group">
-                    <input type="password" id="auth-password" placeholder="Password" required>
-                </div>
-                <button type="submit" class="btn-primary full-width" id="auth-submit-btn">Login</button>
-            </form>
-            <button class="btn-text full-width" id="auth-toggle-btn">Need an account? Sign Up</button>
-            <button class="btn-secondary full-width" onclick="document.getElementById('auth-modal').classList.add('hidden')">Cancel</button>
-        </div>
+<!-- ================= AUTH MODAL ================= -->
+<div id="auth-modal" class="modal hidden">
+  <div class="modal-content card">
+    <h3 id="auth-title">Sign In to FarmTrack</h3>
+    <p><small>Sync your data across devices.</small></p>
+
+    <form id="auth-form">
+      <div class="form-group">
+        <input type="email" id="auth-email" placeholder="Email Address" required />
+      </div>
+      <div class="form-group">
+        <input type="password" id="auth-password" placeholder="Password" required />
+      </div>
+      <button type="submit" id="auth-submit-btn" class="btn-primary full-width">Login</button>
+    </form>
+
+    <button id="auth-toggle-btn" class="btn-text full-width">Need an account? Sign Up</button>
+    <button type="button" class="btn-secondary full-width" onclick="document.getElementById('auth-modal').classList.add('hidden')">Cancel</button>
+  </div>
+</div>
+
+<!-- ================= LANDING ================= -->
+<div id="landing-page" class="view-section">
+  <div class="landing-content">
+    <h1>FarmTrack</h1>
+    <p>What do you want to manage today?</p>
+
+    <div class="livestock-grid">
+      <div class="card dairy" data-livestock="dairy">
+        <i class="fa-solid fa-cow fa-3x"></i>
+        <h3>Dairy</h3>
+      </div>
+
+      <div class="card poultry" data-livestock="poultry">
+        <i class="fa-solid fa-egg fa-3x"></i>
+        <h3>Poultry</h3>
+      </div>
+
+      <div class="card pig" data-livestock="pig">
+        <i class="fa-solid fa-piggy-bank fa-3x"></i>
+        <h3>Pig</h3>
+      </div>
+
+      <div class="card goat" data-livestock="goat">
+        <i class="fa-solid fa-hippo fa-3x"></i>
+        <h3>Goat</h3>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= APP SHELL ================= -->
+<div id="app-shell" class="view-section hidden">
+
+  <!-- HEADER -->
+  <header class="app-header">
+    <div>
+      <button id="menu-toggle" class="icon-btn" type="button"><i class="fa-solid fa-bars"></i></button>
+      <button id="home-btn" class="icon-btn" type="button"><i class="fa-solid fa-house"></i></button>
     </div>
 
-    <!-- Landing Page -->
-    <div id="landing-page" class="view-section active">
-        <div class="landing-content">
-            <h1>FarmTrack</h1>
-            <p>What do you want to manage today?</p>
-            <div class="livestock-grid">
-                <small style="color: var(--text-muted);">
-                    You can track production, expenses, and health records offline.
-                </small>
+    <h2 id="header-title">FarmTrack</h2>
 
-                <div class="card dairy" data-livestock="dairy">
-                    <i class="fa-solid fa-cow fa-3x"></i>
-                    <h3>Dairy</h3>
-                </div>
+    <div>
+      <button id="auth-status-btn" class="icon-btn" type="button"><i class="fa-solid fa-circle-user"></i></button>
+      <button id="theme-toggle" class="icon-btn" type="button"><i class="fa-solid fa-moon"></i></button>
+    </div>
+  </header>
 
-                <div class="card poultry" data-livestock="poultry">
-                    <i class="fa-solid fa-egg fa-3x"></i>
-                    <h3>Poultry</h3>
-                </div>
+  <!-- MAIN CONTENT -->
+  <main id="main-content">
 
-                <div class="card pig" data-ivestock="pig"">
-                    <i class="fa-solid fa-piggy-bank fa-3x"></i>
-                    <h3>Pig</h3>
-                </div>
+    <section id="view-dashboard" class="tab-view"></section>
 
-                <div class="card goat" data-ivestock="goat">
-                    <i class="fa-solid fa-hippo fa-3x"></i> 
-                    <h3>Goat</h3>
-                </div>
-            </div>
+    <section id="view-add" class="tab-view">
+      <div class="card">
+        <h3>Add Production Record</h3>
+        <form id="add-record-form">
+          <div id="dynamic-fields"></div>
+          <button type="submit" class="btn-primary full-width">Save Record</button>
+        </form>
+      </div>
+    </section>
 
-            <div class="landing-footer">
-                <button id="backup-btn" class="btn-secondary"><i class="fa-solid fa-download"></i> Backup</button>
-                <input type="file" id="restore-file" style="display:none" accept=".json">
-                <button id="restore-btn" class="btn-secondary" onclick="document.getElementById('restore-file').click()"><i class="fa-solid fa-upload"></i> Restore</button>
-            </div>
-        </div>
+    <section id="view-records" class="tab-view">
+      <div class="card">
+        <table class="data-table" id="records-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Qty / Value</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="view-finance" class="tab-view">
+      <div class="card">
+        <form id="add-transaction-form">
+          <select name="type" required>
+            <option value="expense">Expense</option>
+            <option value="income">Income</option>
+          </select>
+          <input type="number" name="amount" placeholder="Amount" required />
+          <input type="date" name="date" required />
+          <input type="text" name="category" placeholder="Category" />
+          <button type="submit" class="btn-primary full-width">Add Transaction</button>
+        </form>
+      </div>
+      <ul id="transaction-list" class="list-group"></ul>
+    </section>
+
+    <section id="view-vax" class="tab-view">
+      <div class="card">
+        <form id="reminder-form">
+          <input id="remind-animal" placeholder="Animal" required />
+          <input id="remind-task" placeholder="Task" required />
+          <input id="remind-date" type="date" required />
+          <button class="btn-primary full-width">Set Reminder</button>
+        </form>
+      </div>
+      <ul id="vax-list" class="list-group"></ul>
+    </section>
+
+    <section id="view-settings" class="tab-view">
+      <div class="card">
+        <input id="currency-input" placeholder="Currency (KSh)" />
+      </div>
+    </section>
+
+  </main>
+
+  <!-- SIDE DRAWER -->
+  <div id="side-drawer" class="drawer">
+    <div class="drawer-header">
+      <h3>FarmTrack</h3>
+      <button id="close-drawer" class="icon-btn" type="button"><i class="fa-solid fa-xmark"></i></button>
     </div>
 
-    <!-- App Shell -->
-    <div id="app-shell" class="view-section hidden">
-        <header class="app-header">
-            <div class="header-left">
-                <button id="menu-toggle" class="icon-btn"><i class="fa-solid fa-bars"></i></button>
-                <button id="home-btn" class="icon-btn"><i class="fa-solid fa-house"></i></button>
-            </div>
-            <h2 id="header-title">FarmTrack</h2>
-            <div class="header-right">
-                <button id="auth-status-btn" class="icon-btn"><i class="fa-solid fa-circle-user"></i></button>
-                <button id="theme-toggle" class="icon-btn"><i class="fa-solid fa-moon"></i></button>
-            </div>
-        </header>
+    <nav class="drawer-nav">
+      <button class="nav-btn" data-target="view-dashboard">Dashboard</button>
+      <button class="nav-btn" data-target="view-add">Add Entry</button>
+      <button class="nav-btn" data-target="view-records">History</button>
+      <button class="nav-btn" data-target="view-finance">Finance</button>
+      <button class="nav-btn" data-target="view-vax">Reminders</button>
+      <button class="nav-btn" data-target="view-settings">Settings</button>
+    </nav>
 
-        <main id="main-content"></main>
-
-            <!-- Dashboard -->
-            <div id="dashboard" class="hidden">
-                <section id="view-dashboard" class="tab-view active">
-                    <div id="kpi-container" class="kpi-grid"></div>
-
-                    <div id="insight-card" class="card" style="border-left: 5px solid #2E7D32; margin-bottom: 15px;">
-                        <div class="insight-content">
-                            <i class="fa-solid fa-lightbulb" style="color: #ffd700; margin-right: 10px;"></i>
-                            <span id="insight-text">Analyzing your farm data...</span>
-                        </div>
-                    </div>
-
-                    <div class="card chart-card">
-                        <canvas id="productionChart"></canvas>
-                    </div>
-                </section>
-            </div>
-
-            <!-- Reminders -->
-            <section id="view-vax" class="tab-view" style="display:none;">
-                <div class="card">
-                    <h3><i class="fa-solid fa-plus"></i> Add New Reminder</h3>
-                    <form id="reminder-form">
-                        <div class="form-group">
-                            <label>Animal Tag/Name</label>
-                            <input type="text" id="remind-animal" placeholder="e.g. Cow #42" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Task</label>
-                            <input type="text" id="remind-task" placeholder="e.g. Deworming" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Due Date</label>
-                            <input type="date" id="remind-date" required>
-                        </div>
-                        <button type="submit" class="btn-primary full-width">Set Reminder</button>
-                    </form>
-                </div>
-                <div class="card" style="margin-top: 20px;">
-                    <h3>Upcoming Tasks</h3>
-                    <ul id="vax-list" class="list-group"></ul>
-                </div>
-            </section>
-
-            <!-- Add Record -->
-            <section id="view-add" class="tab-view" style="display:none;">
-                <div class="card">
-                    <h3>Add Production Record</h3>
-                    <form id="add-record-form">
-                        <div id="dynamic-fields"></div>
-                        <button type="submit" class="btn-primary full-width">Save Record</button>
-                    </form>
-                </div>
-            </section>
-
-            <!-- Records History -->
-            <section id="view-records" class="tab-view" style="display:none;">
-                <div class="table-responsive card">
-                    <table class="data-table" id="records-table">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Qty/Value</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-            </section>
-
-            <!-- Finance -->
-            <section id="view-finance" class="tab-view" style="display:none;">
-                <div class="card">
-                    <h3>New Transaction</h3>
-                    <form id="add-transaction-form">
-                        <div class="form-group">
-                            <select name="type" required>
-                                <option value="expense">Expense</option>
-                                <option value="income">Income</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <input type="number" name="amount" placeholder="Amount" required step="0.01">
-                        </div>
-                        <div class="form-group">
-                            <input type="date" name="date" required id="trans-date">
-                        </div>
-                        <div class="form-group">
-                            <input type="text" name="category" placeholder="Category (Feed, Vet, Sales)" list="cat-suggestions">
-                            <datalist id="cat-suggestions">
-                                <option value="Feed">
-                                <option value="Medication">
-                                <option value="Sales">
-                            </datalist>
-                        </div>
-                        <button type="submit" class="btn-primary full-width">Add Transaction</button>
-                    </form>
-                </div>
-                <ul id="transaction-list" class="list-group" style="margin-top:20px;"></ul>
-            </section>
-
-            <!-- Reports -->
-            <section id="view-reports" class="tab-view" style="display:none;">
-                <div class="report-card card">
-                    <h3><i class="fa-solid fa-file-pdf"></i> Generate Report</h3>
-                    <button id="generate-pdf-btn" class="btn-primary full-width">Download Summary PDF</button>
-                </div>
-            </section>
-
-            <!-- Settings -->
-            <section id="view-settings" class="tab-view" style="display:none;">
-                <div class="card">
-                    <h3>Settings</h3>
-                    <div class="form-group">
-                        <label>Currency Symbol</label>
-                        <input type="text" id="currency-input" placeholder="e.g. KSh">
-                    </div>
-                </div>
-            </section>
-
-        </main>
-
-        <!-- Side Drawer -->
-        <div id="side-drawer" class="drawer">
-            <div class="drawer-header">
-                <h3>FarmTrack Menu</h3>
-                <button id="close-drawer" class="icon-btn"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <nav class="drawer-nav">
-                <button class="nav-btn" data-target="view-dashboard"><i class="fa-solid fa-chart-line"></i> Dashboard</button>
-                <button class="nav-btn" data-target="view-add"><i class="fa-solid fa-plus"></i> Add Entry</button>
-                <button class="nav-btn" data-target="view-records"><i class="fa-solid fa-list"></i> History</button>
-                <button class="nav-btn" data-target="view-finance"><i class="fa-solid fa-wallet"></i> Finance</button>
-                <button class="nav-btn" data-target="view-vax"><i class="fa-solid fa-bell"></i> Reminders</button>
-                <button class="nav-btn" data-target="view-reports"><i class="fa-solid fa-file-invoice"></i> Reports</button>
-                <button class="nav-btn" data-target="view-settings"><i class="fa-solid fa-gear"></i> Settings</button>
-            </nav>
-            <div class="drawer-footer">
-                <div class="user-info">
-                    <i class="fa-solid fa-circle-user fa-2x"></i>
-                    <div class="user-details">
-                        <span id="user-email-display">Guest User</span>
-                        <button id="logout-btn" class="btn-text-danger">Logout</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div id="drawer-overlay" class="overlay hidden"></div>
+    <div class="drawer-footer">
+      <span id="user-email-display">Guest User</span>
+      <button id="logout-btn" class="btn-text-danger">Logout</button>
     </div>
+  </div>
 
-    <!-- Firebase Init -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-      
-        const firebaseConfig = {
-            apiKey: "AIzaSyAva7tu7mWrdgJswDIR0W9OWv8ctZ5phPk",
-            authDomain: "farmtrack-b470e.firebaseapp.com",
-            projectId: "farmtrack-b470e",
-            storageBucket: "farmtrack-b470e.firebasestorage.app",
-            messagingSenderId: "572276398926",
-            appId: "1:572276398926:web:4b39dc570ce2077fae5c1f"
-        };
-      
-        const app = initializeApp(firebaseConfig);
-        window.db = getFirestore(app);
-        window.auth = getAuth(app);
-    </script>
+  <div id="drawer-overlay" class="overlay hidden"></div>
+</div>
 
-    <script type="module" src="app.js"></script>
+<!-- ================= FIREBASE ================= -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAva7tu7mWrdgJswDIR0W9OWv8ctZ5phPk",
+    authDomain: "farmtrack-b470e.firebaseapp.com",
+    projectId: "farmtrack-b470e",
+    storageBucket: "farmtrack-b470e.firebasestorage.app",
+    messagingSenderId: "572276398926",
+    appId: "1:572276398926:web:4b39dc570ce2077fae5c1f"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  window.db = getFirestore(app);
+  window.auth = getAuth(app);
+</script>
+
+<script type="module" src="app.js"></script>
 </body>
 </html>
-
-
