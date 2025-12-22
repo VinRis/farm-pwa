@@ -727,7 +727,7 @@ const App = {
             // Load dashboard content
             this.loadAppShell();
         }, 400);
-    }
+    },
 
 
     loadAppShell() {
@@ -797,6 +797,7 @@ const App = {
 window.app = App;
 
 document.addEventListener('DOMContentLoaded', () => App.init());
+
 
 
 
