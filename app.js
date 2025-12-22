@@ -733,15 +733,17 @@ const App = {
     loadAppShell() {
 
         document.getElementById('landing-page').classList.add('hidden');
-
         document.getElementById('app-shell').classList.remove('hidden');
+        
+        this.updateHeader();
+        this.renderDashboard();
 
         const titles = { dairy: 'Dairy Farm', poultry: 'Poultry Farm', pig: 'Pig Farm', goat: 'Goat Farm' };
 
         document.getElementById('header-title').innerText = titles[this.state.livestock];
 
         this.renderAddForm();
-
+       
         this.switchTab('view-dashboard', document.querySelector('[data-target="view-dashboard"]'));
 
     },
@@ -793,6 +795,7 @@ const App = {
 window.app = App;
 
 document.addEventListener('DOMContentLoaded', () => App.init());
+
 
 
 
