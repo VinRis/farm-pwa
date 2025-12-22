@@ -1,5 +1,5 @@
 const DB_NAME = 'farmtrack-db';
-const DB_VERSION = 1;
+const DB_VERSION = 2; // Incremented version to trigger the new 'reminders' store
 
 export const dbPromise = new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
@@ -12,12 +12,18 @@ export const dbPromise = new Promise((resolve, reject) => {
             const store = db.createObjectStore('records', { keyPath: 'id' });
             store.createIndex('livestock', 'livestock', { unique: false });
             store.createIndex('date', 'date', { unique: false });
-            store.createIndex('syncStatus', 'syncStatus', { unique: false });
         }
 
         // Transactions Store
         if (!db.objectStoreNames.contains('transactions')) {
             const store = db.createObjectStore('transactions', { keyPath: 'id' });
+            store.createIndex('livestock', 'livestock', { unique: false });
+            store.createIndex('date', 'date', { unique: false });
+        }
+
+        // Reminders Store (NEW - Matches the new app features)
+        if (!db.objectStoreNames.contains('reminders')) {
+            const store = db.createObjectStore('reminders', { keyPath: 'id' });
             store.createIndex('livestock', 'livestock', { unique: false });
             store.createIndex('date', 'date', { unique: false });
         }
@@ -37,24 +43,16 @@ export const dbPromise = new Promise((resolve, reject) => {
     request.onerror = (e) => reject(e.target.error);
 });
 
-// Helper for transaction
 const getStore = async (storeName, mode) => {
     const db = await dbPromise;
-    const tx = db.transaction(storeName, mode);
-    return tx.objectStore(storeName);
+    return db.transaction(storeName, mode).objectStore(storeName);
 };
 
 export const DB = {
     async getAll(storeName, indexName, value) {
         const store = await getStore(storeName, 'readonly');
         return new Promise((resolve, reject) => {
-            let request;
-            if (indexName && value) {
-                const index = store.index(indexName);
-                request = index.getAll(value);
-            } else {
-                request = store.getAll();
-            }
+            let request = (indexName && value) ? store.index(indexName).getAll(value) : store.getAll();
             request.onsuccess = () => resolve(request.result);
             request.onerror = () => reject(request.error);
         });
@@ -88,8 +86,7 @@ export const DB = {
     },
 
     async dump() {
-        // Export all data for backup
-        const stores = ['records', 'transactions', 'meta'];
+        const stores = ['records', 'transactions', 'meta', 'reminders'];
         const data = {};
         for (const s of stores) {
             data[s] = await this.getAll(s);
@@ -98,18 +95,15 @@ export const DB = {
     },
 
     async restore(data) {
-        // Simple restore: iterate and put
         const db = await dbPromise;
         const tx = db.transaction(Object.keys(data), 'readwrite');
         for (const storeName of Object.keys(data)) {
             const store = tx.objectStore(storeName);
-            await store.clear(); // Wipe existing before restore
+            store.clear(); 
             for (const item of data[storeName]) {
                 store.put(item);
             }
         }
-        return new Promise((resolve) => {
-            tx.oncomplete = () => resolve();
-        });
+        return new Promise((resolve) => { tx.oncomplete = () => resolve(); });
     }
 };
