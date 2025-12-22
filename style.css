@@ -284,15 +284,17 @@ button { cursor: pointer; border: none; font-family: var(--font-body); }
     .bottom-nav { max-width: 450px; left: 50%; transform: translateX(-50%); border-radius: 20px 20px 0 0; }
 }
 
-/* Ensure clicks pass through icons to the card container */
-.livestock-card * {
-    pointer-events: none;
-}
+/* Add this at the end of your style.css */
 .livestock-card {
+    cursor: pointer !important;
     pointer-events: auto !important;
 }
 
-/* Fix for the hidden class logic */
+.livestock-card * {
+    pointer-events: none; /* This ensures clicks go to the parent card */
+}
+
 .hidden {
     display: none !important;
 }
+
