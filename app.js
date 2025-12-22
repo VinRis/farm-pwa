@@ -32,6 +32,40 @@ const App = {
             }
         }
     },
+    renderVaxSchedule() {
+        const schedules = {
+            poultry: [
+                { day: 1, task: "Gumboro (1st Dose)", type: "Vaccine" },
+                { day: 7, task: "Newcastle (1st Dose)", type: "Vaccine" },
+                { day: 21, task: "Gumboro (2nd Dose)", type: "Vaccine" }
+            ],
+            dairy: [
+                { day: 180, task: "Foot & Mouth", type: "Annual" },
+                { day: 90, task: "Deworming", type: "Quarterly" }
+            ],
+            pig: [
+                { day: 60, task: "Swine Fever", type: "Vaccine" },
+                { day: 90, task: "Deworming", type: "Routine" }
+            ],
+            goat: [
+                { day: 30, task: "PPR Vaccine", type: "Annual" },
+                { day: 15, task: "Deworming", type: "Routine" }
+            ]
+        };
+    
+        const list = document.getElementById('vax-list');
+        const currentSched = schedules[this.state.livestock] || [];
+        
+        list.innerHTML = currentSched.map(v => `
+            <li style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #eee;">
+                <div>
+                    <strong>${v.task}</strong><br>
+                    <small>${v.type}</small>
+                </div>
+                <button class="btn-sm btn-secondary" onclick="alert('Marked as done!')">Done</button>
+            </li>
+        `).join('');
+    }
 
     init() {
         this.applyTheme();
@@ -228,6 +262,7 @@ const App = {
         if (viewId === 'view-dashboard') this.refreshDashboard();
         if (viewId === 'view-records') this.loadRecords();
         if (viewId === 'view-finance') this.loadFinance();
+        if (viewId === 'view-vax') this.renderVaxSchedule();
     },
 
     renderAddForm() {
@@ -478,6 +513,7 @@ window.app = App;
 
 // 3. Start the app
 document.addEventListener('DOMContentLoaded', () => App.init());
+
 
 
 
