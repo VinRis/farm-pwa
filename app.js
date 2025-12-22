@@ -7,43 +7,7 @@ const App = {
         livestock: localStorage.getItem('ft_livestock') || null,
         theme: localStorage.getItem('ft_theme') || 'light',
         currency: localStorage.getItem('ft_currency') || 'KSh', // Load saved currency
-        chartInstance: null
-        generateInsights(records, income, expense) {
-            const textEl = document.getElementById('insight-text');
-            const type = this.state.livestock;
-            let insight = "";
-    
-            // 1. Financial Insight (Priority)
-            if (expense > income && income > 0) {
-                insight = `Your expenses are higher than income this month. Consider reviewing feed costs or overheads.`;
-            } 
-            // 2. Production Insights based on Livestock Type
-            else if (records.length < 3) {
-                insight = `Welcome! Start logging at least 3 days of data to see production trends here.`;
-            } else {
-                const latest = records[0].quantity || 0;
-                const previous = records[1].quantity || 0;
-    
-                if (type === 'dairy') {
-                    if (latest < previous) insight = "Milk production dropped slightly compared to yesterday. Check if water or feed quality changed.";
-                    else insight = "Great job! Milk production is steady. Ensure consistent milking times for best results.";
-                } 
-                else if (type === 'poultry') {
-                    const mortality = records.reduce((sum, r) => sum + (r.mortality || 0), 0);
-                    if (mortality > 0) insight = "Mortality detected. Ensure the coop temperature is regulated and biosecurity is maintained.";
-                    else insight = "Excellent egg collection rate! Keep the nesting areas clean to avoid cracked eggs.";
-                }
-                else if (type === 'pig') {
-                    insight = "Pigs grow fastest with high-protein starter feed. Monitor weight gains weekly for market readiness.";
-                }
-                else if (type === 'goat') {
-                    insight = "Goats are sensitive to damp bedding. Ensure their shelter is dry to prevent hoof issues.";
-                }
-            }
-    
-            textEl.innerText = insight || "Keep up the good work! Your farm records are looking organized.";
-        },
-  
+        chartInstance: null  
     },
 
     init() {
@@ -399,8 +363,7 @@ const App = {
                 plugins: { legend: { display: false } }
             }
         });
-           // Inside refreshDashboard, after calculating totalIncome and totalExpense:
-        this.generateInsights(thisMonthRecs, totalIncome, totalExpense);
+          
     },
 
     async loadRecords() {
@@ -518,6 +481,7 @@ const App = {
 
 window.app = App; // Expose for HTML onclick handlers
 document.addEventListener('DOMContentLoaded', () => App.init());
+
 
 
 
