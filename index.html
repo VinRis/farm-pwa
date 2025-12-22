@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>FarmTrack - Farm Management</title>
     <meta name="description" content="Offline-first farm management for Dairy, Poultry, Pig, and Goat.">
     <link rel="manifest" href="manifest.json">
@@ -33,6 +33,7 @@
             <button class="btn-secondary full-width" onclick="document.getElementById('auth-modal').classList.add('hidden')">Cancel</button>
         </div>
     </div>
+
     <div id="landing-page" class="view-section active">
         <div class="landing-content">
             <h1>FarmTrack</h1>
@@ -50,27 +51,20 @@
                     <i class="fa-solid fa-piggy-bank fa-3x"></i>
                     <h3>Pig</h3>
                 </div>
-           <div class="card" onclick="app.selectLivestock('goat')">
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 10px;">
-                    <path d="M16 18l0 2" />
-                    <path d="M8 18l0 2" />
-                    <path d="M21 11c0 2.8 -2.2 5 -5 5h-7c-2.8 0 -5 -2.2 -5 -5s2.2 -5 5 -5h7c2.8 0 5 2.2 5 5Z" />
-                    <path d="M5.5 10c0 -2.5 2 -4.5 4.5 -4.5" />
-                    <path d="M18.5 10c0 -2.5 -2 -4.5 -4.5 -4.5" />
-                </svg>
-                <h3>Goat</h3>
-            </div>
+                <div class="card" onclick="app.selectLivestock('goat')">
+                    <i class="fa-solid fa-hippo fa-3x"></i> <h3>Goat</h3>
+                </div>
             </div>
             <div class="landing-footer">
-                <button id="backup-btn" class="btn-secondary"><i class="fa-solid fa-download"></i> Backup All Data</button>
+                <button id="backup-btn" class="btn-secondary"><i class="fa-solid fa-download"></i> Backup</button>
                 <input type="file" id="restore-file" style="display:none" accept=".json">
-                <button id="restore-btn" class="btn-secondary"><i class="fa-solid fa-upload"></i> Restore</button>
+                <button id="restore-btn" class="btn-secondary" onclick="document.getElementById('restore-file').click()"><i class="fa-solid fa-upload"></i> Restore</button>
             </div>
         </div>
     </div>
 
     <div id="app-shell" class="view-section hidden">
-       <header class="app-header">
+        <header class="app-header">
             <div class="header-left">
                 <button id="home-btn" class="icon-btn"><i class="fa-solid fa-house"></i></button>
                 <button id="auth-status-btn" class="icon-btn"><i class="fa-solid fa-circle-user"></i></button>
@@ -80,13 +74,11 @@
         </header>
 
         <main id="main-content">
-
             <section id="view-vax" class="tab-view" style="display:none;">
                 <div class="card">
                     <h3><i class="fa-solid fa-syringe"></i> Vaccination Schedule</h3>
-                    <p><small>Upcoming health tasks for your ${this.state.livestock || 'farm'}.</small></p>
-                    <ul id="vax-list" class="list-group">
-                        </ul>
+                    <p><small id="vax-subtitle">Upcoming health tasks for your farm.</small></p>
+                    <ul id="vax-list" class="list-group"></ul>
                 </div>
             </section>
             
@@ -106,8 +98,7 @@
 
                 <div class="recent-list card">
                     <h3 style="margin-bottom: 15px;">Recent Activity</h3>
-                    <ul id="recent-records-list">
-                        </ul>
+                    <ul id="recent-records-list"></ul>
                 </div>
             </section>
 
@@ -183,10 +174,10 @@
                     </form>
                 </div>
 
-                <div class="toolbar" style="margin-top: 20px;">
-                    <h3>Transaction History</h3>
-                    <button onclick="app.exportTransactionsCSV()" class="btn-secondary">
-                        <i class="fa-solid fa-file-csv"></i> Export CSV
+                <div class="toolbar" style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center;">
+                    <h3>History</h3>
+                    <button onclick="app.exportTransactionsCSV()" class="btn-secondary btn-sm">
+                        <i class="fa-solid fa-file-csv"></i> Export
                     </button>
                 </div>
                 <ul id="transaction-list" class="list-group"></ul>
@@ -195,7 +186,6 @@
             <section id="view-reports" class="tab-view" style="display:none;">
                 <div class="report-card card">
                     <h3><i class="fa-solid fa-file-pdf"></i> PDF Summary</h3>
-                    <p>Select a date range to generate a professional farm report.</p>
                     <div class="form-group">
                         <label>From:</label>
                         <input type="date" id="report-start">
@@ -204,10 +194,10 @@
                         <label>To:</label>
                         <input type="date" id="report-end">
                     </div>
-                    <button id="generate-pdf-btn" class="btn-primary full-width">Download PDF Report</button>
+                    <button id="generate-pdf-btn" class="btn-primary full-width">Download PDF</button>
                 </div>
                 
-                <div class="report-card card">
+                <div class="report-card card" style="margin-top: 15px;">
                     <h3><i class="fa-solid fa-file-csv"></i> Raw Data</h3>
                     <button id="export-csv-btn" class="btn-secondary full-width">Export Records (CSV)</button>
                 </div>
@@ -215,22 +205,21 @@
 
             <section id="view-settings" class="tab-view" style="display:none;">
                 <div class="card">
-                    <h3><i class="fa-solid fa-gear"></i> App Settings</h3>
+                    <h3><i class="fa-solid fa-gear"></i> Settings</h3>
                     <div class="form-group">
                         <label>Currency Symbol</label>
-                        <input type="text" id="currency-input" placeholder="e.g. KSh, $, £" onchange="app.updateCurrency(this.value)">
+                        <input type="text" id="currency-input" placeholder="e.g. KSh">
                     </div>
                     <div class="card premium-card" style="background: linear-gradient(135deg, #2E7D32, #1B5E20); color: white; margin-top: 20px;">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <h3>FarmTrack Pro</h3>
                             <i class="fa-solid fa-crown" style="color: #FFD700;"></i>
                         </div>
-                        <p style="font-size: 0.85rem; margin: 10px 0;">Unlock Cloud Sync, Unlimited PDF Reports, and Multi-Device access.</p>
+                        <p style="font-size: 0.85rem; margin: 10px 0;">Unlock Cloud Sync and Unlimited Reports.</p>
                         <button id="upgrade-btn" class="btn-primary" style="background: white; color: #2E7D32; border: none; font-weight: bold; width: 100%;">
                             Upgrade Now
                         </button>
                     </div>
-                    <p><small>Changing this updates all current and future dashboard figures.</small></p>
                 </div>
             </section>
 
@@ -253,13 +242,13 @@
                 <i class="fa-solid fa-wallet"></i>
                 <span>Cash</span>
             </button>
-            <button class="nav-btn" data-target="view-reports">
-                <i class="fa-solid fa-file-invoice"></i>
-                <span>Docs</span>
-            </button>
             <button class="nav-btn" data-target="view-vax">
                 <i class="fa-solid fa-shield-virus"></i>
                 <span>Health</span>
+            </button>
+            <button class="nav-btn" data-target="view-reports">
+                <i class="fa-solid fa-file-invoice"></i>
+                <span>Docs</span>
             </button>
             <button class="nav-btn" data-target="view-settings">
                 <i class="fa-solid fa-gear"></i>
@@ -268,54 +257,39 @@
         </nav>
     </div>
 
-   <script type="module">
+    <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
       import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
       import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     
       const firebaseConfig = {
-        apiKey: "AIzaSyAva7tu7mWrdgJswDIR0W9OWv8ctZ5phPk",
-      authDomain: "farmtrack-b470e.firebaseapp.com",
-      projectId: "farmtrack-b470e",
-      storageBucket: "farmtrack-b470e.firebasestorage.app",
-      messagingSenderId: "572276398926",
-      appId: "1:572276398926:web:4b39dc570ce2077fae5c1f",
-      measurementId: "G-8TLCQ93SR2"
+          apiKey: "AIzaSyAva7tu7mWrdgJswDIR0W9OWv8ctZ5phPk",
+          authDomain: "farmtrack-b470e.firebaseapp.com",
+          projectId: "farmtrack-b470e",
+          storageBucket: "farmtrack-b470e.firebasestorage.app",
+          messagingSenderId: "572276398926",
+          appId: "1:572276398926:web:4b39dc570ce2077fae5c1f",
+          measurementId: "G-8TLCQ93SR2"
       };
     
       try {
         const app = initializeApp(firebaseConfig);
         window.db = getFirestore(app);
         window.auth = getAuth(app);
-        console.log("✅ Firebase Initialized Successfully");
+        console.log("✅ Firebase Initialized");
     
-        // Listen for user login state
         onAuthStateChanged(window.auth, (user) => {
-          if (user) {
-            console.log("👤 User Logged In:", user.email);
-            document.getElementById('auth-status-btn').style.color = "#4caf50"; // Green for logged in
-          } else {
-            console.log("⚪ No User Logged In");
-            document.getElementById('auth-status-btn').style.color = "inherit";
+          const btn = document.getElementById('auth-status-btn');
+          if (user && btn) {
+            btn.style.color = "#4caf50"; 
+          } else if (btn) {
+            btn.style.color = "inherit";
           }
         });
       } catch (error) {
-        console.error("❌ Firebase Initialization Error:", error);
+        console.error("❌ Firebase Error:", error);
       }
     </script>
     <script type="module" src="app.js"></script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
