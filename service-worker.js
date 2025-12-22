@@ -1,4 +1,4 @@
-const CACHE_NAME = 'farmtrack-v2'; // Incremented version
+const CACHE_NAME = 'farmtrack-v2';
 const ASSETS = [
     './',
     './index.html',
@@ -8,6 +8,8 @@ const ASSETS = [
     './utils.js',
     './sample-data.js',
     './manifest.json',
+    './icon-192.png',
+    './icon-512.png',
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
     'https://cdn.jsdelivr.net/npm/chart.js'
 ];
@@ -93,3 +95,4 @@ self.addEventListener('notificationclick', (event) => {
         clients.openWindow(event.notification.data.url)
     );
 });
+
