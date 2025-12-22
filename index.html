@@ -9,7 +9,6 @@
     <meta name="theme-color" content="#2E7D32">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <link rel="stylesheet" href="style.css">
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -32,14 +31,16 @@
                     <h3>Poultry</h3>
                 </div>
                 <div class="card" onclick="app.selectLivestock('pig')">
-                    <i class="fa-solid fa-piggy-bank fa-3x"></i> <h3>Pig</h3>
+                    <i class="fa-solid fa-piggy-bank fa-3x"></i>
+                    <h3>Pig</h3>
                 </div>
                 <div class="card" onclick="app.selectLivestock('goat')">
-                    <i class="fa-solid fa-sheet-plastic fa-3x"></i> <h3>Goat</h3>
+                    <i class="fa-solid fa-mountain-sun fa-3x"></i>
+                    <h3>Goat</h3>
                 </div>
             </div>
             <div class="landing-footer">
-                <button id="backup-btn" class="btn-secondary"><i class="fa-solid fa-download"></i> Backup Data</button>
+                <button id="backup-btn" class="btn-secondary"><i class="fa-solid fa-download"></i> Backup All Data</button>
                 <input type="file" id="restore-file" style="display:none" accept=".json">
                 <button id="restore-btn" class="btn-secondary"><i class="fa-solid fa-upload"></i> Restore</button>
             </div>
@@ -49,43 +50,48 @@
     <div id="app-shell" class="view-section hidden">
         <header class="app-header">
             <button id="home-btn" class="icon-btn"><i class="fa-solid fa-house"></i></button>
-            <h2 id="header-title">Dashboard</h2>
+            <h2 id="header-title">Farm Dashboard</h2>
             <button id="theme-toggle" class="icon-btn"><i class="fa-solid fa-moon"></i></button>
         </header>
 
         <main id="main-content">
 
-            <div id="view-dashboard" class="tab-view active">
-                <div id="kpi-container" class="kpi-grid"></div>
-                         
             <section id="view-dashboard" class="tab-view active">
-                <div class="kpi-grid" id="kpi-container">
+                <div id="kpi-container" class="kpi-grid"></div>
+                
+                <div id="insight-card" class="card" style="border-left: 5px solid var(--primary-color); margin-bottom: 15px;">
+                    <div class="insight-content">
+                        <i class="fa-solid fa-lightbulb" style="color: #ffd700; margin-right: 10px;"></i>
+                        <span id="insight-text">Analyzing your farm data...</span>
                     </div>
-                <div id="view-dashboard" class="tab-view active">
-                    <div id="kpi-container" class="kpi-grid"></div>
-                <div class="chart-container">
+                </div>
+
+                <div class="card chart-card">
                     <canvas id="productionChart"></canvas>
                 </div>
-                <div class="recent-list">
+
+                <div class="recent-list card">
                     <h3>Recent Activity</h3>
                     <ul id="recent-records-list"></ul>
                 </div>
             </section>
 
-            <section id="view-add" class="tab-view">
-                <h3>Add Production Record</h3>
-                <form id="add-record-form">
-                    <div id="dynamic-fields"></div>
-                    <button type="submit" class="btn-primary">Save Record</button>
-                </form>
+            <section id="view-add" class="tab-view" style="display:none;">
+                <div class="card">
+                    <h3>Add Production Record</h3>
+                    <form id="add-record-form">
+                        <div id="dynamic-fields"></div>
+                        <button type="submit" class="btn-primary full-width">Save Record</button>
+                    </form>
+                </div>
             </section>
 
-            <section id="view-records" class="tab-view">
-                <div class="toolbar">
+            <section id="view-records" class="tab-view" style="display:none;">
+                <div class="toolbar card">
                     <input type="month" id="record-filter-date">
                     <button id="bulk-delete-btn" class="btn-danger hidden"><i class="fa-solid fa-trash"></i> Delete Selected</button>
                 </div>
-                <div class="table-responsive">
+                <div class="table-responsive card">
                     <table class="data-table" id="records-table">
                         <thead>
                             <tr>
@@ -99,49 +105,51 @@
                         <tbody></tbody>
                     </table>
                 </div>
-                <div id="pagination-controls"></div>
             </section>
 
-            <section id="view-finance" class="tab-view">
+            <section id="view-finance" class="tab-view" style="display:none;">
                 <div class="finance-summary">
                     <div class="card income">
                         <span>Income</span>
-                        <h3 id="fin-income">$0</h3>
+                        <h3 id="fin-income">0</h3>
                     </div>
                     <div class="card expense">
                         <span>Expense</span>
-                        <h3 id="fin-expense">$0</h3>
+                        <h3 id="fin-expense">0</h3>
                     </div>
                 </div>
 
-                <h3>Add Transaction</h3>
-                <form id="add-transaction-form">
-                    <div class="form-group">
-                        <select name="type" required>
-                            <option value="expense">Expense</option>
-                            <option value="income">Income</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <input type="number" name="amount" placeholder="Amount" required step="0.01">
-                    </div>
-                    <div class="form-group">
-                        <input type="date" name="date" required id="trans-date">
-                    </div>
-                    <div class="form-group">
-                        <input type="text" name="category" placeholder="Category (e.g., Feed, Vet)" list="cat-suggestions">
-                        <datalist id="cat-suggestions">
-                            <option value="Feed">
-                            <option value="Medication">
-                            <option value="Sales">
-                            <option value="Equipment">
-                        </datalist>
-                    </div>
-                    <button type="submit" class="btn-primary">Add Transaction</button>
-                </form>
+                <div class="card">
+                    <h3>New Transaction</h3>
+                    <form id="add-transaction-form">
+                        <div class="form-group">
+                            <select name="type" required>
+                                <option value="expense">Expense</option>
+                                <option value="income">Income</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <input type="number" name="amount" placeholder="Amount" required step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <input type="date" name="date" required id="trans-date">
+                        </div>
+                        <div class="form-group">
+                            <input type="text" name="category" placeholder="Category (Feed, Vet, Sales)" list="cat-suggestions">
+                            <datalist id="cat-suggestions">
+                                <option value="Feed">
+                                <option value="Medication">
+                                <option value="Sales">
+                                <option value="Equipment">
+                                <option value="Labor">
+                            </datalist>
+                        </div>
+                        <button type="submit" class="btn-primary full-width">Add Transaction</button>
+                    </form>
+                </div>
 
                 <div class="toolbar" style="margin-top: 20px;">
-                    <h3>History</h3>
+                    <h3>Transaction History</h3>
                     <button onclick="app.exportTransactionsCSV()" class="btn-secondary">
                         <i class="fa-solid fa-file-csv"></i> Export CSV
                     </button>
@@ -149,10 +157,10 @@
                 <ul id="transaction-list" class="list-group"></ul>
             </section>
 
-            <section id="view-reports" class="tab-view">
-                <div class="report-card">
-                    <h3>Generate Report</h3>
-                    <p>Create a PDF summary for the selected livestock.</p>
+            <section id="view-reports" class="tab-view" style="display:none;">
+                <div class="report-card card">
+                    <h3><i class="fa-solid fa-file-pdf"></i> PDF Summary</h3>
+                    <p>Select a date range to generate a professional farm report.</p>
                     <div class="form-group">
                         <label>From:</label>
                         <input type="date" id="report-start">
@@ -164,48 +172,49 @@
                     <button id="generate-pdf-btn" class="btn-primary full-width">Download PDF Report</button>
                 </div>
                 
-                <div class="report-card">
-                    <h3>Data Management</h3>
+                <div class="report-card card">
+                    <h3><i class="fa-solid fa-file-csv"></i> Raw Data</h3>
                     <button id="export-csv-btn" class="btn-secondary full-width">Export Records (CSV)</button>
                 </div>
             </section>
-            <div id="view-settings" class="tab-view" style="display:none;">
+
+            <section id="view-settings" class="tab-view" style="display:none;">
                 <div class="card">
                     <h3><i class="fa-solid fa-gear"></i> App Settings</h3>
                     <div class="form-group">
                         <label>Currency Symbol</label>
                         <input type="text" id="currency-input" placeholder="e.g. KSh, $, £" onchange="app.updateCurrency(this.value)">
                     </div>
-                    <p><small>This symbol will be used across all finance records and reports.</small></p>
+                    <p><small>Changing this updates all current and future dashboard figures.</small></p>
                 </div>
-            </div>
+            </section>
 
         </main>
 
         <nav class="bottom-nav">
             <button class="nav-btn active" data-target="view-dashboard">
-                <i class="fa-solid fa-chart-pie"></i>
+                <i class="fa-solid fa-house-chimney"></i>
                 <span>Dash</span>
             </button>
             <button class="nav-btn" data-target="view-add">
-                <i class="fa-solid fa-circle-plus"></i>
+                <i class="fa-solid fa-plus"></i>
                 <span>Add</span>
             </button>
             <button class="nav-btn" data-target="view-records">
-                <i class="fa-solid fa-list"></i>
-                <span>Records</span>
+                <i class="fa-solid fa-book"></i>
+                <span>Log</span>
             </button>
             <button class="nav-btn" data-target="view-finance">
                 <i class="fa-solid fa-wallet"></i>
-                <span>Finance</span>
+                <span>Cash</span>
             </button>
             <button class="nav-btn" data-target="view-reports">
-                <i class="fa-solid fa-file-pdf"></i>
-                <span>Reports</span>
+                <i class="fa-solid fa-file-invoice"></i>
+                <span>Docs</span>
             </button>
             <button class="nav-btn" data-target="view-settings">
                 <i class="fa-solid fa-gear"></i>
-                <span>Settings</span>
+                <span>Set</span>
             </button>
         </nav>
     </div>
@@ -220,8 +229,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
