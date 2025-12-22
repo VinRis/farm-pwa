@@ -39,6 +39,43 @@ const App = {
         }
     },
 
+    async requestNotificationPermission() {
+        const permission = await Notification.requestPermission();
+        if (permission === "granted") {
+            console.log("Notification permission granted.");
+            // Test notification
+            new Notification("FarmTrack Active", {
+                body: "You will now receive reminders for your livestock health tasks.",
+                icon: "icon-192x192.png"
+            });
+        }
+    }
+    
+    async saveReminder(e) {
+        e.preventDefault();
+        const reminder = {
+            animal: document.getElementById('remind-animal').value,
+            task: document.getElementById('remind-task').value,
+            date: document.getElementById('remind-date').value,
+            type: this.state.livestock, // dairy, poultry, etc.
+            completed: false,
+            createdAt: new Date().toISOString()
+        };
+    
+        // Save to Firestore (if logged in) or LocalStorage
+        if (window.auth.currentUser) {
+            await addDoc(collection(window.db, "reminders"), reminder);
+        } else {
+            const local = JSON.parse(localStorage.getItem('reminders') || '[]');
+            local.push(reminder);
+            localStorage.setItem('reminders', JSON.stringify(local));
+        }
+    
+        e.target.reset();
+        this.renderReminders();
+        alert("Reminder Set!");
+    }
+
     renderVaxSchedule() {
         const schedules = {
             poultry: [
@@ -382,4 +419,5 @@ const App = {
 
 window.app = App;
 document.addEventListener('DOMContentLoaded', () => App.init());
+
 
