@@ -66,11 +66,14 @@
     <div id="app-shell" class="view-section hidden">
         <header class="app-header">
             <div class="header-left">
+                <button id="menu-toggle" class="icon-btn"><i class="fa-solid fa-bars"></i></button>
                 <button id="home-btn" class="icon-btn"><i class="fa-solid fa-house"></i></button>
-                <button id="auth-status-btn" class="icon-btn"><i class="fa-solid fa-circle-user"></i></button>
             </div>
             <h2 id="header-title">FarmTrack</h2>
-            <button id="theme-toggle" class="icon-btn"><i class="fa-solid fa-moon"></i></button>
+            <div class="header-right">
+                <button id="auth-status-btn" class="icon-btn"><i class="fa-solid fa-circle-user"></i></button>
+                <button id="theme-toggle" class="icon-btn"><i class="fa-solid fa-moon"></i></button>
+            </div>
         </header>
 
         <main id="main-content">
@@ -225,38 +228,37 @@
 
         </main>
 
-        <nav class="bottom-nav">
-            <button class="nav-btn active" data-target="view-dashboard">
-                <i class="fa-solid fa-house-chimney"></i>
-                <span>Dash</span>
-            </button>
-            <button class="nav-btn" data-target="view-add">
-                <i class="fa-solid fa-plus"></i>
-                <span>Add</span>
-            </button>
-            <button class="nav-btn" data-target="view-records">
-                <i class="fa-solid fa-book"></i>
-                <span>Log</span>
-            </button>
-            <button class="nav-btn" data-target="view-finance">
-                <i class="fa-solid fa-wallet"></i>
-                <span>Cash</span>
-            </button>
-            <button class="nav-btn" data-target="view-vax">
-                <i class="fa-solid fa-shield-virus"></i>
-                <span>Health</span>
-            </button>
-            <button class="nav-btn" data-target="view-reports">
-                <i class="fa-solid fa-file-invoice"></i>
-                <span>Docs</span>
-            </button>
-            <button class="nav-btn" data-target="view-settings">
-                <i class="fa-solid fa-gear"></i>
-                <span>Set</span>
-            </button>
-        </nav>
-    </div>
+       <div id="side-drawer" class="drawer">
+           <div class="drawer-header">
+                <h3>FarmTrack</h3>
+                <button id="close-drawer" class="icon-btn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <nav class="drawer-nav">
+                <button class="nav-btn active" data-target="view-dashboard">
+                    <i class="fa-solid fa-house-chimney"></i> <span>Dashboard</span>
+                </button>
+                <button class="nav-btn" data-target="view-add">
+                    <i class="fa-solid fa-plus"></i> <span>Add Record</span>
+                </button>
+                <button class="nav-btn" data-target="view-records">
+                    <i class="fa-solid fa-book"></i> <span>Logs & History</span>
+                </button>
+                <button class="nav-btn" data-target="view-finance">
+                    <i class="fa-solid fa-wallet"></i> <span>Cash Flow</span>
+                </button>
+                <button class="nav-btn" data-target="view-vax">
+                    <i class="fa-solid fa-shield-virus"></i> <span>Health/Vax</span>
+                </button>
+                <button class="nav-btn" data-target="view-reports">
+                    <i class="fa-solid fa-file-invoice"></i> <span>Reports</span>
+                </button>
+                <button class="nav-btn" data-target="view-settings">
+                    <i class="fa-solid fa-gear"></i> <span>Settings</span>
+                </button>
+            </nav>
+        </div>
 
+        <div id="drawer-overlay" class="overlay hidden"></div>
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
       import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -293,3 +295,4 @@
     <script type="module" src="app.js"></script>
 </body>
 </html>
+
