@@ -33,6 +33,42 @@ const App = {
     },
 
     bindEvents() {
+        // Open Modal when User Icon is clicked
+        document.getElementById('auth-status-btn')?.addEventListener('click', () => {
+            document.getElementById('auth-modal').classList.remove('hidden');
+        });
+        
+        // Toggle between Login and Sign Up
+        let isLoginMode = true;
+        document.getElementById('auth-toggle-btn')?.addEventListener('click', () => {
+            isLoginMode = !isLoginMode;
+            document.getElementById('auth-title').innerText = isLoginMode ? "Sign In" : "Create Account";
+            document.getElementById('auth-submit-btn').innerText = isLoginMode ? "Login" : "Sign Up";
+            document.getElementById('auth-toggle-btn').innerText = isLoginMode ? "Need an account? Sign Up" : "Have an account? Login";
+        });
+        
+        // Handle Form Submission
+        document.getElementById('auth-form')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+            
+            // Use the imports from Firebase (ensure these are imported at the top!)
+            // import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "...";
+            
+            try {
+                if (isLoginMode) {
+                    await signInWithEmailAndPassword(window.auth, email, password);
+                    alert("Signed in successfully!");
+                } else {
+                    await createUserWithEmailAndPassword(window.auth, email, password);
+                    alert("Account created!");
+                }
+                document.getElementById('auth-modal').classList.add('hidden');
+            } catch (err) {
+                alert(err.message);
+            }
+        });
         // Navigation Handler (Fixed: Removed duplicate binding)
         document.querySelectorAll('.nav-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -426,4 +462,5 @@ window.app = App;
 
 // 3. Start the app
 document.addEventListener('DOMContentLoaded', () => App.init());
+
 
