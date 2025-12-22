@@ -1,55 +1,40 @@
 const DB_NAME = 'FarmTrackDB';
-const DB_VERSION = 6; // Increased version to fix the index error
+const DB_VERSION = 7; // Increment to ensure all stores & indexes are created
 
 export const DB = {
     open() {
         return new Promise((resolve, reject) => {
             const request = indexedDB.open(DB_NAME, DB_VERSION);
-
             request.onupgradeneeded = (e) => {
                 const db = e.target.result;
-                const stores = ['records', 'transactions'];
-                
-                stores.forEach(storeName => {
-                    if (!db.objectStoreNames.contains(storeName)) {
-                        const store = db.createObjectStore(storeName, { keyPath: 'id' });
-                        // This index is required for the "getAll" filtering to work
+                const stores = ['records', 'transactions', 'reminders'];
+                stores.forEach(name => {
+                    if (!db.objectStoreNames.contains(name)) {
+                        const store = db.createObjectStore(name, { keyPath: 'id' });
                         store.createIndex('livestock', 'livestock', { unique: false });
                     }
                 });
             };
-
             request.onsuccess = () => resolve(request.result);
             request.onerror = () => reject(request.error);
         });
     },
-
-    async add(storeName, data) {
+    async add(store, data) {
         const db = await this.open();
-        return new Promise((resolve) => {
-            const transaction = db.transaction(storeName, 'readwrite');
-            transaction.objectStore(storeName).add(data);
-            transaction.oncomplete = () => resolve(true);
-        });
+        const tx = db.transaction(store, 'readwrite');
+        tx.objectStore(store).add(data);
+        return new Promise(r => tx.oncomplete = () => r(true));
     },
-
-    async getAll(storeName, indexName, indexValue) {
+    async getAll(store, indexName, val) {
         const db = await this.open();
-        return new Promise((resolve) => {
-            const transaction = db.transaction(storeName, 'readonly');
-            const store = transaction.objectStore(storeName);
-            const index = store.index(indexName);
-            const request = index.getAll(indexValue);
-            request.onsuccess = () => resolve(request.result);
-        });
+        const tx = db.transaction(store, 'readonly');
+        const idx = tx.objectStore(store).index(indexName);
+        return new Promise(r => idx.getAll(val).onsuccess = (e) => r(e.target.result));
     },
-
-    async delete(storeName, id) {
+    async delete(store, id) {
         const db = await this.open();
-        return new Promise((resolve) => {
-            const transaction = db.transaction(storeName, 'readwrite');
-            transaction.objectStore(storeName).delete(id);
-            transaction.oncomplete = () => resolve(true);
-        });
+        const tx = db.transaction(store, 'readwrite');
+        tx.objectStore(store).delete(id);
+        return new Promise(r => tx.oncomplete = () => r(true));
     }
 };
