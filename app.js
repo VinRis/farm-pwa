@@ -41,14 +41,14 @@ const App = {
 
     async loadAppShell() {
         try {
-            const landing = document.getElementById('landing-page');
-            const shell = document.getElementById('app-shell');
-            
-            if (landing) landing.classList.add('hidden');
-            if (shell) shell.classList.remove('hidden');
-            
-            document.getElementById('header-title').innerText = this.state.livestock.toUpperCase();
+            document.getElementById('landing-page')?.classList.add('hidden');
+            document.getElementById('app-shell')?.classList.remove('hidden');
+    
+            document.getElementById('header-title').innerText =
+                this.state.livestock.toUpperCase();
+    
             this.renderFields();
+            this.switchTab('view-dashboard', document.querySelector('.nav-btn'));
             await this.refreshDashboard();
         } catch (err) {
             console.error("Error loading shell:", err);
@@ -115,3 +115,4 @@ const App = {
 
 window.app = App;
 document.addEventListener('DOMContentLoaded', () => App.init());
+
