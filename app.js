@@ -326,9 +326,6 @@ const App = {
             else totalExpense += t.amount;
         });
 
-        // Inside refreshDashboard, after calculating totalIncome and totalExpense:
-        this.generateInsights(thisMonthRecs, totalIncome, totalExpense);
-
         // 5. Render the new KPI Cards
         document.getElementById('kpi-container').innerHTML = `
             <div class="kpi-card">
@@ -402,6 +399,8 @@ const App = {
                 plugins: { legend: { display: false } }
             }
         });
+           // Inside refreshDashboard, after calculating totalIncome and totalExpense:
+        this.generateInsights(thisMonthRecs, totalIncome, totalExpense);
     },
 
     async loadRecords() {
@@ -519,6 +518,7 @@ const App = {
 
 window.app = App; // Expose for HTML onclick handlers
 document.addEventListener('DOMContentLoaded', () => App.init());
+
 
 
 
