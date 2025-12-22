@@ -1,6 +1,13 @@
 import { DB } from './db.js';
 import { Utils } from './utils.js';
 import { loadSampleData } from './sample-data.js';
+import { 
+    collection, 
+    addDoc, 
+    serverTimestamp, 
+    doc, 
+    getDoc 
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const App = {
     state: {
@@ -143,7 +150,6 @@ const App = {
     },
 
     async loadAppShell() {
-        await loadSampleData();
         document.getElementById('landing-page').classList.add('hidden');
         document.getElementById('app-shell').classList.remove('hidden');
         
@@ -425,5 +431,6 @@ const App = {
     
     window.app = App;
     document.addEventListener('DOMContentLoaded', () => App.init());
+
 
 
