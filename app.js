@@ -700,15 +700,18 @@ const App = {
 
     
 
-    function selectLivestock(type) {
+    selectLivestock(type) {
         const landing = document.getElementById('landing-page');
         const dashboard = document.getElementById('dashboard');
         const selectedCard = document.querySelector(`.card.${type}`);
-        selectedCard.style.transform = 'scale(1.05)';
-        selectedCard.style.transition = 'transform 0.2s ease';
-        setTimeout(() => {
-            selectedCard.style.transform = 'scale(1)';
-        }, 200);
+
+        if (selectedCard) {
+            selectedCard.style.transform = 'scale(1.05)';
+            selectedCard.style.transition = 'transform 0.2s ease';
+            setTimeout(() => {
+                selectedCard.style.transform = 'scale(1)';
+            }, 200);
+        }  
     
         // Hide landing page smoothly
         landing.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
@@ -726,8 +729,12 @@ const App = {
             }, 50);
         }, 400);
     
-        // Optional: store selected livestock type
-        app.selectedLivestock = type;
+        // Store selected livestock type
+        this.state.livestock = type;
+        localStorage.setItem('ft_livestock', type);
+    
+        // Load the app shell
+        this.loadAppShell();
     }
 
 
@@ -798,4 +805,5 @@ const App = {
 window.app = App;
 
 document.addEventListener('DOMContentLoaded', () => App.init());
+
 
