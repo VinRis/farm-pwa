@@ -84,11 +84,15 @@ const App = {
 
   /* ================= NAV ================= */
   switchTab(id, btn) {
-    document.querySelectorAll('.tab-view').forEach(v => v.style.display = 'none');
-    document.getElementById(id).style.display = 'block';
+    document.querySelectorAll('.tab-view').forEach(v => {
+      v.classList.remove('active');
+    });
+  
+    document.getElementById(id).classList.add('active');
+  
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
     btn?.classList.add('active');
-
+  
     if (id === 'view-dashboard') this.refreshDashboard();
     if (id === 'view-records') this.loadRecords();
     if (id === 'view-finance') this.loadFinance();
@@ -152,18 +156,23 @@ const App = {
   },
 
   renderChart(records) {
-    if (!window.Chart || records.length === 0) return;
-
-    const ctx = document.getElementById('productionChart').getContext('2d');
+    const canvas = document.getElementById('productionChart');
+    if (!canvas || !records.length) return;
+  
+    const ctx = canvas.getContext('2d');
     if (this.state.chartInstance) this.state.chartInstance.destroy();
-
+  
     this.state.chartInstance = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: records.map(r => r.date),
-        datasets: [{ data: records.map(r => r.quantity || 0), borderColor: '#2E7D32' }]
-      },
-      options: { responsive: true }
+        labels: records.map(r => r.date || ''),
+        datasets: [{
+          label: 'Production',
+          data: records.map(r => Number(r.quantity) || 0),
+          borderColor: '#2E7D32',
+          tension: 0.3
+        }]
+      }
     });
   },
 
@@ -208,3 +217,4 @@ const App = {
 
 window.app = App;
 document.addEventListener('DOMContentLoaded', () => App.init());
+
