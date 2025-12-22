@@ -76,11 +76,14 @@
 
             <h1>FarmTrack</h1>
 
-            <p>Select your livestock to begin</p>
+            <p>What do you want to manage today?</p>
 
             <div class="livestock-grid">
+                <small style="color: var(--text-muted);">
+                    You can track production, expenses, and health records offline.
+                </small>
 
-                <div class="card" onclick="app.selectLivestock('dairy')">
+                <div class="card dairy" onclick="app.selectLivestock('dairy')">
 
                     <i class="fa-solid fa-cow fa-3x"></i>
 
@@ -88,7 +91,7 @@
 
                 </div>
 
-                <div class="card" onclick="app.selectLivestock('poultry')">
+                <div class="card poultry" onclick="app.selectLivestock('poultry')">
 
                     <i class="fa-solid fa-egg fa-3x"></i>
 
@@ -96,7 +99,7 @@
 
                 </div>
 
-                <div class="card" onclick="app.selectLivestock('pig')">
+                <div class="card pig" onclick="app.selectLivestock('pig')">
 
                     <i class="fa-solid fa-piggy-bank fa-3x"></i>
 
@@ -104,7 +107,7 @@
 
                 </div>
 
-                <div class="card" onclick="app.selectLivestock('goat')">
+                <div class="card goat" onclick="app.selectLivestock('goat')">
 
                     <i class="fa-solid fa-hippo fa-3x"></i> 
 
@@ -479,6 +482,7 @@
 </body>
 
 </html>
+
 
 
 
