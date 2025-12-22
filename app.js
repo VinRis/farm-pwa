@@ -91,6 +91,30 @@ const App = {
     },
 
     bindEvents() {
+        const drawer = document.getElementById('side-drawer');
+        const overlay = document.getElementById('drawer-overlay');
+    
+        // Open Drawer
+        document.getElementById('menu-toggle')?.addEventListener('click', () => {
+            drawer.classList.add('open');
+            overlay.classList.remove('hidden');
+        });
+    
+        // Close Drawer
+        const closeDrawer = () => {
+            drawer.classList.remove('open');
+            overlay.classList.add('hidden');
+        };
+    
+        document.getElementById('close-drawer')?.addEventListener('click', closeDrawer);
+        overlay?.addEventListener('click', closeDrawer);
+    
+        // Update switchTab to close drawer after clicking a link
+        const originalSwitchTab = this.switchTab.bind(this);
+        this.switchTab = (viewId, btnElement) => {
+            originalSwitchTab(viewId, btnElement);
+            closeDrawer(); // Close the menu whenever a tab is selected
+        };
         document.getElementById('auth-status-btn')?.addEventListener('click', () => {
             document.getElementById('auth-modal').classList.remove('hidden');
         });
@@ -358,3 +382,4 @@ const App = {
 
 window.app = App;
 document.addEventListener('DOMContentLoaded', () => App.init());
+
