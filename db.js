@@ -1,5 +1,5 @@
 const DB_NAME = 'FarmTrackDB';
-const DB_VERSION = 3; 
+const DB_VERSION = 4; // Bumped version to force index creation
 
 export const DB = {
     db: null,
@@ -10,7 +10,8 @@ export const DB = {
 
             request.onupgradeneeded = (e) => {
                 const db = e.target.result;
-                // Create stores if they don't exist and add search indexes
+                
+                // Create stores and the vital 'livestock' index
                 if (!db.objectStoreNames.contains('records')) {
                     const store = db.createObjectStore('records', { keyPath: 'id' });
                     store.createIndex('livestock', 'livestock', { unique: false });
@@ -35,7 +36,7 @@ export const DB = {
         return new Promise((resolve, reject) => {
             const transaction = this.db.transaction(storeName, 'readonly');
             const store = transaction.objectStore(storeName);
-            const index = store.index(indexName); // This is where the error was happening
+            const index = store.index(indexName); // This will now find the index
             const request = index.getAll(value);
 
             request.onsuccess = () => resolve(request.result);
@@ -50,7 +51,6 @@ export const DB = {
             const store = transaction.objectStore(storeName);
             store.put(data);
             transaction.oncomplete = () => resolve();
-            transaction.onerror = () => reject(transaction.error);
         });
     }
 };
