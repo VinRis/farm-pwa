@@ -6,6 +6,14 @@ import {
     createUserWithEmailAndPassword 
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+import { 
+    collection, 
+    addDoc, 
+    serverTimestamp, 
+    doc, 
+    getDoc 
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
 const App = {
     state: {
         livestock: localStorage.getItem('ft_livestock') || null,
@@ -30,18 +38,17 @@ const App = {
     },
 
     bindEvents() {
-        // Open Modal when User Icon is clicked
+        // Auth Modal Toggles
         document.getElementById('auth-status-btn')?.addEventListener('click', () => {
             document.getElementById('auth-modal').classList.remove('hidden');
         });
         
-        // Toggle between Login and Sign Up
-        let isLoginMode = true;
         document.getElementById('auth-toggle-btn')?.addEventListener('click', () => {
-            isLoginMode = !isLoginMode;
-            document.getElementById('auth-title').innerText = isLoginMode ? "Sign In" : "Create Account";
-            document.getElementById('auth-submit-btn').innerText = isLoginMode ? "Login" : "Sign Up";
-            document.getElementById('auth-toggle-btn').innerText = isLoginMode ? "Need an account? Sign Up" : "Have an account? Login";
+            this.state.isLoginMode = !this.state.isLoginMode;
+            const isLogin = this.state.isLoginMode;
+            document.getElementById('auth-title').innerText = isLogin ? "Sign In" : "Create Account";
+            document.getElementById('auth-submit-btn').innerText = isLogin ? "Login" : "Sign Up";
+            document.getElementById('auth-toggle-btn').innerText = isLogin ? "Need an account? Sign Up" : "Have an account? Login";
         });
         
         // Handle Form Submission
@@ -54,7 +61,7 @@ const App = {
             // import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "...";
             
             try {
-                if (isLoginMode) {
+                if (this.state.isLoginMode) {
                     await signInWithEmailAndPassword(window.auth, email, password);
                     alert("Signed in successfully!");
                 } else {
@@ -459,6 +466,7 @@ window.app = App;
 
 // 3. Start the app
 document.addEventListener('DOMContentLoaded', () => App.init());
+
 
 
 
