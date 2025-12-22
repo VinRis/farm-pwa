@@ -215,6 +215,18 @@ const App = {
   }
 };
 
-window.app = App;
-document.addEventListener('DOMContentLoaded', () => App.init());
+  window.app = App;
+  document.addEventListener('DOMContentLoaded', () => App.init());
+  
+  window.addEventListener('load', () => {
+    console.log('Force activating app shell');
+  
+    const landing = document.getElementById('landing-page');
+    const app = document.getElementById('app-shell');
+    const dashboard = document.getElementById('view-dashboard');
+  
+    if (landing) landing.style.display = 'none';
+    if (app) app.classList.remove('hidden');
+    if (dashboard) dashboard.classList.add('active');
+  });
 
