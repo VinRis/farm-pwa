@@ -68,15 +68,17 @@ body { background-color: var(--bg-body); color: var(--text-main); height: 100vh;
 .drawer {
     position: fixed;
     top: 0;
-    left: -280px; /* Start hidden off-screen */
+    left: -280px; 
     width: 280px;
     height: 100%;
-    background: var(--card-bg); /* Use your existing background variable */
+    background: var(--card-bg);
     box-shadow: 2px 0 10px rgba(0,0,0,0.1);
     z-index: 1000;
     transition: left 0.3s ease;
     display: flex;
     flex-direction: column;
+    /* Prevent the whole drawer from bouncing, allow internal scroll */
+    overflow: hidden; 
 }
 
 .drawer.open {
@@ -97,6 +99,19 @@ body { background-color: var(--bg-body); color: var(--text-main); height: 100vh;
     display: flex;
     flex-direction: column;
     padding: 10px 0;
+    /* KEY FIX: This allows the menu items to scroll if they overflow */
+    flex-grow: 1;
+    overflow-y: auto; 
+    scrollbar-width: thin; /* For Firefox */
+}
+
+/* Optional: Make the scrollbar look cleaner */
+.drawer-nav::-webkit-scrollbar {
+    width: 5px;
+}
+.drawer-nav::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 10px;
 }
 
 .drawer-nav .nav-btn {
@@ -387,4 +402,5 @@ body.dark-mode .modal-content input {
 .icon-btn.success {
     color: #2e7d32;
 }
+
 
