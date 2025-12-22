@@ -19,7 +19,18 @@ const App = {
         livestock: localStorage.getItem('ft_livestock') || null,
         theme: localStorage.getItem('ft_theme') || 'light',
         currency: localStorage.getItem('ft_currency') || 'KSh',
-        chartInstance: null  
+        chartInstance: null
+        async checkMissingLogs() {
+            const today = new Date().toISOString().split('T')[0];
+            const records = await DB.getAll('records', 'livestock', this.state.livestock);
+            const hasLogToday = records.some(r => r.date === today);
+        
+            const insightEl = document.getElementById('insight-text');
+            if (!hasLogToday && insightEl) {
+                insightEl.innerHTML = `<b style="color:#e53935">Missing Entry:</b> You haven't recorded data for today yet!`;
+                document.getElementById('insight-card').style.borderLeftColor = "#e53935";
+            }
+        }
     },
 
     init() {
@@ -290,6 +301,7 @@ const App = {
 
         this.generateInsights(thisMonthRecs, totalIncome, totalExpense);
         this.renderChart(records);
+        this.checkMissingLogs()
 
         // Recent Activity
         const recent = records.sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 3);
@@ -466,6 +478,7 @@ window.app = App;
 
 // 3. Start the app
 document.addEventListener('DOMContentLoaded', () => App.init());
+
 
 
 
