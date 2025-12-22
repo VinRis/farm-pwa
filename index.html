@@ -228,36 +228,31 @@
 
         </main>
 
-       <div id="side-drawer" class="drawer">
-           <div class="drawer-header">
-                <h3>FarmTrack</h3>
-                <button id="close-drawer" class="icon-btn"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <nav class="drawer-nav">
-                <button class="nav-btn active" data-target="view-dashboard">
-                    <i class="fa-solid fa-house-chimney"></i> <span>Dashboard</span>
-                </button>
-                <button class="nav-btn" data-target="view-add">
-                    <i class="fa-solid fa-plus"></i> <span>Add Record</span>
-                </button>
-                <button class="nav-btn" data-target="view-records">
-                    <i class="fa-solid fa-book"></i> <span>Logs & History</span>
-                </button>
-                <button class="nav-btn" data-target="view-finance">
-                    <i class="fa-solid fa-wallet"></i> <span>Cash Flow</span>
-                </button>
-                <button class="nav-btn" data-target="view-vax">
-                    <i class="fa-solid fa-shield-virus"></i> <span>Health/Vax</span>
-                </button>
-                <button class="nav-btn" data-target="view-reports">
-                    <i class="fa-solid fa-file-invoice"></i> <span>Reports</span>
-                </button>
-                <button class="nav-btn" data-target="view-settings">
-                    <i class="fa-solid fa-gear"></i> <span>Settings</span>
-                </button>
-            </nav>
-        </div>
+    <div id="side-drawer" class="drawer">
+    <div class="drawer-header">
+        <h3>FarmTrack</h3>
+        <button id="close-drawer" class="icon-btn"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    
+    <nav class="drawer-nav" style="flex-grow: 1;">
+        <button class="nav-btn active" data-target="view-dashboard">
+            <i class="fa-solid fa-house-chimney"></i> <span>Dashboard</span>
+        </button>
+        <button class="nav-btn" data-target="view-vax">
+            <i class="fa-solid fa-bell"></i> <span>Reminders</span>
+        </button>
+    </nav>
 
+    <div class="drawer-footer">
+        <div class="user-info">
+            <i class="fa-solid fa-circle-user fa-2x"></i>
+            <div class="user-details">
+                <span id="user-email-display">Guest User</span>
+                <button id="logout-btn" class="btn-text-danger">Logout</button>
+            </div>
+        </div>
+    </div>
+</div>
         <div id="drawer-overlay" class="overlay hidden"></div>
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -295,4 +290,5 @@
     <script type="module" src="app.js"></script>
 </body>
 </html>
+
 
