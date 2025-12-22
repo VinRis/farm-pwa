@@ -283,3 +283,16 @@ button { cursor: pointer; border: none; font-family: var(--font-body); }
     #landing-page, #app-shell { width: 100%; max-width: 450px; box-shadow: 0 0 50px rgba(0,0,0,0.1); }
     .bottom-nav { max-width: 450px; left: 50%; transform: translateX(-50%); border-radius: 20px 20px 0 0; }
 }
+
+/* Ensure clicks pass through icons to the card container */
+.livestock-card * {
+    pointer-events: none;
+}
+.livestock-card {
+    pointer-events: auto !important;
+}
+
+/* Fix for the hidden class logic */
+.hidden {
+    display: none !important;
+}
