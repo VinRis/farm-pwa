@@ -321,31 +321,58 @@ const App = {
 
     // --- DASHBOARD & ANALYTICS ---
     async refreshDashboard() {
+        // 1. Get data from fixed DB
         const records = await DB.getAll('records', 'livestock', this.state.livestock);
         const trans = await DB.getAll('transactions', 'livestock', this.state.livestock);
         
+        // 2. Calculate Totals
         const totalProd = records.reduce((sum, r) => sum + (parseFloat(r.quantity) || 0), 0);
-        const income = trans.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
-        const expense = trans.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+        const income = trans.filter(t => t.type === 'income').reduce((sum, t) => sum + parseFloat(t.amount), 0);
+        const expense = trans.filter(t => t.type === 'expense').reduce((sum, t) => sum + parseFloat(t.amount), 0);
 
-        // Update KPI Cards
-        const kpi = document.getElementById('kpi-container');
-        if (kpi) {
-            kpi.innerHTML = `
-                <div class="kpi-card">
-                    <h4>Production</h4>
-                    <div class="value">${totalProd.toFixed(1)} <small style="font-size:0.9rem; font-weight:400; color:#888;">Units</small></div>
-                </div>
-                <div class="kpi-card">
-                    <h4>Profit</h4>
-                    <div class="value" style="color:${(income-expense) >= 0 ? 'var(--primary-dark)' : 'var(--danger)'}">
-                        ${this.state.currency} ${Math.abs(income - expense)}
-                    </div>
-                </div>
-            `;
-        }
+        // 3. Update UI Text
+        document.querySelector('.kpi-card:nth-child(1) .value').innerText = totalProd.toFixed(1);
+        document.querySelector('.kpi-card:nth-child(2) .value').innerText = `${this.state.currency} ${income - expense}`;
 
-        // Fake AI Insight Logic
+        // 4. Render the Chart
+        this.renderChart(records);
+    },
+
+        this.renderChart(records);
+    },
+
+    renderChart(records) {
+        const canvas = document.getElementById('productionChart');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        
+        if (this.state.chartInstance) this.state.chartInstance.destroy();
+        
+        // Sort data for the line graph
+        const sorted = records.sort((a,b) => new Date(a.date) - new Date(b.date)).slice(-7);
+        
+        this.state.chartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: sorted.map(r => r.date.split('-').slice(1).join('/')), // Shows MM/DD
+                datasets: [{
+                    label: 'Yield',
+                    data: sorted.map(r => r.quantity),
+                    borderColor: '#10B981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+
+ // Fake AI Insight Logic
         const insightText = document.getElementById('insight-text');
         if(insightText) {
             if(records.length === 0) {
@@ -358,51 +385,6 @@ const App = {
                 insightText.innerText = "Gathering more data for analysis...";
             }
         }
-
-        this.renderChart(records);
-    },
-
-    renderChart(records) {
-        const ctx = document.getElementById('productionChart')?.getContext('2d');
-        if (!ctx) return;
-        
-        if (records.length === 0) {
-            // Render empty chart placeholder or clear
-            return;
-        }
-
-        if (this.state.chartInstance) this.state.chartInstance.destroy();
-        
-        const sorted = records.sort((a,b) => new Date(a.date) - new Date(b.date)).slice(-10); // Last 10 entries
-        
-        this.state.chartInstance = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: sorted.map(r => Utils.formatDate(r.date)), // Show MM-DD
-                datasets: [{ 
-                    label: 'Yield Trend', 
-                    data: sorted.map(r => r.quantity || r.weightKg), 
-                    borderColor: '#10B981', 
-                    backgroundColor: 'rgba(16, 185, 129, 0.2)',
-                    tension: 0.4,
-                    fill: true,
-                    pointRadius: 5,
-                    pointHoverRadius: 8
-                }]
-            },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false,
-                plugins: { 
-                    legend: { display: false } 
-                },
-                scales: {
-                    x: { grid: { display: false } },
-                    y: { beginAtZero: true, grid: { color: 'rgba(200, 200, 200, 0.1)' } }
-                }
-            }
-        });
-    },
 
     // --- REPORTS ---
     async generateReport() {
@@ -482,4 +464,5 @@ const App = {
 
 window.app = App;
 document.addEventListener('DOMContentLoaded', () => App.init());
+
 
