@@ -109,22 +109,51 @@ body.dark-mode .data-table th { background: #2c2c2c; }
     .bottom-nav { max-width: 800px; left: 50%; transform: translateX(-50%); }
 }
 
+/* Insight Card Styling */
 .insight-card {
-    background: linear-gradient(to right, #f1f8e9, #ffffff);
+    background: linear-gradient(135deg, #f1f8e9 0%, #ffffff 100%);
     border-left: 5px solid #2e7d32;
-    margin-bottom: 15px;
-    padding: 15px;
-    font-size: 0.95rem;
-    color: #333;
-    animation: fadeIn 0.5s ease-in;
+    padding: 16px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    display: flex;
+    align-items: center;
+    animation: slideInDown 0.5s ease-out;
 }
 
 .insight-content {
     display: flex;
     align-items: center;
+    gap: 12px;
 }
 
-@keyframes fadeIn {
+.insight-content i {
+    font-size: 1.4rem;
+    filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.4));
+}
+
+#insight-text {
+    font-size: 0.95rem;
+    color: #2e7d32;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+/* Entrance Animation */
+@keyframes slideInDown {
     from { opacity: 0; transform: translateY(-10px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+/* Dark Mode Adjustment */
+.dark-mode .insight-card {
+    background: linear-gradient(135deg, #1b301c 0%, #1e1e1e 100%);
+    border-left: 5px solid #4caf50;
+    color: #e0e0e0;
+}
+
+.dark-mode #insight-text {
+    color: #a5d6a7;
+}
+
