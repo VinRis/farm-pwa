@@ -633,7 +633,7 @@ const App = {
         });
     
         this.renderChart(records);
-    }
+    },
 
     renderChart(records) {
         const ctx = document.getElementById('productionChart')?.getContext('2d');
@@ -657,7 +657,7 @@ const App = {
             chartCard.style.transform = 'translateY(20px)';
             setTimeout(() => chartCard.classList.add('visible'), 300);
         }
-    }
+    },
 
 
     // --- CLOUD SYNC ---
@@ -790,13 +790,10 @@ const App = {
 
 
 
-
-
-
-
 window.app = App;
 
 document.addEventListener('DOMContentLoaded', () => App.init());
+
 
 
 
