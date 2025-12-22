@@ -603,71 +603,53 @@ const App = {
     // --- DASHBOARD & ANALYTICS ---
 
     async refreshDashboard() {
-
         const records = await DB.getAll('records', 'livestock', this.state.livestock);
-
         const trans = await DB.getAll('transactions', 'livestock', this.state.livestock);
-
-        
-
+    
         const totalProd = records.reduce((sum, r) => sum + (parseFloat(r.quantity) || 0), 0);
-
         const income = trans.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
-
         const expense = trans.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
-
-
-
+    
         const kpi = document.getElementById('kpi-container');
-
         if (kpi) {
-
             kpi.innerHTML = `
-
                 <div class="kpi-card"><h4>Production</h4><div class="value">${totalProd.toFixed(1)}</div></div>
-
                 <div class="kpi-card"><h4>Net Cash</h4><div class="value" style="color:${(income-expense) >= 0 ? '#2e7d32' : '#d32f2f'}">${this.state.currency} ${income - expense}</div></div>
-
             `;
-
         }
-
+    
+        // Animate KPI cards sequentially
+        const cards = document.querySelectorAll('.kpi-card, #insight-card, .chart-card');
+        cards.forEach((el, idx) => {
+            setTimeout(() => el.classList.add('visible'), idx * 150);
+        });
+    
         this.renderChart(records);
-
-    },
-
-
+    }
 
     renderChart(records) {
-
         const ctx = document.getElementById('productionChart')?.getContext('2d');
-
+        const chartCard = document.querySelector('.chart-card');
         if (!ctx || records.length === 0) return;
-
         if (this.state.chartInstance) this.state.chartInstance.destroy();
-
-        
-
+    
         const sorted = records.sort((a,b) => new Date(a.date) - new Date(b.date)).slice(-7);
-
         this.state.chartInstance = new Chart(ctx, {
-
             type: 'line',
-
             data: {
-
                 labels: sorted.map(r => r.date),
-
                 datasets: [{ label: 'Daily Yield', data: sorted.map(r => r.quantity || r.weightKg), borderColor: '#2E7D32', tension: 0.3 }]
-
             },
-
             options: { responsive: true, maintainAspectRatio: false }
-
         });
-
-    },
-
+    
+        // Fade-in chart
+        if (chartCard) {
+            chartCard.style.opacity = 0;
+            chartCard.style.transform = 'translateY(20px)';
+            setTimeout(() => chartCard.classList.add('visible'), 300);
+        }
+    }
 
 
     // --- CLOUD SYNC ---
@@ -807,6 +789,7 @@ const App = {
 window.app = App;
 
 document.addEventListener('DOMContentLoaded', () => App.init());
+
 
 
 
