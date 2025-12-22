@@ -16,7 +16,23 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
-
+    <div id="auth-modal" class="modal hidden">
+        <div class="modal-content card">
+            <h3 id="auth-title">Sign In to FarmTrack</h3>
+            <p><small>Sync your data across devices and unlock Pro features.</small></p>
+            <form id="auth-form">
+                <div class="form-group">
+                    <input type="email" id="auth-email" placeholder="Email Address" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="auth-password" placeholder="Password" required>
+                </div>
+                <button type="submit" class="btn-primary full-width" id="auth-submit-btn">Login</button>
+            </form>
+            <button class="btn-text full-width" id="auth-toggle-btn">Need an account? Sign Up</button>
+            <button class="btn-secondary full-width" onclick="document.getElementById('auth-modal').classList.add('hidden')">Cancel</button>
+        </div>
+    </div>
     <div id="landing-page" class="view-section active">
         <div class="landing-content">
             <h1>FarmTrack</h1>
@@ -277,6 +293,7 @@
     <script type="module" src="app.js"></script>
 </body>
 </html>
+
 
 
 
