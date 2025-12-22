@@ -69,6 +69,18 @@ const App = {
             const local = JSON.parse(localStorage.getItem('reminders') || '[]');
             local.push(reminder);
             localStorage.setItem('reminders', JSON.stringify(local));
+            // Example of how to render each list item
+            const reminderHTML = reminders.map(rem => `
+                <li class="list-item ${new Date(rem.date) < new Date() ? 'overdue' : ''}">
+                    <div class="item-info">
+                        <strong>${rem.task}</strong>
+                        <span>${rem.animal} • ${new Date(rem.date).toLocaleDateString()}</span>
+                    </div>
+                    <button onclick="app.completeReminder('${rem.id}')" class="icon-btn success">
+                        <i class="fa-solid fa-check"></i>
+                    </button>
+                </li>
+            `).join('');
         }
     
         e.target.reset();
@@ -191,6 +203,17 @@ const App = {
             this.state.theme = this.state.theme === 'light' ? 'dark' : 'light';
             localStorage.setItem('ft_theme', this.state.theme);
             this.applyTheme();
+        });
+
+        document.getElementById('logout-btn')?.addEventListener('click', async () => {
+            if (confirm("Are you sure you want to log out?")) {
+                try {
+                    await window.auth.signOut();
+                    window.location.reload(); // Refresh to clear state
+                } catch (error) {
+                    console.error("Logout Error:", error);
+                }
+            }
         });
 
         document.getElementById('home-btn')?.addEventListener('click', () => {
@@ -419,5 +442,6 @@ const App = {
 
 window.app = App;
 document.addEventListener('DOMContentLoaded', () => App.init());
+
 
 
