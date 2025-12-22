@@ -393,44 +393,38 @@ const App = {
     },
 
     syncToCloud() { 
-            console.log('Online: Checking sync queue...');
-        }, // Added missing comma
-    
-        // Move these inside the App object as methods
-        async saveRecordToCloud(recordData) {
-            const user = window.auth?.currentUser;
-            if (!user) {
-                console.log("Saving locally only (Not signed in)");
-                return;
-            }
-        
-            try {
-                // This requires the firebase imports at the TOP of app.js
-                // import { collection, addDoc, serverTimestamp } from "https://..."
-                await addDoc(collection(window.db, "production"), {
-                    ...recordData,
-                    userId: user.uid,
-                    timestamp: serverTimestamp()
-                });
-                console.log("Synced to cloud!");
-            } catch (e) {
-                console.error("Error syncing: ", e);
-            }
-        },
-    
-        async checkProStatus() {
-            const user = window.auth?.currentUser;
-            if (user) {
-                const userDoc = await getDoc(doc(window.db, "users", user.uid));
-                if (userDoc.exists() && userDoc.data().isPremium) {
-                    document.body.classList.add('premium-unlocked');
-                }
+        console.log('Online: Checking sync queue...');
+    },
+
+    async saveRecordToCloud(recordData) {
+        const user = window.auth?.currentUser;
+        if (!user) return console.log("Cloud sync skipped: No user logged in.");
+
+        try {
+            await addDoc(collection(window.db, "production"), {
+                ...recordData,
+                userId: user.uid,
+                timestamp: serverTimestamp()
+            });
+            console.log("Synced to cloud!");
+        } catch (e) {
+            console.error("Cloud Error: ", e);
+        }
+    },
+
+    async checkProStatus() {
+        const user = window.auth?.currentUser;
+        if (user) {
+            const userDoc = await getDoc(doc(window.db, "users", user.uid));
+            if (userDoc.exists() && userDoc.data().isPremium) {
+                document.body.classList.add('premium-unlocked');
             }
         }
-    }; // Correctly closing the App object
-    
-    window.app = App;
-    document.addEventListener('DOMContentLoaded', () => App.init());
+    }
+}; // This closing brace MUST be after all your methods
 
+// 2. This line makes the livestock buttons work!
+window.app = App;
 
-
+// 3. Start the app
+document.addEventListener('DOMContentLoaded', () => App.init());
