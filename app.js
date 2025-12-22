@@ -124,11 +124,19 @@ const App = {
 
     // --- CORE NAVIGATION & UI ---
 
-    bindEvents() {
+    bindEvents() { 
 
         const drawer = document.getElementById('side-drawer');
 
         const overlay = document.getElementById('drawer-overlay');
+
+        // Bind livestock card clicks dynamically
+        document.querySelectorAll('.livestock-grid .card').forEach(card => {
+            card.addEventListener('click', () => {
+                const type = card.dataset.livestock;
+                if (type) this.selectLivestock(type);
+            });
+        });
 
 
 
@@ -789,6 +797,7 @@ const App = {
 window.app = App;
 
 document.addEventListener('DOMContentLoaded', () => App.init());
+
 
 
 
