@@ -119,6 +119,11 @@ const App = {
             const emailDisp = document.getElementById('user-email-display');
             if (emailDisp) emailDisp.innerText = user ? user.email : "Guest User";
             if (this.state.livestock) this.renderVaxSchedule(); 
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(() => console.log("FarmTrack Offline Ready"))
+                    .catch(err => console.log("SW Registration Failed", err));
+            }
         });
 
         if (this.state.livestock) this.loadAppShell();
@@ -296,3 +301,4 @@ const App = {
 
 window.app = App;
 document.addEventListener('DOMContentLoaded', () => App.init());
+
