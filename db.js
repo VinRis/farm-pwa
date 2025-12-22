@@ -1,43 +1,23 @@
 const DB_NAME = 'FarmTrackDB';
-const DB_VERSION = 4; // Bumped version to force index creation
+const DB_VERSION = 6; // Increased version to fix the index error
 
 export const DB = {
-    db: null,
-
-    async init() {
+    open() {
         return new Promise((resolve, reject) => {
             const request = indexedDB.open(DB_NAME, DB_VERSION);
 
             request.onupgradeneeded = (e) => {
                 const db = e.target.result;
+                const stores = ['records', 'transactions'];
                 
-                // Create stores and the vital 'livestock' index
-                if (!db.objectStoreNames.contains('records')) {
-                    const store = db.createObjectStore('records', { keyPath: 'id' });
-                    store.createIndex('livestock', 'livestock', { unique: false });
-                }
-                if (!db.objectStoreNames.contains('transactions')) {
-                    const store = db.createObjectStore('transactions', { keyPath: 'id' });
-                    store.createIndex('livestock', 'livestock', { unique: false });
-                }
+                stores.forEach(storeName => {
+                    if (!db.objectStoreNames.contains(storeName)) {
+                        const store = db.createObjectStore(storeName, { keyPath: 'id' });
+                        // This index is required for the "getAll" filtering to work
+                        store.createIndex('livestock', 'livestock', { unique: false });
+                    }
+                });
             };
-
-            request.onsuccess = (e) => {
-                this.db = e.target.result;
-                resolve(this.db);
-            };
-
-            request.onerror = (e) => reject(e.target.error);
-        });
-    },
-
-    async getAll(storeName, indexName, value) {
-        if (!this.db) await this.init();
-        return new Promise((resolve, reject) => {
-            const transaction = this.db.transaction(storeName, 'readonly');
-            const store = transaction.objectStore(storeName);
-            const index = store.index(indexName); // This will now find the index
-            const request = index.getAll(value);
 
             request.onsuccess = () => resolve(request.result);
             request.onerror = () => reject(request.error);
@@ -45,12 +25,31 @@ export const DB = {
     },
 
     async add(storeName, data) {
-        if (!this.db) await this.init();
-        return new Promise((resolve, reject) => {
-            const transaction = this.db.transaction(storeName, 'readwrite');
+        const db = await this.open();
+        return new Promise((resolve) => {
+            const transaction = db.transaction(storeName, 'readwrite');
+            transaction.objectStore(storeName).add(data);
+            transaction.oncomplete = () => resolve(true);
+        });
+    },
+
+    async getAll(storeName, indexName, indexValue) {
+        const db = await this.open();
+        return new Promise((resolve) => {
+            const transaction = db.transaction(storeName, 'readonly');
             const store = transaction.objectStore(storeName);
-            store.put(data);
-            transaction.oncomplete = () => resolve();
+            const index = store.index(indexName);
+            const request = index.getAll(indexValue);
+            request.onsuccess = () => resolve(request.result);
+        });
+    },
+
+    async delete(storeName, id) {
+        const db = await this.open();
+        return new Promise((resolve) => {
+            const transaction = db.transaction(storeName, 'readwrite');
+            transaction.objectStore(storeName).delete(id);
+            transaction.oncomplete = () => resolve(true);
         });
     }
 };
