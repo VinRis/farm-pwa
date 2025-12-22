@@ -2,12 +2,9 @@ import { DB } from './db.js';
 import { Utils } from './utils.js';
 import { loadSampleData } from './sample-data.js';
 import { 
-    collection, 
-    addDoc, 
-    serverTimestamp, 
-    doc, 
-    getDoc 
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    signInWithEmailAndPassword, 
+    createUserWithEmailAndPassword 
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const App = {
     state: {
@@ -462,5 +459,6 @@ window.app = App;
 
 // 3. Start the app
 document.addEventListener('DOMContentLoaded', () => App.init());
+
 
 
