@@ -364,4 +364,27 @@ body.dark-mode .modal-content input {
     color: white;
 }
 
+.list-item.overdue {
+    border-left: 4px solid #d32f2f;
+    background-color: #fff8f8;
+}
+
+.item-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.item-info strong {
+    font-size: 1rem;
+    color: var(--text-color);
+}
+
+.item-info span {
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.icon-btn.success {
+    color: #2e7d32;
+}
 
