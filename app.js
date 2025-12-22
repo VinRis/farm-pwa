@@ -27,8 +27,6 @@ const App = {
         
         if (this.state.livestock) {
             this.loadAppShell();
-        } else {
-            loadSampleData(); 
         }
 
         window.addEventListener('online', this.syncToCloud);
@@ -428,3 +426,4 @@ window.app = App;
 
 // 3. Start the app
 document.addEventListener('DOMContentLoaded', () => App.init());
+
