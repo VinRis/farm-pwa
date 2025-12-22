@@ -700,16 +700,35 @@ const App = {
 
     
 
-    selectLivestock(type) {
-
-        this.state.livestock = type;
-
-        localStorage.setItem('ft_livestock', type);
-
-        this.loadAppShell();
-
-    },
-
+    function selectLivestock(type) {
+        const landing = document.getElementById('landing-page');
+        const dashboard = document.getElementById('dashboard');
+        const selectedCard = document.querySelector(`.card.${type}`);
+        selectedCard.style.transform = 'scale(1.05)';
+        selectedCard.style.transition = 'transform 0.2s ease';
+        setTimeout(() => {
+            selectedCard.style.transform = 'scale(1)';
+        }, 200);
+    
+        // Hide landing page smoothly
+        landing.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+        landing.style.opacity = 0;
+        landing.style.transform = 'translateY(-20px)';
+    
+        // After animation, hide landing completely and show dashboard
+        setTimeout(() => {
+            landing.classList.add('hidden');
+            dashboard.classList.remove('hidden');
+    
+            // Show dashboard smoothly
+            setTimeout(() => {
+                dashboard.classList.add('visible');
+            }, 50);
+        }, 400);
+    
+        // Optional: store selected livestock type
+        app.selectedLivestock = type;
+    }
 
 
     loadAppShell() {
@@ -779,3 +798,4 @@ const App = {
 window.app = App;
 
 document.addEventListener('DOMContentLoaded', () => App.init());
+
