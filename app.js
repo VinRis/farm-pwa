@@ -73,6 +73,7 @@ const App = {
             e.target.reset();
             alert('Record saved');
             this.refreshDashboard();
+            this.saveRecordToCloud(record); // Add this line to attempt cloud sync
         });
 
         // Add Transaction Form
@@ -385,41 +386,44 @@ const App = {
         Utils.generatePDF('Farm Report', filteredRecs, filteredTrans, this.state.livestock, start, end);
     },
 
-    syncToCloud() { console.log('Online: Checking sync queue...');}
-
-    import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-    async function saveRecordToCloud(recordData) {
-        const user = window.auth.currentUser;
-        if (!user) {
-            alert("Please sign in to save records!");
-            return;
-        }
+    syncToCloud() { 
+            console.log('Online: Checking sync queue...');
+        }, // Added missing comma
     
-        try {
-            await addDoc(collection(window.db, "production"), {
-                ...recordData,
-                userId: user.uid, // Keeps data private to this user
-                timestamp: serverTimestamp()
-            });
-            console.log("Synced to cloud!");
-        } catch (e) {
-            console.error("Error adding document: ", e);
-        }
-    }
-    async function checkProStatus() {
-        const user = window.auth.currentUser;
-        if (user) {
-            // Fetch user document from Firestore
-            const userDoc = await getDoc(doc(window.db, "users", user.uid));
-            if (userDoc.exists() && userDoc.data().isPremium) {
-                document.body.classList.add('premium-unlocked');
+        // Move these inside the App object as methods
+        async saveRecordToCloud(recordData) {
+            const user = window.auth?.currentUser;
+            if (!user) {
+                console.log("Saving locally only (Not signed in)");
+                return;
+            }
+        
+            try {
+                // This requires the firebase imports at the TOP of app.js
+                // import { collection, addDoc, serverTimestamp } from "https://..."
+                await addDoc(collection(window.db, "production"), {
+                    ...recordData,
+                    userId: user.uid,
+                    timestamp: serverTimestamp()
+                });
+                console.log("Synced to cloud!");
+            } catch (e) {
+                console.error("Error syncing: ", e);
+            }
+        },
+    
+        async checkProStatus() {
+            const user = window.auth?.currentUser;
+            if (user) {
+                const userDoc = await getDoc(doc(window.db, "users", user.uid));
+                if (userDoc.exists() && userDoc.data().isPremium) {
+                    document.body.classList.add('premium-unlocked');
+                }
             }
         }
-    }
+    }; // Correctly closing the App object
     
-};
+    window.app = App;
+    document.addEventListener('DOMContentLoaded', () => App.init());
 
-window.app = App;
-document.addEventListener('DOMContentLoaded', () => App.init());
 
