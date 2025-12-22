@@ -1,11 +1,16 @@
 import { DB } from './db.js';
 import { Utils } from './utils.js';
 import { loadSampleData } from './sample-data.js';
+
+// Firebase Auth Imports
 import { 
     signInWithEmailAndPassword, 
-    createUserWithEmailAndPassword 
+    createUserWithEmailAndPassword,
+    onAuthStateChanged,
+    signOut
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+// Firebase Firestore Imports
 import { 
     collection, 
     addDoc, 
@@ -14,7 +19,7 @@ import {
     query,
     where,
     deleteDoc,
-    doc
+    doc 
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const App = {
@@ -26,113 +31,41 @@ const App = {
         isLoginMode: true 
     },
 
-    // --- Health & Custom Reminders ---
-    async saveReminder(e) {
-        e.preventDefault();
-        const reminder = {
-            animal: document.getElementById('remind-animal').value,
-            task: document.getElementById('remind-task').value,
-            date: document.getElementById('remind-date').value,
-            type: this.state.livestock,
-            completed: false,
-            createdAt: new Date().toISOString()
-        };
-
-        try {
-            if (window.auth.currentUser) {
-                await addDoc(collection(window.db, "reminders"), {
-                    ...reminder,
-                    userId: window.auth.currentUser.uid
-                });
-            } else {
-                const local = JSON.parse(localStorage.getItem('reminders') || '[]');
-                local.push({ ...reminder, id: Utils.uuid() });
-                localStorage.setItem('reminders', JSON.stringify(local));
-            }
-            
-            e.target.reset();
-            await this.renderVaxSchedule(); // Refresh the list
-            alert("Reminder Set Successfully!");
-        } catch (err) {
-            console.error("Save Reminder Error:", err);
-        }
-    },
-
-    async renderVaxSchedule() {
-        const list = document.getElementById('vax-list');
-        if (!list) return;
-
-        let reminders = [];
-        
-        // 1. Get Custom Reminders
-        if (window.auth.currentUser) {
-            const q = query(collection(window.db, "reminders"), where("userId", "==", window.auth.currentUser.uid), where("type", "==", this.state.livestock));
-            const querySnapshot = await getDocs(q);
-            querySnapshot.forEach((doc) => reminders.push({ id: doc.id, ...doc.data() }));
-        } else {
-            reminders = JSON.parse(localStorage.getItem('reminders') || '[]')
-                        .filter(r => r.type === this.state.livestock);
-        }
-
-        // 2. Add Static Schedule templates (Optional)
-        const templates = {
-            poultry: [{ task: "Newcastle Vaccine", animal: "All Birds", date: "Recurring" }],
-            dairy: [{ task: "Deworming", animal: "All Cows", date: "Quarterly" }]
-        };
-        const activeTemplates = templates[this.state.livestock] || [];
-
-        // 3. Render HTML
-        const customHTML = reminders.map(rem => `
-            <li class="list-item ${new Date(rem.date) < new Date() ? 'overdue' : ''}" style="display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #eee; margin-bottom:5px; border-radius:8px;">
-                <div class="item-info">
-                    <strong>${rem.task}</strong><br>
-                    <small>${rem.animal} • ${rem.date}</small>
-                </div>
-                <button onclick="app.deleteReminder('${rem.id}')" class="icon-btn" style="color:#e53935">
-                    <i class="fa-solid fa-trash"></i>
-                </button>
-            </li>
-        `).join('');
-
-        list.innerHTML = customHTML || '<p style="text-align:center; padding:20px; color:#666;">No reminders set.</p>';
-    },
-
-    async deleteReminder(id) {
-        if (!confirm("Delete this reminder?")) return;
-        if (window.auth.currentUser) {
-            await deleteDoc(doc(window.db, "reminders", id));
-        } else {
-            let local = JSON.parse(localStorage.getItem('reminders') || '[]');
-            local = local.filter(r => r.id !== id);
-            localStorage.setItem('reminders', JSON.stringify(local));
-        }
-        this.renderVaxSchedule();
-    },
-
-    // --- Core logic & UI ---
+    // --- INITIALIZATION ---
     init() {
         this.applyTheme();
         this.bindEvents();
         
-        // Listen for Firebase Auth to update Drawer Profile
-        window.auth.onAuthStateChanged(user => {
+        // Listen for Firebase Auth State
+        onAuthStateChanged(window.auth, (user) => {
             const emailDisp = document.getElementById('user-email-display');
             if (emailDisp) emailDisp.innerText = user ? user.email : "Guest User";
-            if (this.state.livestock) this.renderVaxSchedule(); 
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('./service-worker.js')
-                    .then(() => console.log("FarmTrack Offline Ready"))
-                    .catch(err => console.log("SW Registration Failed", err));
+            
+            if (this.state.livestock) {
+                this.renderVaxSchedule(); 
+                this.refreshDashboard();
             }
         });
 
-        if (this.state.livestock) this.loadAppShell();
+        // Register Service Worker for Offline/PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./service-worker.js')
+                .then(() => console.log("Service Worker Registered"))
+                .catch(err => console.error("SW Registration Failed", err));
+        }
+
+        // If a livestock type was previously selected, skip landing page
+        if (this.state.livestock) {
+            this.loadAppShell();
+        }
     },
 
+    // --- CORE NAVIGATION & UI ---
     bindEvents() {
         const drawer = document.getElementById('side-drawer');
         const overlay = document.getElementById('drawer-overlay');
 
+        // Sidebar Toggle Logic
         document.getElementById('menu-toggle')?.addEventListener('click', () => {
             drawer.classList.add('open');
             overlay.classList.remove('hidden');
@@ -146,7 +79,7 @@ const App = {
         document.getElementById('close-drawer')?.addEventListener('click', closeDrawer);
         overlay?.addEventListener('click', closeDrawer);
 
-        // Map Drawer Buttons
+        // Sidebar Navigation Links
         document.querySelectorAll('.nav-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const targetId = btn.getAttribute('data-target');
@@ -155,9 +88,7 @@ const App = {
             });
         });
 
-        // Forms
-        document.getElementById('reminder-form')?.addEventListener('submit', (e) => this.saveReminder(e));
-        
+        // Auth Modal Handlers
         document.getElementById('auth-status-btn')?.addEventListener('click', () => {
             document.getElementById('auth-modal').classList.remove('hidden');
         });
@@ -168,24 +99,13 @@ const App = {
             document.getElementById('auth-submit-btn').innerText = this.state.isLoginMode ? "Login" : "Sign Up";
         });
 
-        document.getElementById('auth-form')?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('auth-email').value;
-            const password = document.getElementById('auth-password').value;
-            try {
-                if (this.state.isLoginMode) {
-                    await signInWithEmailAndPassword(window.auth, email, password);
-                } else {
-                    await createUserWithEmailAndPassword(window.auth, email, password);
-                }
-                document.getElementById('auth-modal').classList.add('hidden');
-            } catch (err) { alert(err.message); }
-        });
+        document.getElementById('auth-form')?.addEventListener('submit', (e) => this.handleAuth(e));
 
         document.getElementById('logout-btn')?.addEventListener('click', () => {
-            if (confirm("Log out?")) window.auth.signOut().then(() => window.location.reload());
+            if (confirm("Log out?")) signOut(window.auth).then(() => window.location.reload());
         });
 
+        // Global UI Actions
         document.getElementById('home-btn')?.addEventListener('click', () => {
             this.state.livestock = null;
             localStorage.removeItem('ft_livestock');
@@ -193,40 +113,16 @@ const App = {
             document.getElementById('landing-page').classList.remove('hidden');
         });
 
-        document.getElementById('add-record-form')?.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const data = Object.fromEntries(new FormData(e.target).entries());
-            const record = { id: Utils.uuid(), livestock: this.state.livestock, createdAt: Date.now(), ...data };
-            await DB.add('records', record);
-            e.target.reset();
-            this.refreshDashboard();
-            this.saveRecordToCloud(record);
-        });
-
         document.getElementById('theme-toggle')?.addEventListener('click', () => {
             this.state.theme = this.state.theme === 'light' ? 'dark' : 'light';
             localStorage.setItem('ft_theme', this.state.theme);
             this.applyTheme();
         });
-    },
 
-    applyTheme() {
-        document.body.classList.toggle('dark-mode', this.state.theme === 'dark');
-    },
-
-    selectLivestock(type) {
-        this.state.livestock = type;
-        localStorage.setItem('ft_livestock', type);
-        this.loadAppShell();
-    },
-
-    async loadAppShell() {
-        document.getElementById('landing-page').classList.add('hidden');
-        document.getElementById('app-shell').classList.remove('hidden');
-        const titles = { dairy: 'Dairy Farm', poultry: 'Poultry Farm', pig: 'Pig Farm', goat: 'Goat Farm' };
-        document.getElementById('header-title').innerText = titles[this.state.livestock];
-        this.renderAddForm();
-        this.switchTab('view-dashboard', document.querySelector('[data-target="view-dashboard"]'));
+        // Form Submissions
+        document.getElementById('add-record-form')?.addEventListener('submit', (e) => this.saveProductionRecord(e));
+        document.getElementById('reminder-form')?.addEventListener('submit', (e) => this.saveReminder(e));
+        document.getElementById('add-transaction-form')?.addEventListener('submit', (e) => this.saveTransaction(e));
     },
 
     switchTab(viewId, btnElement) {
@@ -242,63 +138,254 @@ const App = {
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         if (btnElement) btnElement.classList.add('active');
 
+        // Refresh dynamic content based on view
         if (viewId === 'view-dashboard') this.refreshDashboard();
         if (viewId === 'view-records') this.loadRecords();
         if (viewId === 'view-finance') this.loadFinance();
         if (viewId === 'view-vax') this.renderVaxSchedule();
     },
 
-    // ... [Add Form, Dashboard, Chart methods remain same as your previous logic] ...
-    renderAddForm() {
-        const container = document.getElementById('dynamic-fields');
-        const type = this.state.livestock;
-        let html = `<div class="form-group"><input type="date" name="date" required value="${new Date().toISOString().split('T')[0]}"></div>`;
-        if (type === 'dairy') {
-            html += `<input type="text" name="cowId" placeholder="Cow ID" required class="form-control">
-                     <select name="session"><option value="morning">Morning</option><option value="evening">Evening</option></select>
-                     <input type="number" name="quantity" placeholder="Milk (L)" step="0.1" required>`;
-        } else if (type === 'poultry') {
-            html += `<input type="number" name="quantity" placeholder="Eggs Collected" required>
-                     <input type="number" name="mortality" placeholder="Birds Dead">`;
-        }
-        html += `<input type="number" name="feedKg" placeholder="Feed (Kg)">
-                 <textarea name="notes" placeholder="Notes"></textarea>`;
-        container.innerHTML = html;
+    // --- AUTHENTICATION ---
+    async handleAuth(e) {
+        e.preventDefault();
+        const email = document.getElementById('auth-email').value;
+        const password = document.getElementById('auth-password').value;
+        try {
+            if (this.state.isLoginMode) {
+                await signInWithEmailAndPassword(window.auth, email, password);
+                alert("Welcome back!");
+            } else {
+                await createUserWithEmailAndPassword(window.auth, email, password);
+                alert("Account created successfully!");
+            }
+            document.getElementById('auth-modal').classList.add('hidden');
+        } catch (err) { alert(err.message); }
     },
 
+    // --- PRODUCTION & DATA ---
+    async saveProductionRecord(e) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData.entries());
+        
+        const record = { 
+            id: Utils.uuid(), 
+            livestock: this.state.livestock, 
+            createdAt: Date.now(), 
+            ...data 
+        };
+
+        await DB.add('records', record);
+        this.saveToCloud("production", record);
+        
+        e.target.reset();
+        alert("Record Saved!");
+        this.refreshDashboard();
+    },
+
+    async loadRecords() {
+        const records = await DB.getAll('records', 'livestock', this.state.livestock);
+        const tbody = document.querySelector('#records-table tbody');
+        if (tbody) {
+            tbody.innerHTML = records.sort((a,b) => b.createdAt - a.createdAt).map(r => `
+                <tr>
+                    <td>${r.date}</td>
+                    <td>${r.quantity || r.weightKg || '-'}</td>
+                    <td><button onclick="app.deleteRecord('${r.id}')" class="btn-danger btn-sm"><i class="fa-solid fa-trash"></i></button></td>
+                </tr>
+            `).join('');
+        }
+    },
+
+    async deleteRecord(id) {
+        if(confirm('Delete this record?')) { 
+            await DB.delete('records', id); 
+            this.loadRecords(); 
+            this.refreshDashboard(); 
+        }
+    },
+
+    // --- FINANCE ---
+    async saveTransaction(e) {
+        e.preventDefault();
+        const data = Object.fromEntries(new FormData(e.target).entries());
+        data.amount = parseFloat(data.amount);
+        
+        const trans = { 
+            id: Utils.uuid(), 
+            livestock: this.state.livestock, 
+            createdAt: Date.now(), 
+            ...data 
+        };
+
+        await DB.add('transactions', trans);
+        this.saveToCloud("transactions", trans);
+        
+        e.target.reset();
+        this.loadFinance();
+    },
+
+    async loadFinance() {
+        const trans = await DB.getAll('transactions', 'livestock', this.state.livestock);
+        const list = document.getElementById('transaction-list');
+        if (!list) return;
+
+        list.innerHTML = trans.map(t => `
+            <li class="list-item">
+                <div><strong>${t.category}</strong><br><small>${t.date}</small></div>
+                <span class="${t.type}" style="color: ${t.type === 'income' ? '#2e7d32' : '#d32f2f'}">
+                    ${t.type === 'income' ? '+' : '-'}${this.state.currency}${t.amount}
+                </span>
+            </li>
+        `).join('') || '<p>No transactions yet.</p>';
+    },
+
+    // --- REMINDERS & HEALTH ---
+    async saveReminder(e) {
+        e.preventDefault();
+        const reminder = {
+            animal: document.getElementById('remind-animal').value,
+            task: document.getElementById('remind-task').value,
+            date: document.getElementById('remind-date').value,
+            type: this.state.livestock,
+            completed: false,
+            createdAt: new Date().toISOString()
+        };
+
+        if (window.auth.currentUser) {
+            await addDoc(collection(window.db, "reminders"), { ...reminder, userId: window.auth.currentUser.uid });
+        } else {
+            const local = JSON.parse(localStorage.getItem('reminders') || '[]');
+            local.push({ ...reminder, id: Utils.uuid() });
+            localStorage.setItem('reminders', JSON.stringify(local));
+        }
+
+        e.target.reset();
+        this.renderVaxSchedule();
+        alert("Reminder Set!");
+    },
+
+    async renderVaxSchedule() {
+        const list = document.getElementById('vax-list');
+        if (!list) return;
+
+        let reminders = [];
+        if (window.auth.currentUser) {
+            const q = query(collection(window.db, "reminders"), 
+                      where("userId", "==", window.auth.currentUser.uid), 
+                      where("type", "==", this.state.livestock));
+            const snap = await getDocs(q);
+            snap.forEach(doc => reminders.push({ id: doc.id, ...doc.data() }));
+        } else {
+            reminders = JSON.parse(localStorage.getItem('reminders') || '[]').filter(r => r.type === this.state.livestock);
+        }
+
+        list.innerHTML = reminders.map(rem => `
+            <li class="list-item ${new Date(rem.date) < new Date() ? 'overdue' : ''}" style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #eee;">
+                <div><strong>${rem.task}</strong><br><small>${rem.animal} • ${rem.date}</small></div>
+                <button onclick="app.deleteReminder('${rem.id}')" class="icon-btn danger"><i class="fa-solid fa-trash"></i></button>
+            </li>
+        `).join('') || '<p>No reminders set.</p>';
+    },
+
+    async deleteReminder(id) {
+        if (!confirm("Delete?")) return;
+        if (window.auth.currentUser) {
+            await deleteDoc(doc(window.db, "reminders", id));
+        } else {
+            let local = JSON.parse(localStorage.getItem('reminders') || '[]');
+            localStorage.setItem('reminders', JSON.stringify(local.filter(r => r.id !== id)));
+        }
+        this.renderVaxSchedule();
+    },
+
+    // --- DASHBOARD & ANALYTICS ---
     async refreshDashboard() {
         const records = await DB.getAll('records', 'livestock', this.state.livestock);
+        const trans = await DB.getAll('transactions', 'livestock', this.state.livestock);
+        
+        const totalProd = records.reduce((sum, r) => sum + (parseFloat(r.quantity) || 0), 0);
+        const income = trans.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+        const expense = trans.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+
+        const kpi = document.getElementById('kpi-container');
+        if (kpi) {
+            kpi.innerHTML = `
+                <div class="kpi-card"><h4>Production</h4><div class="value">${totalProd.toFixed(1)}</div></div>
+                <div class="kpi-card"><h4>Net Cash</h4><div class="value" style="color:${(income-expense) >= 0 ? '#2e7d32' : '#d32f2f'}">${this.state.currency} ${income - expense}</div></div>
+            `;
+        }
         this.renderChart(records);
-        // ... rest of dashboard logic
     },
 
     renderChart(records) {
         const ctx = document.getElementById('productionChart')?.getContext('2d');
-        if (!ctx) return;
+        if (!ctx || records.length === 0) return;
         if (this.state.chartInstance) this.state.chartInstance.destroy();
+        
         const sorted = records.sort((a,b) => new Date(a.date) - new Date(b.date)).slice(-7);
         this.state.chartInstance = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: sorted.map(r => r.date),
-                datasets: [{ label: 'Prod', data: sorted.map(r => r.quantity), borderColor: '#2E7D32', tension: 0.1 }]
+                datasets: [{ label: 'Daily Yield', data: sorted.map(r => r.quantity || r.weightKg), borderColor: '#2E7D32', tension: 0.3 }]
             },
-            options: { responsive: true }
+            options: { responsive: true, maintainAspectRatio: false }
         });
     },
 
-    async saveRecordToCloud(recordData) {
+    // --- CLOUD SYNC ---
+    async saveToCloud(colName, data) {
         if (!window.auth.currentUser) return;
         try {
-            await addDoc(collection(window.db, "production"), {
-                ...recordData,
+            await addDoc(collection(window.db, colName), {
+                ...data,
                 userId: window.auth.currentUser.uid,
                 timestamp: serverTimestamp()
             });
-        } catch (e) { console.error("Cloud Error: ", e); }
+        } catch (e) { console.error("Cloud Sync Error:", e); }
+    },
+
+    // --- HELPERS ---
+    applyTheme() { document.body.classList.toggle('dark-mode', this.state.theme === 'dark'); },
+    
+    selectLivestock(type) {
+        this.state.livestock = type;
+        localStorage.setItem('ft_livestock', type);
+        this.loadAppShell();
+    },
+
+    loadAppShell() {
+        document.getElementById('landing-page').classList.add('hidden');
+        document.getElementById('app-shell').classList.remove('hidden');
+        const titles = { dairy: 'Dairy Farm', poultry: 'Poultry Farm', pig: 'Pig Farm', goat: 'Goat Farm' };
+        document.getElementById('header-title').innerText = titles[this.state.livestock];
+        this.renderAddForm();
+        this.switchTab('view-dashboard', document.querySelector('[data-target="view-dashboard"]'));
+    },
+
+    renderAddForm() {
+        const container = document.getElementById('dynamic-fields');
+        const type = this.state.livestock;
+        let html = `<div class="form-group"><label>Date</label><input type="date" name="date" required value="${new Date().toISOString().split('T')[0]}"></div>`;
+        if (type === 'dairy') {
+            html += `<input type="text" name="cowId" placeholder="Cow Name/ID" required>
+                     <select name="session"><option value="morning">Morning</option><option value="evening">Evening</option></select>
+                     <input type="number" name="quantity" placeholder="Milk (Liters)" step="0.1" required>`;
+        } else if (type === 'poultry') {
+            html += `<input type="number" name="quantity" placeholder="Eggs Collected" required>
+                     <input type="number" name="mortality" placeholder="Mortality (Birds)">`;
+        } else {
+            html += `<input type="text" name="id" placeholder="Animal ID">
+                     <input type="number" name="weightKg" placeholder="Weight (Kg)" step="0.1">`;
+        }
+        html += `<input type="number" name="feedKg" placeholder="Feed Consumed (Kg)" step="0.1">
+                 <textarea name="notes" placeholder="General Notes"></textarea>`;
+        container.innerHTML = html;
     }
 };
 
+
+
 window.app = App;
 document.addEventListener('DOMContentLoaded', () => App.init());
-
