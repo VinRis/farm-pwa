@@ -25,7 +25,7 @@ export const Utils = {
         doc.text("Production Records", 14, 45);
         
         const prodData = records.map(r => [
-            this.Utils.formatDate(r.date),
+            Utils.formatDate(r.date),
             r.cowId || r.id || 'N/A',
             r.quantity || r.weightKg || '0'
         ]);
