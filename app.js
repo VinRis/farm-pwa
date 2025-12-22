@@ -385,8 +385,41 @@ const App = {
         Utils.generatePDF('Farm Report', filteredRecs, filteredTrans, this.state.livestock, start, end);
     },
 
-    syncToCloud() { console.log('Online: Checking sync queue...'); }
+    syncToCloud() { console.log('Online: Checking sync queue...');}
+
+    import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    async function saveRecordToCloud(recordData) {
+        const user = window.auth.currentUser;
+        if (!user) {
+            alert("Please sign in to save records!");
+            return;
+        }
+    
+        try {
+            await addDoc(collection(window.db, "production"), {
+                ...recordData,
+                userId: user.uid, // Keeps data private to this user
+                timestamp: serverTimestamp()
+            });
+            console.log("Synced to cloud!");
+        } catch (e) {
+            console.error("Error adding document: ", e);
+        }
+    }
+    async function checkProStatus() {
+        const user = window.auth.currentUser;
+        if (user) {
+            // Fetch user document from Firestore
+            const userDoc = await getDoc(doc(window.db, "users", user.uid));
+            if (userDoc.exists() && userDoc.data().isPremium) {
+                document.body.classList.add('premium-unlocked');
+            }
+        }
+    }
+    
 };
 
 window.app = App;
 document.addEventListener('DOMContentLoaded', () => App.init());
+
