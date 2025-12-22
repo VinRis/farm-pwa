@@ -52,7 +52,8 @@
                     <h3>Pig</h3>
                 </div>
                 <div class="card" onclick="app.selectLivestock('goat')">
-                    <i class="fa-solid fa-hippo fa-3x"></i> <h3>Goat</h3>
+                    <i class="fa-solid fa-hippo fa-3x"></i> 
+                    <h3>Goat</h3>
                 </div>
             </div>
             <div class="landing-footer">
@@ -77,18 +78,10 @@
         </header>
 
         <main id="main-content">
-            <section id="view-vax" class="tab-view" style="display:none;">
-                <div class="card">
-                    <h3><i class="fa-solid fa-syringe"></i> Vaccination Schedule</h3>
-                    <p><small id="vax-subtitle">Upcoming health tasks for your farm.</small></p>
-                    <ul id="vax-list" class="list-group"></ul>
-                </div>
-            </section>
-            
             <section id="view-dashboard" class="tab-view active">
                 <div id="kpi-container" class="kpi-grid"></div>
                 
-                <div id="insight-card" class="card" style="border-left: 5px solid var(--primary-color); margin-bottom: 15px;">
+                <div id="insight-card" class="card" style="border-left: 5px solid #2E7D32; margin-bottom: 15px;">
                     <div class="insight-content">
                         <i class="fa-solid fa-lightbulb" style="color: #ffd700; margin-right: 10px;"></i>
                         <span id="insight-text">Analyzing your farm data...</span>
@@ -98,10 +91,30 @@
                 <div class="card chart-card">
                     <canvas id="productionChart"></canvas>
                 </div>
+            </section>
 
-                <div class="recent-list card">
-                    <h3 style="margin-bottom: 15px;">Recent Activity</h3>
-                    <ul id="recent-records-list"></ul>
+            <section id="view-vax" class="tab-view" style="display:none;">
+                <div class="card">
+                    <h3><i class="fa-solid fa-plus"></i> Add New Reminder</h3>
+                    <form id="reminder-form">
+                        <div class="form-group">
+                            <label>Animal Tag/Name</label>
+                            <input type="text" id="remind-animal" placeholder="e.g. Cow #42" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Task</label>
+                            <input type="text" id="remind-task" placeholder="e.g. Deworming" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Due Date</label>
+                            <input type="date" id="remind-date" required>
+                        </div>
+                        <button type="submit" class="btn-primary full-width">Set Reminder</button>
+                    </form>
+                </div>
+                <div class="card" style="margin-top: 20px;">
+                    <h3>Upcoming Tasks</h3>
+                    <ul id="vax-list" class="list-group"></ul>
                 </div>
             </section>
 
@@ -116,18 +129,12 @@
             </section>
 
             <section id="view-records" class="tab-view" style="display:none;">
-                <div class="toolbar card">
-                    <input type="month" id="record-filter-date">
-                    <button id="bulk-delete-btn" class="btn-danger hidden"><i class="fa-solid fa-trash"></i> Delete Selected</button>
-                </div>
                 <div class="table-responsive card">
                     <table class="data-table" id="records-table">
                         <thead>
                             <tr>
-                                <th><input type="checkbox" id="select-all-records"></th>
                                 <th>Date</th>
-                                <th>Details</th>
-                                <th>Qty</th>
+                                <th>Qty/Value</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -137,17 +144,6 @@
             </section>
 
             <section id="view-finance" class="tab-view" style="display:none;">
-                <div class="finance-summary">
-                    <div class="card income">
-                        <span>Income</span>
-                        <h3 id="fin-income">0</h3>
-                    </div>
-                    <div class="card expense">
-                        <span>Expense</span>
-                        <h3 id="fin-expense">0</h3>
-                    </div>
-                </div>
-
                 <div class="card">
                     <h3>New Transaction</h3>
                     <form id="add-transaction-form">
@@ -169,153 +165,77 @@
                                 <option value="Feed">
                                 <option value="Medication">
                                 <option value="Sales">
-                                <option value="Equipment">
-                                <option value="Labor">
                             </datalist>
                         </div>
                         <button type="submit" class="btn-primary full-width">Add Transaction</button>
                     </form>
                 </div>
-
-                <div class="toolbar" style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center;">
-                    <h3>History</h3>
-                    <button onclick="app.exportTransactionsCSV()" class="btn-secondary btn-sm">
-                        <i class="fa-solid fa-file-csv"></i> Export
-                    </button>
-                </div>
-                <ul id="transaction-list" class="list-group"></ul>
+                <ul id="transaction-list" class="list-group" style="margin-top:20px;"></ul>
             </section>
 
             <section id="view-reports" class="tab-view" style="display:none;">
                 <div class="report-card card">
-                    <h3><i class="fa-solid fa-file-pdf"></i> PDF Summary</h3>
-                    <div class="form-group">
-                        <label>From:</label>
-                        <input type="date" id="report-start">
-                    </div>
-                    <div class="form-group">
-                        <label>To:</label>
-                        <input type="date" id="report-end">
-                    </div>
-                    <button id="generate-pdf-btn" class="btn-primary full-width">Download PDF</button>
-                </div>
-                
-                <div class="report-card card" style="margin-top: 15px;">
-                    <h3><i class="fa-solid fa-file-csv"></i> Raw Data</h3>
-                    <button id="export-csv-btn" class="btn-secondary full-width">Export Records (CSV)</button>
+                    <h3><i class="fa-solid fa-file-pdf"></i> Generate Report</h3>
+                    <button id="generate-pdf-btn" class="btn-primary full-width">Download Summary PDF</button>
                 </div>
             </section>
 
             <section id="view-settings" class="tab-view" style="display:none;">
                 <div class="card">
-                    <h3><i class="fa-solid fa-gear"></i> Settings</h3>
+                    <h3>Settings</h3>
                     <div class="form-group">
                         <label>Currency Symbol</label>
                         <input type="text" id="currency-input" placeholder="e.g. KSh">
                     </div>
-                    <div class="card premium-card" style="background: linear-gradient(135deg, #2E7D32, #1B5E20); color: white; margin-top: 20px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <h3>FarmTrack Pro</h3>
-                            <i class="fa-solid fa-crown" style="color: #FFD700;"></i>
-                        </div>
-                        <p style="font-size: 0.85rem; margin: 10px 0;">Unlock Cloud Sync and Unlimited Reports.</p>
-                        <button id="upgrade-btn" class="btn-primary" style="background: white; color: #2E7D32; border: none; font-weight: bold; width: 100%;">
-                            Upgrade Now
-                        </button>
-                    </div>
                 </div>
             </section>
-            <section id="view-vax" class="tab-view" style="display:none;">
-                <div class="card">
-                    <h3><i class="fa-solid fa-plus"></i> Add New Reminder</h3>
-                    <form id="reminder-form">
-                        <div class="form-group">
-                            <label>Animal Tag/Name</label>
-                            <input type="text" id="remind-animal" placeholder="e.g. Cow #42 or 'Flock A'" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Task</label>
-                            <input type="text" id="remind-task" placeholder="e.g. Deworming, Vaccination" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Due Date</label>
-                            <input type="date" id="remind-date" required>
-                        </div>
-                        <button type="submit" class="btn-primary full-width">Set Reminder</button>
-                    </form>
-                </div>
-            
-                <div class="card" style="margin-top: 20px;">
-                    <h3>Upcoming Tasks</h3>
-                    <ul id="vax-list" class="list-group">
-                        </ul>
-                </div>
-            </section>
-
         </main>
 
-    <div id="side-drawer" class="drawer">
-    <div class="drawer-header">
-        <h3>FarmTrack</h3>
-        <button id="close-drawer" class="icon-btn"><i class="fa-solid fa-xmark"></i></button>
-    </div>
-    
-    <nav class="drawer-nav" style="flex-grow: 1;">
-        <button class="nav-btn active" data-target="view-dashboard">
-            <i class="fa-solid fa-house-chimney"></i> <span>Dashboard</span>
-        </button>
-        <button class="nav-btn" data-target="view-vax">
-            <i class="fa-solid fa-bell"></i> <span>Reminders</span>
-        </button>
-    </nav>
-
-    <div class="drawer-footer">
-        <div class="user-info">
-            <i class="fa-solid fa-circle-user fa-2x"></i>
-            <div class="user-details">
-                <span id="user-email-display">Guest User</span>
-                <button id="logout-btn" class="btn-text-danger">Logout</button>
+        <div id="side-drawer" class="drawer">
+            <div class="drawer-header">
+                <h3>FarmTrack Menu</h3>
+                <button id="close-drawer" class="icon-btn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <nav class="drawer-nav">
+                <button class="nav-btn" data-target="view-dashboard"><i class="fa-solid fa-chart-line"></i> Dashboard</button>
+                <button class="nav-btn" data-target="view-add"><i class="fa-solid fa-plus"></i> Add Entry</button>
+                <button class="nav-btn" data-target="view-records"><i class="fa-solid fa-list"></i> History</button>
+                <button class="nav-btn" data-target="view-finance"><i class="fa-solid fa-wallet"></i> Finance</button>
+                <button class="nav-btn" data-target="view-vax"><i class="fa-solid fa-bell"></i> Reminders</button>
+                <button class="nav-btn" data-target="view-reports"><i class="fa-solid fa-file-invoice"></i> Reports</button>
+                <button class="nav-btn" data-target="view-settings"><i class="fa-solid fa-gear"></i> Settings</button>
+            </nav>
+            <div class="drawer-footer">
+                <div class="user-info">
+                    <i class="fa-solid fa-circle-user fa-2x"></i>
+                    <div class="user-details">
+                        <span id="user-email-display">Guest User</span>
+                        <button id="logout-btn" class="btn-text-danger">Logout</button>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</div>
         <div id="drawer-overlay" class="overlay hidden"></div>
+    </div>
+
     <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-      import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-      import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    
-      const firebaseConfig = {
-          apiKey: "AIzaSyAva7tu7mWrdgJswDIR0W9OWv8ctZ5phPk",
-          authDomain: "farmtrack-b470e.firebaseapp.com",
-          projectId: "farmtrack-b470e",
-          storageBucket: "farmtrack-b470e.firebasestorage.app",
-          messagingSenderId: "572276398926",
-          appId: "1:572276398926:web:4b39dc570ce2077fae5c1f",
-          measurementId: "G-8TLCQ93SR2"
-      };
-    
-      try {
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+      
+        const firebaseConfig = {
+            apiKey: "AIzaSyAva7tu7mWrdgJswDIR0W9OWv8ctZ5phPk",
+            authDomain: "farmtrack-b470e.firebaseapp.com",
+            projectId: "farmtrack-b470e",
+            storageBucket: "farmtrack-b470e.firebasestorage.app",
+            messagingSenderId: "572276398926",
+            appId: "1:572276398926:web:4b39dc570ce2077fae5c1f"
+        };
+      
         const app = initializeApp(firebaseConfig);
         window.db = getFirestore(app);
         window.auth = getAuth(app);
-        console.log("✅ Firebase Initialized");
-    
-        onAuthStateChanged(window.auth, (user) => {
-          const btn = document.getElementById('auth-status-btn');
-          if (user && btn) {
-            btn.style.color = "#4caf50"; 
-          } else if (btn) {
-            btn.style.color = "inherit";
-          }
-        });
-      } catch (error) {
-        console.error("❌ Firebase Error:", error);
-      }
     </script>
     <script type="module" src="app.js"></script>
 </body>
 </html>
-
-
-
