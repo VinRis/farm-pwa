@@ -54,9 +54,12 @@
     </div>
 
     <div id="app-shell" class="view-section hidden">
-        <header class="app-header">
-            <button id="home-btn" class="icon-btn"><i class="fa-solid fa-house"></i></button>
-            <h2 id="header-title">Farm Dashboard</h2>
+       <header class="app-header">
+            <div class="header-left">
+                <button id="home-btn" class="icon-btn"><i class="fa-solid fa-house"></i></button>
+                <button id="auth-status-btn" class="icon-btn"><i class="fa-solid fa-circle-user"></i></button>
+            </div>
+            <h2 id="header-title">FarmTrack</h2>
             <button id="theme-toggle" class="icon-btn"><i class="fa-solid fa-moon"></i></button>
         </header>
 
@@ -192,6 +195,16 @@
                         <label>Currency Symbol</label>
                         <input type="text" id="currency-input" placeholder="e.g. KSh, $, £" onchange="app.updateCurrency(this.value)">
                     </div>
+                    <div class="card premium-card" style="background: linear-gradient(135deg, #2E7D32, #1B5E20); color: white; margin-top: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <h3>FarmTrack Pro</h3>
+                            <i class="fa-solid fa-crown" style="color: #FFD700;"></i>
+                        </div>
+                        <p style="font-size: 0.85rem; margin: 10px 0;">Unlock Cloud Sync, Unlimited PDF Reports, and Multi-Device access.</p>
+                        <button id="upgrade-btn" class="btn-primary" style="background: white; color: #2E7D32; border: none; font-weight: bold; width: 100%;">
+                            Upgrade Now
+                        </button>
+                    </div>
                     <p><small>Changing this updates all current and future dashboard figures.</small></p>
                 </div>
             </section>
@@ -226,6 +239,31 @@
         </nav>
     </div>
 
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+      import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+      import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    
+      // Paste your config here
+      const firebaseConfig = { apiKey: "AIzaSyAva7tu7mWrdgJswDIR0W9OWv8ctZ5phPk",
+          authDomain: "farmtrack-b470e.firebaseapp.com",
+          projectId: "farmtrack-b470e",
+          storageBucket: "farmtrack-b470e.firebasestorage.app",
+          messagingSenderId: "572276398926",
+          appId: "1:572276398926:web:4b39dc570ce2077fae5c1f",
+          measurementId: "G-8TLCQ93SR2" }; 
+    
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+      const auth = getAuth(app);
+    
+      // Make them available to your app.js
+      window.db = db;
+      window.auth = auth;
+    </script>
+    <script type="module" src="app.js"></script>
+
     <script type="module" src="app.js"></script>
     <script>
         if ('serviceWorker' in navigator) {
@@ -236,6 +274,7 @@
     </script>
 </body>
 </html>
+
 
 
 
