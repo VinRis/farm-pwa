@@ -73,3 +73,28 @@
 .fab-glow {
     box-shadow: 0 4px 20px var(--primary-glow);
 }
+
+/* Ensure the buttons react to touch/clicks */
+main .grid button {
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.1s active, box-shadow 0.2s;
+}
+
+/* "Pressed" state for physical feedback */
+main .grid button:active {
+    transform: scale(0.96) !important;
+    filter: brightness(0.8);
+}
+
+/* Smooth fade for navigation transitions */
+main {
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* Primary Glow for the active category */
+.active-category {
+    border: 2px solid #13ec13;
+    box-shadow: 0 0 15px rgba(19, 236, 19, 0.3);
+}
