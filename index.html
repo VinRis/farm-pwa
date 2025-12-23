@@ -1,158 +1,104 @@
 <!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Farm Manager Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased min-h-screen">
 
-<html class="dark" lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Farm Manager - Welcome</title>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com" rel="preconnect"/>
-<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#13ec13",
-                        "background-light": "#f6f8f6",
-                        "background-dark": "#102210",
-                        "surface-dark": "#1a2e1a",
-                    },
-                    fontFamily: {
-                        "display": ["Inter", "sans-serif"]
-                    },
-                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px" },
-                },
-            },
-        }
-    </script>
-<style>
-        /* Custom scrollbar hiding for cleaner mobile look */
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-    </style>
-<style>
-    body {
-      min-height: max(884px, 100dvh);
-    }
-  </style>
-  </head>
-<body class="bg-background-light dark:bg-background-dark font-display antialiased min-h-screen flex flex-col">
-<!-- Top App Bar -->
-<header class="sticky top-0 z-50 w-full bg-background-light/95 dark:bg-background-dark/95 backdrop-blur supports-[backdrop-filter]:bg-background-light/60 dark:supports-[backdrop-filter]:bg-background-dark/60 border-b border-gray-200 dark:border-gray-800">
-<div class="flex items-center justify-between p-4 h-16">
-<button class="text-gray-900 dark:text-white flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-gray-200 dark:hover:bg-white/10 transition-colors">
-<span class="material-symbols-outlined text-2xl">menu</span>
-</button>
-<h1 class="text-gray-900 dark:text-white text-lg font-bold leading-tight tracking-tight flex-1 text-center pr-10">Farm Manager</h1>
-<!-- Spacer to balance the menu icon -->
-</div>
-</header>
-<!-- Main Content Area -->
-<main class="flex-1 flex flex-col w-full max-w-md mx-auto px-4 pb-8">
-<!-- Welcome Section -->
-<div class="pt-6 pb-6">
-<h2 class="text-gray-900 dark:text-white text-3xl font-bold leading-tight text-center tracking-tight mb-2">Good Morning, Farmer</h2>
-<p class="text-gray-600 dark:text-gray-400 text-base font-normal leading-normal text-center">Which livestock are you managing today?</p>
-</div>
-<!-- Livestock Grid -->
-<div class="grid grid-cols-2 gap-4 mb-8">
-<!-- Dairy Card -->
-<button class="group relative overflow-hidden rounded-2xl aspect-[4/5] focus:outline-none focus:ring-4 focus:ring-primary/50 transition-all duration-300 transform hover:scale-[1.02] active:scale-95 shadow-lg">
-<div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110" data-alt="Black and white dairy cow in a green field" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCuGn9CKQLxXWoJTC2UOyLZ9dyMLa2tGbBxzGdiwLA2Nr2W6T96eylVJtTDZ-3C9TsGLy3Y6CLRi-4vTU-D8suSYJpONwTOk27PyXAI2OfLoxLzXl-arLIKZc99PCdhDdt_hwjy_esxxsVp6jcIjvXpP7IXD9wijKdCzPjFHJZk0TUO4B9qpoADRTDiT-_SEhBn-eEoA6N-bkRQrnEWNOe_PLTJPweTIGRdUCQYYmGAjL7YORrRVCdyFcDx3-ukZjuRlOcOBQZnRmw");'>
-</div>
-<div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
-<div class="absolute inset-0 flex flex-col justify-end p-4">
-<div class="mb-2 size-10 rounded-full bg-primary/20 backdrop-blur-sm flex items-center justify-center text-primary border border-primary/30">
-<span class="material-symbols-outlined">water_drop</span>
-</div>
-<p class="text-white text-lg font-bold leading-tight">Dairy Cattle</p>
-<p class="text-gray-300 text-xs mt-1 font-medium">Manage Milk &amp; Health</p>
-</div>
-</button>
-<!-- Poultry Card -->
-<button class="group relative overflow-hidden rounded-2xl aspect-[4/5] focus:outline-none focus:ring-4 focus:ring-primary/50 transition-all duration-300 transform hover:scale-[1.02] active:scale-95 shadow-lg">
-<div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110" data-alt="Close up of a brown chicken in a coop" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCc-fQcATA1zQQ5YhSBN5i9_K-y_v74b9YhZrRbQjy23MN4EAK2_8MP4qfE1KsipMrFzlskS3bIk6Nc7YiMkFvf7lGnIhjJxYLH4clsiNkI5_cnFVIERRDAL3XLFSOtx3A34nhOGzNSiuwibDL8eUI4Kb1kMgb82vZNx4-AkUlm_5lZ0uHG90Y4_lATqZygo7vQTwMOOTNDK53BcLSgfwgf-xxCGIW-Qlq9JSkGr2P97xusoRFcHKjaTuOkxjEkowdrqraAMyIdenM");'>
-</div>
-<div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
-<div class="absolute inset-0 flex flex-col justify-end p-4">
-<div class="mb-2 size-10 rounded-full bg-yellow-500/20 backdrop-blur-sm flex items-center justify-center text-yellow-400 border border-yellow-500/30">
-<span class="material-symbols-outlined">egg</span>
-</div>
-<p class="text-white text-lg font-bold leading-tight">Poultry</p>
-<p class="text-gray-300 text-xs mt-1 font-medium">Layers &amp; Broilers</p>
-</div>
-</button>
-<!-- Piggery Card -->
-<button class="group relative overflow-hidden rounded-2xl aspect-[4/5] focus:outline-none focus:ring-4 focus:ring-primary/50 transition-all duration-300 transform hover:scale-[1.02] active:scale-95 shadow-lg">
-<div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110" data-alt="Pink piglet standing on straw" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBtGKkSqMiTCq-GklMTb5GEH5l1JDDLoPYPFS_sTs-L25vDOL81nveRLQJdIQaG2dDuqBTXgO7TCMa3u3GGghzNIiFbdoNobSUXHAIXsjq9-fbMd0z7X2p0qC63KZg0-yg5REFYjF705OxrVEBGOcTtJLnuneTJluMyTkQ8U3thmmjq4QfzV8_RUsLjeWpzTFVExS9dFufLkO5qJHZY_ksSqcCEUcMF0zejUAxlpjyfUJ-pfWy-BxHRGyIGmzwR3WGqOuYim40mt5A");'>
-</div>
-<div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
-<div class="absolute inset-0 flex flex-col justify-end p-4">
-<div class="mb-2 size-10 rounded-full bg-pink-500/20 backdrop-blur-sm flex items-center justify-center text-pink-400 border border-pink-500/30">
-<span class="material-symbols-outlined">pest_control_rodent</span> <!-- closest visually to generic animal shape if pig not available, but 'pest_control_rodent' is usually a rat. Let's use generic or specific if font supports -->
-<!-- Using a generic nature icon as fallback or specific if available in the font set loaded -->
-<span class="material-symbols-outlined">cruelty_free</span>
-</div>
-<p class="text-white text-lg font-bold leading-tight">Piggery</p>
-<p class="text-gray-300 text-xs mt-1 font-medium">Breeding &amp; Fattening</p>
-</div>
-</button>
-<!-- Goats & Sheep Card -->
-<button class="group relative overflow-hidden rounded-2xl aspect-[4/5] focus:outline-none focus:ring-4 focus:ring-primary/50 transition-all duration-300 transform hover:scale-[1.02] active:scale-95 shadow-lg">
-<div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110" data-alt="Sheep grazing in a green pasture" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAWnqEkX3PytFuVTMd4XnrnznN1sEGcFD2g-fLnwb2nwSMLeAhL9N0bMH3YM-Nf0UHbyeg-AFLUJv1DduxJlepZJCMUMJi7R552gK0cniqU6i-InV2naLGmfiws-xdFCgxfs5YdcbXkhwuMtneYGJJoRFkyWV115dTzObFiYDU45XzNVQI6_CUdxHyJhEHkbmGKPTP3EO1Saa0SmhmHwpOtUGyGZ_5g2ZSVDIjpAltWuILsti2fVMDaR_AW4uGMqyyQ-QVydchmLOs");'>
-</div>
-<div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
-<div class="absolute inset-0 flex flex-col justify-end p-4">
-<div class="mb-2 size-10 rounded-full bg-blue-500/20 backdrop-blur-sm flex items-center justify-center text-blue-400 border border-blue-500/30">
-<span class="material-symbols-outlined">grass</span>
-</div>
-<p class="text-white text-lg font-bold leading-tight">Goats &amp; Sheep</p>
-<p class="text-gray-300 text-xs mt-1 font-medium">Small Ruminants</p>
-</div>
-</button>
-</div>
-<!-- Quick Stats / Insight (Optional Filler for visual balance) -->
-<div class="bg-surface-dark/50 dark:bg-white/5 rounded-xl p-4 mb-6 border border-gray-200 dark:border-white/10 flex items-center justify-between">
-<div class="flex items-center gap-3">
-<div class="p-2 bg-primary/20 rounded-lg text-primary">
-<span class="material-symbols-outlined">cloud_sync</span>
-</div>
-<div class="flex flex-col">
-<span class="text-sm font-semibold text-gray-900 dark:text-white">Last Sync Status</span>
-<span class="text-xs text-gray-500 dark:text-gray-400">Everything up to date</span>
-</div>
-</div>
-<button class="text-primary text-sm font-bold hover:underline">Sync Now</button>
-</div>
-<!-- Footer Actions -->
-<div class="mt-auto flex flex-col gap-3">
-<div class="grid grid-cols-2 gap-3">
-<button class="flex cursor-pointer items-center justify-center rounded-xl h-12 px-4 bg-gray-200 dark:bg-white/10 text-gray-900 dark:text-white text-sm font-bold leading-normal hover:bg-gray-300 dark:hover:bg-white/20 transition-colors">
-<span class="material-symbols-outlined mr-2 text-lg">backup</span>
-<span class="truncate">Backup</span>
-</button>
-<button class="flex cursor-pointer items-center justify-center rounded-xl h-12 px-4 bg-gray-200 dark:bg-white/10 text-gray-900 dark:text-white text-sm font-bold leading-normal hover:bg-gray-300 dark:hover:bg-white/20 transition-colors">
-<span class="material-symbols-outlined mr-2 text-lg">restore</span>
-<span class="truncate">Restore</span>
-</button>
-</div>
-<!-- Login CTA -->
-<div class="flex justify-center mt-2">
-<button class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors flex items-center gap-1 group">
-<span>Already have an account?</span>
-<span class="font-bold text-primary underline decoration-primary/50 group-hover:decoration-primary">Log in to Sync</span>
-</button>
-</div>
-</div>
-</main>
-</body></html>
+    <header id="top-bar" class="hidden sticky top-0 z-40 bg-background-dark/95 backdrop-blur border-b border-gray-800">
+        <div class="flex items-center justify-between p-4 h-16 max-w-md mx-auto">
+            <button onclick="showPage('welcome')" class="text-white"><span class="material-symbols-outlined">arrow_back</span></button>
+            <h1 id="page-title" class="text-white text-lg font-bold">Dashboard</h1>
+            <button onclick="showPage('settings')" class="text-white"><span class="material-symbols-outlined">settings</span></button>
+        </div>
+    </header>
 
+    <main class="max-w-md mx-auto px-4 pb-24">
+        <section id="page-welcome" class="page-content py-8">
+            <h2 class="text-white text-3xl font-bold text-center mb-2">Good Morning, Farmer</h2>
+            <p class="text-gray-400 text-center mb-8">Which livestock are you managing today?</p>
+            <div class="grid grid-cols-2 gap-4 mb-8">
+                <button onclick="selectLivestock('Dairy')" class="livestock-card" style="background-image: url('https://images.unsplash.com/photo-1546445317-29f4545e9d53?auto=format&fit=crop&q=80&w=400')">
+                    <div class="card-overlay">
+                        <span class="material-symbols-outlined text-primary">water_drop</span>
+                        <p class="font-bold">Dairy Cattle</p>
+                    </div>
+                </button>
+                <button onclick="selectLivestock('Poultry')" class="livestock-card" style="background-image: url('https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&q=80&w=400')">
+                    <div class="card-overlay">
+                        <span class="material-symbols-outlined text-yellow-400">egg</span>
+                        <p class="font-bold">Poultry</p>
+                    </div>
+                </button>
+                </div>
+        </section>
+
+        <section id="page-dashboard" class="page-content hidden py-6">
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div class="bg-surface-dark p-4 rounded-2xl border border-white/5">
+                    <p class="text-gray-400 text-xs">TOTAL HERD</p>
+                    <h3 class="text-2xl font-bold text-white">145</h3>
+                </div>
+                <div class="bg-surface-dark p-4 rounded-2xl border border-white/5">
+                    <p class="text-gray-400 text-xs">DAILY YIELD</p>
+                    <h3 class="text-2xl font-bold text-white">2,400L</h3>
+                </div>
+            </div>
+            <h3 class="text-white font-bold mb-4">Smart Insights</h3>
+            <div class="bg-orange-500/10 border border-orange-500/20 p-4 rounded-xl mb-4">
+                <p class="text-orange-400 text-sm">Feed efficiency is 10% higher than average.</p>
+            </div>
+        </section>
+
+        <section id="page-finance" class="page-content hidden py-6">
+            <div class="bg-surface-dark p-6 rounded-2xl mb-6">
+                <p class="text-gray-400">Net Profit</p>
+                <h2 class="text-3xl font-bold text-white">$12,450.00</h2>
+            </div>
+            <div id="transaction-list" class="space-y-3">
+                </div>
+        </section>
+    </main>
+
+    <button id="fab" onclick="toggleModal('record-modal')" class="hidden fixed bottom-24 right-6 size-14 bg-primary rounded-full shadow-lg flex items-center justify-center text-black z-50">
+        <span class="material-symbols-outlined text-3xl">add</span>
+    </button>
+
+    <nav id="bottom-nav" class="hidden fixed bottom-0 left-0 right-0 bg-background-dark/95 border-t border-gray-800 pb-6 pt-2">
+        <div class="flex justify-around max-w-md mx-auto">
+            <button onclick="showPage('dashboard')" class="nav-item active"><span class="material-symbols-outlined">dashboard</span></button>
+            <button onclick="showPage('history')" class="nav-item"><span class="material-symbols-outlined">history</span></button>
+            <button onclick="showPage('finance')" class="nav-item"><span class="material-symbols-outlined">payments</span></button>
+            <button onclick="showPage('health')" class="nav-item"><span class="material-symbols-outlined">medical_services</span></button>
+        </div>
+    </nav>
+
+    <div id="record-modal" class="hidden fixed inset-0 bg-black/80 z-[60] flex items-end">
+        <div class="bg-surface-dark w-full rounded-t-3xl p-6 animate-slide-up">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-white text-xl font-bold">New Record</h3>
+                <button onclick="toggleModal('record-modal')"><span class="material-symbols-outlined text-white">close</span></button>
+            </div>
+            <div class="space-y-4">
+                <button class="modal-opt" onclick="alert('Add Production logic')">
+                    <span class="material-symbols-outlined">inventory_2</span>
+                    <div><p class="font-bold">Production Record</p><p class="text-xs text-gray-400">Log milk, eggs, or weight</p></div>
+                </button>
+                <button class="modal-opt" onclick="alert('Add Finance logic')">
+                    <span class="material-symbols-outlined">account_balance_wallet</span>
+                    <div><p class="font-bold">Financial Transaction</p><p class="text-xs text-gray-400">Record sales or expenses</p></div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
