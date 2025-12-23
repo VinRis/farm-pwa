@@ -1,5 +1,62 @@
 // app.js
 document.addEventListener('DOMContentLoaded', () => {
+
+    // 1. Select all livestock category buttons
+    const livestockButtons = document.querySelectorAll('main .grid button');
+
+    livestockButtons.forEach(button => {
+        // Add click event
+        button.addEventListener('click', function(e) {
+            // Get the name of the livestock from the button's text
+            const livestockName = this.querySelector('p.text-white').innerText;
+            
+            console.log(`Navigating to: ${livestockName}`);
+            
+            // Visual feedback: brief flash or scale effect
+            this.classList.add('ring-4', 'ring-primary');
+            
+            // Simulate navigation/loading
+            handleNavigation(livestockName);
+            
+            // Remove the ring after a short delay
+            setTimeout(() => {
+                this.classList.remove('ring-4', 'ring-primary');
+            }, 200);
+        });
+    });
+
+    // 2. Navigation Handler
+    function handleNavigation(category) {
+        // In a real app, this would route to a new page or change the view
+        const mainContent = document.querySelector('main');
+        
+        // Simple transition effect
+        mainContent.style.opacity = '0';
+        mainContent.style.transform = 'translateY(10px)';
+        mainContent.style.transition = 'all 0.3s ease';
+
+        setTimeout(() => {
+            alert(`Opening ${category} Management Dashboard...`);
+            // Reset for demo purposes
+            mainContent.style.opacity = '1';
+            mainContent.style.transform = 'translateY(0)';
+        }, 300);
+    }
+
+    // 3. Sync Button Logic
+    const syncBtn = document.querySelector('button:last-of-type').parentElement.previousElementSibling.querySelector('button');
+    if (syncBtn) {
+        syncBtn.addEventListener('click', () => {
+            syncBtn.innerText = "Syncing...";
+            syncBtn.classList.add('animate-pulse');
+            setTimeout(() => {
+                syncBtn.innerText = "Sync Now";
+                syncBtn.classList.remove('animate-pulse');
+            }, 1500);
+        });
+    }
+});
+    
     // --- State Management ---
     const state = {
         currentCategory: 'All',
