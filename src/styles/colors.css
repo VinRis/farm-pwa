@@ -1,0 +1,332 @@
+/* Farm Manager PWA - Color Variables */
+:root {
+    /* Primary Colors - Farm Theme */
+    --primary-green: #4CAF50;      /* Farm Green - Main brand color */
+    --primary-blue: #2196F3;       /* Dairy Blue - Dairy section */
+    --primary-orange: #FF9800;     /* Poultry Orange - Poultry section */
+    --primary-brown: #8D6E63;      /* Soil Brown - Earth/feed tones */
+    
+    /* Secondary Colors */
+    --secondary-green: #81C784;    /* Light Green - Success states */
+    --secondary-blue: #64B5F6;     /* Light Blue - Info states */
+    --secondary-orange: #FFB74D;   /* Light Orange - Warning states */
+    --secondary-brown: #A1887F;    /* Light Brown - Neutral tones */
+    
+    /* Status Colors */
+    --success: #66BB6A;            /* Success/Healthy - Bright green */
+    --warning: #FFB74D;            /* Warning/Attention - Amber */
+    --danger: #EF5350;             /* Danger/Error - Red */
+    --info: #42A5F5;               /* Information - Blue */
+    
+    /* Livestock Specific Colors */
+    --dairy-color: #2196F3;        /* Dairy theme */
+    --dairy-light: #E3F2FD;        /* Dairy light background */
+    --dairy-dark: #1976D2;         /* Dairy dark shade */
+    
+    --poultry-color: #FF9800;      /* Poultry theme */
+    --poultry-light: #FFF3E0;      /* Poultry light background */
+    --poultry-dark: #F57C00;       /* Poultry dark shade */
+    
+    /* Farm Elements Colors */
+    --milk-color: #E8F5E9;         /* Milk white */
+    --egg-color: #FFFDE7;          /* Egg yellow */
+    --feed-color: #F5F5DC;         /* Feed beige */
+    --hay-color: #D7CCC8;          /* Hay/straw */
+    --water-color: #E3F2FD;        /* Water blue */
+    
+    /* UI Colors */
+    --background: #F5F5F5;         /* Main background */
+    --surface: #FFFFFF;            /* Card surfaces */
+    --border: #E0E0E0;            /* Borders and dividers */
+    
+    /* Text Colors */
+    --text-primary: #212121;       /* Primary text */
+    --text-secondary: #757575;     /* Secondary text */
+    --text-disabled: #9E9E9E;      /* Disabled text */
+    --text-inverse: #FFFFFF;       /* Text on dark backgrounds */
+    
+    /* Neutral Colors */
+    --light-gray: #F5F5F5;         /* Light gray backgrounds */
+    --medium-gray: #E0E0E0;        /* Borders, dividers */
+    --dark-gray: #757575;          /* Secondary text, icons */
+    --black: #212121;              /* Primary text */
+    --white: #FFFFFF;              /* White */
+    
+    /* Semantic Colors */
+    --success-bg: #E8F5E9;         /* Success background */
+    --success-border: #C8E6C9;     /* Success border */
+    --warning-bg: #FFF3E0;         /* Warning background */
+    --warning-border: #FFE0B2;     /* Warning border */
+    --danger-bg: #FFEBEE;          /* Danger background */
+    --danger-border: #FFCDD2;      /* Danger border */
+    --info-bg: #E3F2FD;           /* Info background */
+    --info-border: #BBDEFB;       /* Info border */
+    
+    /* Shadow Colors */
+    --shadow-light: rgba(0, 0, 0, 0.1);
+    --shadow-medium: rgba(0, 0, 0, 0.15);
+    --shadow-dark: rgba(0, 0, 0, 0.2);
+    
+    /* Overlay Colors */
+    --overlay-light: rgba(255, 255, 255, 0.8);
+    --overlay-dark: rgba(0, 0, 0, 0.5);
+    
+    /* Gradient Colors */
+    --gradient-green: linear-gradient(135deg, #4CAF50, #81C784);
+    --gradient-blue: linear-gradient(135deg, #2196F3, #64B5F6);
+    --gradient-orange: linear-gradient(135deg, #FF9800, #FFB74D);
+    --gradient-brown: linear-gradient(135deg, #8D6E63, #A1887F);
+    
+    /* Chart Colors */
+    --chart-1: #4CAF50;            /* Green - Primary */
+    --chart-2: #2196F3;            /* Blue - Secondary */
+    --chart-3: #FF9800;            /* Orange - Tertiary */
+    --chart-4: #9C27B0;            /* Purple */
+    --chart-5: #F44336;            /* Red */
+    --chart-6: #00BCD4;            /* Cyan */
+    --chart-7: #FFC107;            /* Amber */
+    --chart-8: #607D8B;            /* Blue Gray */
+    
+    /* Animal Icons Colors */
+    --cow-color: #795548;          /* Cow brown */
+    --chicken-color: #FF9800;      /* Chicken orange */
+    --pig-color: #E91E63;          /* Pig pink */
+    --sheep-color: #9E9E9E;        /* Sheep gray */
+    
+    /* Seasonal Colors */
+    --spring: #81C784;             /* Spring green */
+    --summer: #FFD54F;             /* Summer yellow */
+    --autumn: #FF9800;             /* Autumn orange */
+    --winter: #64B5F6;             /* Winter blue */
+    
+    /* Time of Day Colors */
+    --morning: #FFEB3B;            /* Morning yellow */
+    --noon: #FF9800;               /* Noon orange */
+    --evening: #E65100;            /* Evening dark orange */
+    --night: #283593;              /* Night blue */
+}
+
+/* Dark Mode Color Overrides */
+@media (prefers-color-scheme: dark) {
+    :root {
+        /* Dark Mode Primary Colors */
+        --primary-green: #66BB6A;
+        --primary-blue: #64B5F6;
+        --primary-orange: #FFB74D;
+        --primary-brown: #A1887F;
+        
+        /* Dark Mode Secondary Colors */
+        --secondary-green: #81C784;
+        --secondary-blue: #90CAF9;
+        --secondary-orange: #FFCC80;
+        --secondary-brown: #BCAAA4;
+        
+        /* Dark Mode Status Colors */
+        --success: #81C784;
+        --warning: #FFB74D;
+        --danger: #EF9A9A;
+        --info: #90CAF9;
+        
+        /* Dark Mode Livestock Colors */
+        --dairy-color: #64B5F6;
+        --dairy-light: #0D47A1;
+        --dairy-dark: #42A5F5;
+        
+        --poultry-color: #FFB74D;
+        --poultry-light: #E65100;
+        --poultry-dark: #FF9800;
+        
+        /* Dark Mode Farm Elements */
+        --milk-color: #1B5E20;
+        --egg-color: #5D4037;
+        --feed-color: #3E2723;
+        --hay-color: #4E342E;
+        --water-color: #0D47A1;
+        
+        /* Dark Mode UI Colors */
+        --background: #121212;
+        --surface: #1E1E1E;
+        --border: #333333;
+        
+        /* Dark Mode Text Colors */
+        --text-primary: #FFFFFF;
+        --text-secondary: #B0B0B0;
+        --text-disabled: #666666;
+        --text-inverse: #212121;
+        
+        /* Dark Mode Neutral Colors */
+        --light-gray: #2E2E2E;
+        --medium-gray: #333333;
+        --dark-gray: #666666;
+        --black: #000000;
+        --white: #FFFFFF;
+        
+        /* Dark Mode Semantic Colors */
+        --success-bg: #1B5E20;
+        --success-border: #2E7D32;
+        --warning-bg: #E65100;
+        --warning-border: #F57C00;
+        --danger-bg: #B71C1C;
+        --danger-border: #C62828;
+        --info-bg: #0D47A1;
+        --info-border: #1565C0;
+        
+        /* Dark Mode Shadow Colors */
+        --shadow-light: rgba(0, 0, 0, 0.3);
+        --shadow-medium: rgba(0, 0, 0, 0.5);
+        --shadow-dark: rgba(0, 0, 0, 0.7);
+        
+        /* Dark Mode Overlay Colors */
+        --overlay-light: rgba(30, 30, 30, 0.8);
+        --overlay-dark: rgba(0, 0, 0, 0.7);
+        
+        /* Dark Mode Gradient Colors */
+        --gradient-green: linear-gradient(135deg, #1B5E20, #2E7D32);
+        --gradient-blue: linear-gradient(135deg, #0D47A1, #1565C0);
+        --gradient-orange: linear-gradient(135deg, #E65100, #F57C00);
+        --gradient-brown: linear-gradient(135deg, #3E2723, #4E342E);
+    }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+    :root {
+        --primary-green: #2E7D32;
+        --primary-blue: #1565C0;
+        --primary-orange: #EF6C00;
+        
+        --text-primary: #000000;
+        --text-secondary: #333333;
+        
+        --border: #000000;
+        --shadow-dark: rgba(0, 0, 0, 0.8);
+    }
+}
+
+/* Print Styles */
+@media print {
+    :root {
+        --background: #FFFFFF;
+        --surface: #FFFFFF;
+        --text-primary: #000000;
+        --text-secondary: #333333;
+        --border: #CCCCCC;
+        
+        /* Remove gradients for print */
+        --gradient-green: #4CAF50;
+        --gradient-blue: #2196F3;
+        --gradient-orange: #FF9800;
+    }
+}
+
+/* Color Utility Classes */
+.color-primary-green { color: var(--primary-green); }
+.color-primary-blue { color: var(--primary-blue); }
+.color-primary-orange { color: var(--primary-orange); }
+.color-primary-brown { color: var(--primary-brown); }
+
+.bg-primary-green { background-color: var(--primary-green); }
+.bg-primary-blue { background-color: var(--primary-blue); }
+.bg-primary-orange { background-color: var(--primary-orange); }
+.bg-primary-brown { background-color: var(--primary-brown); }
+
+.color-success { color: var(--success); }
+.color-warning { color: var(--warning); }
+.color-danger { color: var(--danger); }
+.color-info { color: var(--info); }
+
+.bg-success { background-color: var(--success); }
+.bg-warning { background-color: var(--warning); }
+.bg-danger { background-color: var(--danger); }
+.bg-info { background-color: var(--info); }
+
+/* Border Color Utilities */
+.border-primary-green { border-color: var(--primary-green); }
+.border-primary-blue { border-color: var(--primary-blue); }
+.border-primary-orange { border-color: var(--primary-orange); }
+.border-primary-brown { border-color: var(--primary-brown); }
+
+/* Text Color Utilities */
+.text-primary { color: var(--text-primary); }
+.text-secondary { color: var(--text-secondary); }
+.text-disabled { color: var(--text-disabled); }
+.text-inverse { color: var(--text-inverse); }
+
+/* Background Color Utilities */
+.bg-surface { background-color: var(--surface); }
+.bg-background { background-color: var(--background); }
+.bg-light-gray { background-color: var(--light-gray); }
+
+/* Gradient Backgrounds */
+.bg-gradient-green {
+    background: var(--gradient-green);
+    color: white;
+}
+
+.bg-gradient-blue {
+    background: var(--gradient-blue);
+    color: white;
+}
+
+.bg-gradient-orange {
+    background: var(--gradient-orange);
+    color: white;
+}
+
+.bg-gradient-brown {
+    background: var(--gradient-brown);
+    color: white;
+}
+
+/* Chart Color Classes */
+.chart-color-1 { color: var(--chart-1); }
+.chart-color-2 { color: var(--chart-2); }
+.chart-color-3 { color: var(--chart-3); }
+.chart-color-4 { color: var(--chart-4); }
+.chart-color-5 { color: var(--chart-5); }
+.chart-color-6 { color: var(--chart-6); }
+.chart-color-7 { color: var(--chart-7); }
+.chart-color-8 { color: var(--chart-8); }
+
+/* Animal Icon Color Classes */
+.icon-cow { color: var(--cow-color); }
+.icon-chicken { color: var(--chicken-color); }
+.icon-pig { color: var(--pig-color); }
+.icon-sheep { color: var(--sheep-color); }
+
+/* Seasonal Color Classes */
+.season-spring { color: var(--spring); }
+.season-summer { color: var(--summer); }
+.season-autumn { color: var(--autumn); }
+.season-winter { color: var(--winter); }
+
+/* Time of Day Color Classes */
+.time-morning { color: var(--morning); }
+.time-noon { color: var(--noon); }
+.time-evening { color: var(--evening); }
+.time-night { color: var(--night); }
+
+/* Status Badge Colors */
+.badge-success {
+    background-color: var(--success-bg);
+    border-color: var(--success-border);
+    color: var(--success);
+}
+
+.badge-warning {
+    background-color: var(--warning-bg);
+    border-color: var(--warning-border);
+    color: var(--warning);
+}
+
+.badge-danger {
+    background-color: var(--danger-bg);
+    border-color: var(--danger-border);
+    color: var(--danger);
+}
+
+.badge-info {
+    background-color: var(--info-bg);
+    border-color: var(--info-border);
+    color: var(--info);
+}

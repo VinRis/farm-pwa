@@ -1,0 +1,264 @@
+/* Offline Indicator Component */
+.offline-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    background-color: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--medium-gray);
+    position: relative;
+    overflow: hidden;
+}
+
+.offline-indicator::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    transition: width 0.3s ease;
+}
+
+.offline-indicator.online::before {
+    background-color: var(--success);
+    width: 100%;
+}
+
+.offline-indicator.offline::before {
+    background-color: var(--danger);
+    width: 100%;
+}
+
+.offline-indicator.syncing::before {
+    background: linear-gradient(90deg, var(--primary-green) 0%, var(--primary-blue) 50%, var(--primary-green) 100%);
+    animation: sync-progress 2s linear infinite;
+    background-size: 200% 100%;
+}
+
+@keyframes sync-progress {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.indicator-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    transition: background-color 0.3s ease;
+}
+
+.indicator-dot.online {
+    background-color: var(--success);
+    animation: pulse-online 2s infinite;
+}
+
+.indicator-dot.offline {
+    background-color: var(--danger);
+    animation: pulse-offline 2s infinite;
+}
+
+.indicator-dot.syncing {
+    background-color: var(--warning);
+    animation: pulse-syncing 1.5s infinite;
+}
+
+@keyframes pulse-online {
+    0% { box-shadow: 0 0 0 0 rgba(102, 187, 106, 0.7); }
+    70% { box-shadow: 0 0 0 6px rgba(102, 187, 106, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(102, 187, 106, 0); }
+}
+
+@keyframes pulse-offline {
+    0% { box-shadow: 0 0 0 0 rgba(239, 83, 80, 0.7); }
+    70% { box-shadow: 0 0 0 6px rgba(239, 83, 80, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(239, 83, 80, 0); }
+}
+
+@keyframes pulse-syncing {
+    0%, 100% { 
+        box-shadow: 0 0 0 0 rgba(255, 183, 77, 0.7);
+        transform: scale(1);
+    }
+    50% { 
+        box-shadow: 0 0 0 4px rgba(255, 183, 77, 0);
+        transform: scale(1.2);
+    }
+}
+
+.indicator-text {
+    font-weight: 500;
+}
+
+.indicator-text.online {
+    color: var(--success);
+}
+
+.indicator-text.offline {
+    color: var(--danger);
+}
+
+.indicator-text.syncing {
+    color: var(--warning);
+}
+
+.sync-progress {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sync-progress-bar {
+    width: 60px;
+    height: 4px;
+    background-color: var(--light-gray);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.sync-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-green), var(--primary-blue));
+    border-radius: 2px;
+    transition: width 0.3s ease;
+    animation: sync-wave 2s ease-in-out infinite;
+}
+
+@keyframes sync-wave {
+    0%, 100% { transform: translateX(-100%); }
+    50% { transform: translateX(100%); }
+}
+
+.sync-count {
+    font-size: 12px;
+    color: var(--dark-gray);
+    font-weight: 400;
+}
+
+/* Offline actions */
+.offline-actions {
+    display: flex;
+    gap: 6px;
+    margin-left: 8px;
+}
+
+.offline-action-btn {
+    background: none;
+    border: 1px solid var(--medium-gray);
+    border-radius: 12px;
+    padding: 4px 8px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.offline-action-btn:hover {
+    background-color: var(--light-gray);
+}
+
+.offline-action-btn.retry {
+    border-color: var(--warning);
+    color: var(--warning);
+}
+
+.offline-action-btn.retry:hover {
+    background-color: rgba(255, 183, 77, 0.1);
+}
+
+.offline-action-btn.view-queue {
+    border-color: var(--primary-blue);
+    color: var(--primary-blue);
+}
+
+.offline-action-btn.view-queue:hover {
+    background-color: rgba(33, 150, 243, 0.1);
+}
+
+/* Tooltip */
+.offline-tooltip {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(8px);
+    background-color: var(--text-dark);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1001;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+    pointer-events: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.offline-tooltip::before {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+    width: 8px;
+    height: 8px;
+    background-color: var(--text-dark);
+}
+
+.offline-indicator:hover .offline-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(4px);
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .offline-indicator {
+        background-color: #1e1e1e;
+        border-color: #333;
+    }
+    
+    .offline-action-btn {
+        border-color: #444;
+        color: #b0b0b0;
+    }
+    
+    .offline-action-btn:hover {
+        background-color: #333;
+    }
+    
+    .offline-tooltip {
+        background-color: #333;
+    }
+    
+    .offline-tooltip::before {
+        background-color: #333;
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .offline-indicator {
+        padding: 4px 8px;
+        font-size: 12px;
+    }
+    
+    .offline-actions {
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .offline-action-btn {
+        padding: 3px 6px;
+        font-size: 11px;
+    }
+}
