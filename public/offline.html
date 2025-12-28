@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Farm Manager Pro - Offline</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #4CAF50, #2E7D32);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .offline-container {
+            max-width: 500px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            color: #333;
+        }
+        
+        .offline-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: #2E7D32;
+            margin-bottom: 15px;
+            font-size: 28px;
+        }
+        
+        p {
+            margin-bottom: 20px;
+            line-height: 1.6;
+            color: #555;
+        }
+        
+        .features {
+            text-align: left;
+            margin: 25px 0;
+            padding: 20px;
+            background: #F5F5F5;
+            border-radius: 10px;
+        }
+        
+        .features h3 {
+            color: #4CAF50;
+            margin-bottom: 10px;
+        }
+        
+        .features ul {
+            list-style-type: none;
+        }
+        
+        .features li {
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+        }
+        
+        .features li:before {
+            content: "✓";
+            color: #4CAF50;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #388E3C;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: #4CAF50;
+            border: 2px solid #4CAF50;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(76, 175, 80, 0.1);
+        }
+        
+        .connection-status {
+            margin-top: 25px;
+            padding: 15px;
+            background: #FFF3CD;
+            border-radius: 8px;
+            color: #856404;
+            border: 1px solid #FFEEBA;
+        }
+        
+        .connection-status.error {
+            background: #F8D7DA;
+            color: #721C24;
+            border-color: #F5C6CB;
+        }
+        
+        .connection-status.success {
+            background: #D4EDDA;
+            color: #155724;
+            border-color: #C3E6CB;
+        }
+        
+        .status-icon {
+            font-size: 24px;
+            margin-right: 10px;
+        }
+        
+        .retry-button {
+            background: none;
+            border: none;
+            color: #4CAF50;
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        
+        @media (max-width: 600px) {
+            .offline-container {
+                padding: 25px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="offline-icon">🚜</div>
+        
+        <h1>You're Offline</h1>
+        
+        <p>
+            Farm Manager Pro is designed to work offline! You can continue to:
+        </p>
+        
+        <div class="features">
+            <h3>Available Offline Features:</h3>
+            <ul>
+                <li>View and manage dairy cattle records</li>
+                <li>Record milk production data</li>
+                <li>Track poultry flock information</li>
+                <li>Record egg collections</li>
+                <li>Update feed inventory</li>
+                <li>Monitor animal health status</li>
+                <li>View breeding schedules</li>
+                <li>Generate farm reports</li>
+            </ul>
+        </div>
+        
+        <p>
+            Your data is saved locally and will automatically sync when you're back online.
+        </p>
+        
+        <div class="connection-status" id="connection-status">
+            <div style="display: flex; align-items: center;">
+                <span class="status-icon">📶</span>
+                <span id="status-text">Checking connection...</span>
+            </div>
+        </div>
+        
+        <div class="action-buttons">
+            <button class="btn-primary" onclick="retryConnection()">
+                <span>↻</span> Retry Connection
+            </button>
+            
+            <button class="btn-secondary" onclick="continueOffline()">
+                <span>🚜</span> Continue Offline
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        // Check connection status
+        function checkConnection() {
+            const statusElement = document.getElementById('connection-status');
+            const statusText = document.getElementById('status-text');
+            
+            if (navigator.onLine) {
+                statusElement.className = 'connection-status success';
+                statusText.textContent = 'Connection restored! Redirecting...';
+                
+                // Redirect to main app after 2 seconds
+                setTimeout(() => {
+                    window.location.href = '/farm-pwa/';
+                }, 2000);
+            } else {
+                statusElement.className = 'connection-status error';
+                statusText.textContent = 'No internet connection. Working offline.';
+            }
+        }
+        
+        // Retry connection
+        function retryConnection() {
+            const statusElement = document.getElementById('connection-status');
+            const statusText = document.getElementById('status-text');
+            
+            statusText.textContent = 'Checking connection...';
+            statusElement.className = 'connection-status';
+            
+            // Simulate checking
+            setTimeout(() => {
+                checkConnection();
+            }, 1000);
+        }
+        
+        // Continue working offline
+        function continueOffline() {
+            // Try to load the main app from cache
+            window.location.href = '/farm-pwa/';
+        }
+        
+        // Check for cached app
+        function checkForCachedApp() {
+            if ('caches' in window) {
+                caches.match('/farm-pwa/')
+                    .then(response => {
+                        if (response) {
+                            console.log('Cached app available');
+                        }
+                    })
+                    .catch(error => {
+                        console.log('No cached app found');
+                    });
+            }
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            checkConnection();
+            checkForCachedApp();
+            
+            // Listen for connection changes
+            window.addEventListener('online', checkConnection);
+            window.addEventListener('offline', checkConnection);
+            
+            // Auto-retry every 30 seconds
+            setInterval(checkConnection, 30000);
+        });
+        
+        // Show connection info
+        console.log('Farm Manager Pro Offline Page Loaded');
+        console.log('Service Worker Support:', 'serviceWorker' in navigator);
+        console.log('Cache Support:', 'caches' in window);
+        console.log('IndexedDB Support:', 'indexedDB' in window);
+    </script>
+</body>
+</html>

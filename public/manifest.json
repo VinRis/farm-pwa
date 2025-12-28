@@ -1,0 +1,88 @@
+{
+  "name": "Farm Manager Pro",
+  "short_name": "Farm Manager",
+  "description": "Modern Progressive Web App for Dairy and Poultry Farm Management",
+  "scope": "/farm-pwa/",
+  "start_url": "/farm-pwa/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#4CAF50",
+  "background_color": "#FFFFFF",
+  "icons": [
+    {
+      "src": "/farm-pwa/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/farm-pwa/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/farm-pwa/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/farm-pwa/assets/screenshots/mobile-screenshot.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Farm Manager Mobile Dashboard"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Record Milk Production",
+      "short_name": "Milk",
+      "description": "Quickly record daily milk production",
+      "url": "/farm-pwa/?action=record_milk",
+      "icons": [
+        {
+          "src": "/farm-pwa/assets/icons/milk-icon.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Check Egg Production",
+      "short_name": "Eggs",
+      "description": "View daily egg collection",
+      "url": "/farm-pwa/?action=view_eggs",
+      "icons": [
+        {
+          "src": "/farm-pwa/assets/icons/egg-icon.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Animal Health",
+      "short_name": "Health",
+      "description": "Monitor livestock health status",
+      "url": "/farm-pwa/?action=health",
+      "icons": [
+        {
+          "src": "/farm-pwa/assets/icons/health-icon.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "categories": ["business", "productivity", "finance", "lifestyle"],
+  "lang": "en-US",
+  "dir": "ltr",
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "protocol_handlers": [],
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "edge_side_panel": {
+    "preferred_width": 400
+  }
+}

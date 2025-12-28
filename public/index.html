@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#4CAF50">
+    <title>Farm Manager Pro - Dairy & Poultry Management</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Modern PWA for dairy and poultry farm management">
+    <meta name="application-name" content="Farm Manager Pro">
+    <link rel="manifest" href="/farm-pwa/manifest.json">
+    
+    <!-- Icons -->
+    <link rel="icon" href="/farm-pwa/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="/farm-pwa/icon-192.png">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="/farm-pwa/src/styles/colors.css">
+    <link rel="stylesheet" href="/farm-pwa/src/styles/mobile-first.css">
+    <link rel="stylesheet" href="/farm-pwa/src/styles/main.css">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    
+    <!-- iOS PWA Support -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Farm Manager">
+</head>
+<body>
+    <!-- App Container -->
+    <div id="app">
+        <!-- Dynamic content will be injected here by app.js -->
+        <div class="loading-container">
+            <div class="loading-spinner"></div>
+            <p class="loading-text">Loading Farm Manager...</p>
+        </div>
+    </div>
+    
+    <!-- Service Worker Registration -->
+    <script>
+        // Register service worker for PWA functionality
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/farm-pwa/service-worker.js', {
+                    scope: '/farm-pwa/'
+                }).then(function(registration) {
+                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                }, function(err) {
+                    console.log('ServiceWorker registration failed: ', err);
+                });
+            });
+        }
+        
+        // Check online status
+        window.addEventListener('online', function() {
+            document.dispatchEvent(new CustomEvent('networkStatus', { detail: { online: true } }));
+        });
+        
+        window.addEventListener('offline', function() {
+            document.dispatchEvent(new CustomEvent('networkStatus', { detail: { online: false } }));
+        });
+    </script>
+    
+    <!-- Application Scripts -->
+    <script type="module" src="/farm-pwa/src/js/app.js"></script>
+    <script src="/farm-pwa/src/js/pwa-handler.js"></script>
+    
+    <!-- Initialize app -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check for web app installation
+            if (window.matchMedia('(display-mode: standalone)').matches) {
+                console.log('Running in standalone PWA mode');
+            }
+            
+            // Check if app is installed
+            window.addEventListener('beforeinstallprompt', (e) => {
+                console.log('PWA install prompt available');
+                // You can store this event to trigger install button later
+                window.deferredPrompt = e;
+            });
+        });
+    </script>
+</body>
+</html>
